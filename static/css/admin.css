@@ -493,6 +493,18 @@
     background: var(--primary-color);
 }
 
+.btn-profile {
+    background: #9c27b0;
+}
+
+.btn-profile:hover {
+    background: #7b1fa2;
+}
+
+.profile-fill {
+    background: linear-gradient(135deg, #9c27b0, #e91e63);
+}
+
 .category-row {
     gap: 10px;
 }

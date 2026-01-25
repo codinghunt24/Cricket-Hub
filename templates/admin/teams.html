@@ -87,6 +87,43 @@
                 </div>
             </div>
         </div>
+        
+        <div id="profileScrapeStatus" class="scrape-status-bar" style="display:none;"></div>
+        <h3 class="section-subtitle">Player Profiles by Category</h3>
+        <div class="scrape-sections-row category-row">
+            <div class="scrape-section-cat">
+                <div class="cat-header">🌍 International</div>
+                <button class="btn btn-xs btn-profile" onclick="scrapeCategoryProfiles('international')">Scrape Profiles</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="profileAutoIntl" onchange="saveProfileAuto('international')"> Auto</label>
+                    <input type="time" id="profileTimeIntl" value="03:00" class="time-xs" onchange="saveProfileAuto('international')">
+                </div>
+            </div>
+            <div class="scrape-section-cat">
+                <div class="cat-header">🏠 Domestic</div>
+                <button class="btn btn-xs btn-profile" onclick="scrapeCategoryProfiles('domestic')">Scrape Profiles</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="profileAutoDomestic" onchange="saveProfileAuto('domestic')"> Auto</label>
+                    <input type="time" id="profileTimeDomestic" value="03:30" class="time-xs" onchange="saveProfileAuto('domestic')">
+                </div>
+            </div>
+            <div class="scrape-section-cat">
+                <div class="cat-header">🏆 League</div>
+                <button class="btn btn-xs btn-profile" onclick="scrapeCategoryProfiles('league')">Scrape Profiles</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="profileAutoLeague" onchange="saveProfileAuto('league')"> Auto</label>
+                    <input type="time" id="profileTimeLeague" value="04:00" class="time-xs" onchange="saveProfileAuto('league')">
+                </div>
+            </div>
+            <div class="scrape-section-cat">
+                <div class="cat-header">👩 Women</div>
+                <button class="btn btn-xs btn-profile" onclick="scrapeCategoryProfiles('women')">Scrape Profiles</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="profileAutoWomen" onchange="saveProfileAuto('women')"> Auto</label>
+                    <input type="time" id="profileTimeWomen" value="04:30" class="time-xs" onchange="saveProfileAuto('women')">
+                </div>
+            </div>
+        </div>
     </div>
     
     <div class="categories-section">
@@ -387,5 +424,86 @@ function checkAutoScrapeProgress() {
     });
 }
 setInterval(checkAutoScrapeProgress, 1000);
+
+function scrapeCategoryProfiles(categorySlug) {
+    const statusDiv = document.getElementById('profileScrapeStatus');
+    statusDiv.innerHTML = `
+        <div class="scrape-progress-bar">
+            <div class="progress-info">
+                <span>Scraping ${categorySlug} player profiles...</span>
+                <span id="profileProgressPercent">0%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill profile-fill" id="profileProgressFill" style="width: 0%"></div>
+            </div>
+            <div class="progress-detail" id="profileProgressDetail">Starting...</div>
+        </div>`;
+    statusDiv.style.display = 'block';
+    
+    const progressInterval = setInterval(() => {
+        fetch('/api/scrape/profiles/' + categorySlug + '/progress')
+            .then(res => res.json())
+            .then(prog => {
+                document.getElementById('profileProgressPercent').textContent = prog.percent + '%';
+                document.getElementById('profileProgressFill').style.width = prog.percent + '%';
+                if (prog.current_player) {
+                    document.getElementById('profileProgressDetail').textContent = `Player ${prog.current}/${prog.total}: ${prog.current_player}`;
+                }
+                if (prog.status === 'complete') {
+                    clearInterval(progressInterval);
+                }
+            });
+    }, 500);
+    
+    fetch('/api/scrape/profiles/' + categorySlug, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            clearInterval(progressInterval);
+            document.getElementById('profileProgressPercent').textContent = '100%';
+            document.getElementById('profileProgressFill').style.width = '100%';
+            statusDiv.innerHTML = '<div class="scrape-success">' + data.message + '</div>';
+            setTimeout(() => { statusDiv.style.display = 'none'; location.reload(); }, 2000);
+        })
+        .catch(err => {
+            clearInterval(progressInterval);
+            statusDiv.innerHTML = '<div class="scrape-error">Error: ' + err.message + '</div>';
+        });
+}
+
+function saveProfileAuto(category) {
+    const catMap = {
+        'international': 'Intl',
+        'domestic': 'Domestic', 
+        'league': 'League',
+        'women': 'Women'
+    };
+    const suffix = catMap[category];
+    const enabled = document.getElementById('profileAuto' + suffix).checked;
+    const time = document.getElementById('profileTime' + suffix).value;
+    
+    fetch('/api/settings/profile-auto-scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: category, enabled: enabled, scrape_time: time })
+    })
+    .then(res => res.json())
+    .then(data => alert(data.message))
+    .catch(err => alert('Error: ' + err.message));
+}
+
+fetch('/api/settings/profile-scrape')
+    .then(res => res.json())
+    .then(settings => {
+        const catMap = { 'international': 'Intl', 'domestic': 'Domestic', 'league': 'League', 'women': 'Women' };
+        for (const [cat, data] of Object.entries(settings)) {
+            const suffix = catMap[cat];
+            if (suffix) {
+                const checkbox = document.getElementById('profileAuto' + suffix);
+                const timeInput = document.getElementById('profileTime' + suffix);
+                if (checkbox) checkbox.checked = data.enabled;
+                if (timeInput) timeInput.value = data.time;
+            }
+        }
+    });
 </script>
 {% endblock %}

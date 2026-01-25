@@ -36,16 +36,42 @@
         </div>
         
         <div class="player-details-card">
-            <h3>Player Information</h3>
+            <h3>Personal Information</h3>
             <div class="info-grid">
+                {% if player.born %}
                 <div class="info-item">
-                    <span class="info-label">Full Name</span>
-                    <span class="info-value">{{ player.name }}</span>
+                    <span class="info-label">Born</span>
+                    <span class="info-value">{{ player.born }}</span>
                 </div>
+                {% endif %}
+                {% if player.birth_place %}
+                <div class="info-item">
+                    <span class="info-label">Birth Place</span>
+                    <span class="info-value">{{ player.birth_place }}</span>
+                </div>
+                {% endif %}
+                {% if player.nickname %}
+                <div class="info-item">
+                    <span class="info-label">Nickname</span>
+                    <span class="info-value">{{ player.nickname }}</span>
+                </div>
+                {% endif %}
                 {% if player.role %}
                 <div class="info-item">
                     <span class="info-label">Role</span>
                     <span class="info-value">{{ player.role }}</span>
+                </div>
+                {% endif %}
+                {% if player.batting_style %}
+                <div class="info-item">
+                    <span class="info-label">Batting Style</span>
+                    <span class="info-value">{{ player.batting_style }}</span>
+                </div>
+                {% endif %}
+                {% if player.bowling_style %}
+                <div class="info-item">
+                    <span class="info-label">Bowling Style</span>
+                    <span class="info-value">{{ player.bowling_style }}</span>
                 </div>
                 {% endif %}
                 <div class="info-item">
@@ -58,6 +84,196 @@
                 </div>
             </div>
         </div>
+        
+        {% if player.bat_matches or player.bat_runs or player.bat_innings %}
+        <div class="player-stats-card">
+            <h3>Batting Career Summary</h3>
+            <div class="stats-grid">
+                {% if player.bat_matches %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bat_matches }}</span>
+                    <span class="stat-label">Matches</span>
+                </div>
+                {% endif %}
+                {% if player.bat_innings %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bat_innings }}</span>
+                    <span class="stat-label">Innings</span>
+                </div>
+                {% endif %}
+                {% if player.bat_runs %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bat_runs }}</span>
+                    <span class="stat-label">Runs</span>
+                </div>
+                {% endif %}
+                {% if player.bat_balls %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bat_balls }}</span>
+                    <span class="stat-label">Balls</span>
+                </div>
+                {% endif %}
+                {% if player.bat_highest %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bat_highest }}</span>
+                    <span class="stat-label">Highest Score</span>
+                </div>
+                {% endif %}
+                {% if player.bat_average %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bat_average }}</span>
+                    <span class="stat-label">Average</span>
+                </div>
+                {% endif %}
+                {% if player.bat_strike_rate %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bat_strike_rate }}</span>
+                    <span class="stat-label">Strike Rate</span>
+                </div>
+                {% endif %}
+                {% if player.bat_not_outs %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bat_not_outs }}</span>
+                    <span class="stat-label">Not Outs</span>
+                </div>
+                {% endif %}
+                {% if player.bat_fours %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bat_fours }}</span>
+                    <span class="stat-label">4s</span>
+                </div>
+                {% endif %}
+                {% if player.bat_sixes %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bat_sixes }}</span>
+                    <span class="stat-label">6s</span>
+                </div>
+                {% endif %}
+                {% if player.bat_ducks %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bat_ducks }}</span>
+                    <span class="stat-label">Ducks</span>
+                </div>
+                {% endif %}
+                {% if player.bat_fifties %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bat_fifties }}</span>
+                    <span class="stat-label">50s</span>
+                </div>
+                {% endif %}
+                {% if player.bat_hundreds %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bat_hundreds }}</span>
+                    <span class="stat-label">100s</span>
+                </div>
+                {% endif %}
+                {% if player.bat_two_hundreds %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bat_two_hundreds }}</span>
+                    <span class="stat-label">200s</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if player.bowl_matches or player.bowl_wickets or player.bowl_innings %}
+        <div class="player-stats-card">
+            <h3>Bowling Career Summary</h3>
+            <div class="stats-grid">
+                {% if player.bowl_matches %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bowl_matches }}</span>
+                    <span class="stat-label">Matches</span>
+                </div>
+                {% endif %}
+                {% if player.bowl_innings %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bowl_innings }}</span>
+                    <span class="stat-label">Innings</span>
+                </div>
+                {% endif %}
+                {% if player.bowl_balls %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bowl_balls }}</span>
+                    <span class="stat-label">Balls</span>
+                </div>
+                {% endif %}
+                {% if player.bowl_runs %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bowl_runs }}</span>
+                    <span class="stat-label">Runs</span>
+                </div>
+                {% endif %}
+                {% if player.bowl_maidens %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bowl_maidens }}</span>
+                    <span class="stat-label">Maidens</span>
+                </div>
+                {% endif %}
+                {% if player.bowl_wickets %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bowl_wickets }}</span>
+                    <span class="stat-label">Wickets</span>
+                </div>
+                {% endif %}
+                {% if player.bowl_average %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bowl_average }}</span>
+                    <span class="stat-label">Average</span>
+                </div>
+                {% endif %}
+                {% if player.bowl_economy %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bowl_economy }}</span>
+                    <span class="stat-label">Economy</span>
+                </div>
+                {% endif %}
+                {% if player.bowl_strike_rate %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bowl_strike_rate }}</span>
+                    <span class="stat-label">Strike Rate</span>
+                </div>
+                {% endif %}
+                {% if player.bowl_best_innings %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bowl_best_innings }}</span>
+                    <span class="stat-label">Best (Inn)</span>
+                </div>
+                {% endif %}
+                {% if player.bowl_best_match %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bowl_best_match }}</span>
+                    <span class="stat-label">Best (Match)</span>
+                </div>
+                {% endif %}
+                {% if player.bowl_four_wickets %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bowl_four_wickets }}</span>
+                    <span class="stat-label">4 Wickets</span>
+                </div>
+                {% endif %}
+                {% if player.bowl_five_wickets %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bowl_five_wickets }}</span>
+                    <span class="stat-label">5 Wickets</span>
+                </div>
+                {% endif %}
+                {% if player.bowl_ten_wickets %}
+                <div class="stat-item">
+                    <span class="stat-value">{{ player.bowl_ten_wickets }}</span>
+                    <span class="stat-label">10 Wickets</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if not player.profile_scraped %}
+        <div class="profile-not-scraped">
+            <p>Detailed stats not yet available. Profile needs to be scraped from admin panel.</p>
+        </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

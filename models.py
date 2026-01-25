@@ -37,6 +37,46 @@ def init_models(db):
         photo_url = db.Column(db.String(500), nullable=True)
         player_url = db.Column(db.String(500), nullable=True)
         team_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=False)
+        
+        born = db.Column(db.String(100), nullable=True)
+        birth_place = db.Column(db.String(200), nullable=True)
+        nickname = db.Column(db.String(100), nullable=True)
+        batting_style = db.Column(db.String(100), nullable=True)
+        bowling_style = db.Column(db.String(100), nullable=True)
+        
+        bat_matches = db.Column(db.String(50), nullable=True)
+        bat_innings = db.Column(db.String(50), nullable=True)
+        bat_runs = db.Column(db.String(50), nullable=True)
+        bat_balls = db.Column(db.String(50), nullable=True)
+        bat_highest = db.Column(db.String(50), nullable=True)
+        bat_average = db.Column(db.String(50), nullable=True)
+        bat_strike_rate = db.Column(db.String(50), nullable=True)
+        bat_not_outs = db.Column(db.String(50), nullable=True)
+        bat_fours = db.Column(db.String(50), nullable=True)
+        bat_sixes = db.Column(db.String(50), nullable=True)
+        bat_ducks = db.Column(db.String(50), nullable=True)
+        bat_fifties = db.Column(db.String(50), nullable=True)
+        bat_hundreds = db.Column(db.String(50), nullable=True)
+        bat_two_hundreds = db.Column(db.String(50), nullable=True)
+        
+        bowl_matches = db.Column(db.String(50), nullable=True)
+        bowl_innings = db.Column(db.String(50), nullable=True)
+        bowl_balls = db.Column(db.String(50), nullable=True)
+        bowl_runs = db.Column(db.String(50), nullable=True)
+        bowl_maidens = db.Column(db.String(50), nullable=True)
+        bowl_wickets = db.Column(db.String(50), nullable=True)
+        bowl_average = db.Column(db.String(50), nullable=True)
+        bowl_economy = db.Column(db.String(50), nullable=True)
+        bowl_strike_rate = db.Column(db.String(50), nullable=True)
+        bowl_best_innings = db.Column(db.String(50), nullable=True)
+        bowl_best_match = db.Column(db.String(50), nullable=True)
+        bowl_four_wickets = db.Column(db.String(50), nullable=True)
+        bowl_five_wickets = db.Column(db.String(50), nullable=True)
+        bowl_ten_wickets = db.Column(db.String(50), nullable=True)
+        
+        profile_scraped = db.Column(db.Boolean, default=False)
+        profile_scraped_at = db.Column(db.DateTime, nullable=True)
+        
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
         updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -71,4 +111,14 @@ def init_models(db):
         women_time = db.Column(db.String(10), default='07:00')
         updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting
+    class ProfileScrapeSetting(db.Model):
+        __tablename__ = 'profile_scrape_settings'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        category_slug = db.Column(db.String(50), unique=True, nullable=False)
+        auto_scrape_enabled = db.Column(db.Boolean, default=False)
+        scrape_time = db.Column(db.String(10), default='03:00')
+        last_scrape = db.Column(db.DateTime, nullable=True)
+        updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting
