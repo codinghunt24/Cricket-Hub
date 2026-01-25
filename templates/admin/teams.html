@@ -6,6 +6,7 @@
 {% block content %}
 <div class="admin-page">
     <div id="scrapeStatus" class="scrape-status-bar" style="display:none;"></div>
+<div id="autoScrapeStatus" class="scrape-status-bar" style="display:none;"></div>
 <div class="scrape-controls">
         <div class="control-header">
             <h2>Scrape Controls</h2>
@@ -354,5 +355,37 @@ function updateServerClock() {
 
 updateServerClock();
 setInterval(updateServerClock, 1000);
+
+function checkAutoScrapeProgress() {
+    const categories = ['international', 'domestic', 'league', 'women'];
+    categories.forEach(cat => {
+        fetch('/api/scrape/category/' + cat + '/players/progress')
+            .then(res => res.json())
+            .then(prog => {
+                if (prog.status === 'running') {
+                    const statusDiv = document.getElementById('autoScrapeStatus');
+                    statusDiv.style.display = 'block';
+                    statusDiv.innerHTML = `
+                        <div class="scrape-progress-bar">
+                            <div class="progress-info">
+                                <span>Auto Scraping ${cat} players...</span>
+                                <span>${prog.percent}%</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: ${prog.percent}%"></div>
+                            </div>
+                            <div class="progress-detail">Team ${prog.current}/${prog.total}: ${prog.team || 'Starting...'}</div>
+                        </div>`;
+                } else if (prog.status === 'complete' && prog.percent === 100) {
+                    const statusDiv = document.getElementById('autoScrapeStatus');
+                    if (statusDiv.style.display === 'block') {
+                        statusDiv.innerHTML = '<div class="scrape-success">Auto scrape completed!</div>';
+                        setTimeout(() => { statusDiv.style.display = 'none'; location.reload(); }, 2000);
+                    }
+                }
+            });
+    });
+}
+setInterval(checkAutoScrapeProgress, 1000);
 </script>
 {% endblock %}
