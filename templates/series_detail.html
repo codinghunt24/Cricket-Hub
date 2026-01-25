@@ -38,12 +38,9 @@
                 </div>
                 <div class="match-card">
                     <div class="match-header">
-                        {% if match.match_format %}
-                        <span class="match-format">{{ match.match_format }}</span>
-                        {% endif %}
-                        {% if match.venue %}
-                        <span class="match-venue"><i class="fas fa-map-marker-alt"></i> {{ match.venue }}</span>
-                        {% endif %}
+                        <span class="match-info">
+                            {% if match.match_format %}{{ match.match_format }}{% endif %}{% if match.match_format and match.venue %} • {% endif %}{% if match.venue %}{{ match.venue }}{% endif %}
+                        </span>
                     </div>
                     
                     <div class="match-teams">
@@ -243,23 +240,10 @@
     gap: 10px;
 }
 
-.match-format {
-    background: #046a38;
-    color: white;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.match-venue {
-    color: #666;
+.match-info {
+    color: #555;
     font-size: 12px;
-}
-
-.match-venue i {
-    margin-right: 4px;
-    color: #046a38;
+    font-weight: 500;
 }
 
 .match-teams {
