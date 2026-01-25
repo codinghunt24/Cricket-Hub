@@ -264,16 +264,45 @@ function scrapeAllPlayers() {
 
 function scrapeCategoryPlayers(categorySlug) {
     const statusDiv = document.getElementById('scrapeStatus');
-    statusDiv.innerHTML = '<div class="scrape-progress">Scraping ' + categorySlug + ' players... <span id="progressText">Starting</span></div>';
+    statusDiv.innerHTML = `
+        <div class="scrape-progress-bar">
+            <div class="progress-info">
+                <span>Scraping ${categorySlug} players...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="progress-detail" id="progressDetail">Starting...</div>
+        </div>`;
     statusDiv.style.display = 'block';
+    
+    const progressInterval = setInterval(() => {
+        fetch('/api/scrape/category/' + categorySlug + '/players/progress')
+            .then(res => res.json())
+            .then(prog => {
+                document.getElementById('progressPercent').textContent = prog.percent + '%';
+                document.getElementById('progressFill').style.width = prog.percent + '%';
+                if (prog.team) {
+                    document.getElementById('progressDetail').textContent = `Team ${prog.current}/${prog.total}: ${prog.team}`;
+                }
+                if (prog.status === 'complete') {
+                    clearInterval(progressInterval);
+                }
+            });
+    }, 500);
     
     fetch('/api/scrape/category/' + categorySlug + '/players', { method: 'POST' })
         .then(res => res.json())
         .then(data => {
+            clearInterval(progressInterval);
+            document.getElementById('progressPercent').textContent = '100%';
+            document.getElementById('progressFill').style.width = '100%';
             statusDiv.innerHTML = '<div class="scrape-success">' + data.message + '</div>';
             setTimeout(() => { statusDiv.style.display = 'none'; location.reload(); }, 2000);
         })
         .catch(err => {
+            clearInterval(progressInterval);
             statusDiv.innerHTML = '<div class="scrape-error">Error: ' + err.message + '</div>';
         });
 }

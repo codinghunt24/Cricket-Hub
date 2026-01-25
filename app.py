@@ -376,6 +376,13 @@ def clear_all_teams():
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
+scrape_progress = {}
+
+@app.route('/api/scrape/category/<category_slug>/players/progress', methods=['GET'])
+def get_scrape_progress(category_slug):
+    progress = scrape_progress.get(category_slug, {'percent': 0, 'current': 0, 'total': 0, 'status': 'idle'})
+    return jsonify(progress)
+
 @app.route('/api/scrape/category/<category_slug>/players', methods=['POST'])
 def scrape_category_players(category_slug):
     try:
@@ -385,8 +392,11 @@ def scrape_category_players(category_slug):
         
         total_players = 0
         teams = Team.query.filter_by(category_id=category.id).filter(Team.team_url.isnot(None)).all()
+        total_teams = len(teams)
         
-        for team in teams:
+        scrape_progress[category_slug] = {'percent': 0, 'current': 0, 'total': total_teams, 'status': 'running'}
+        
+        for idx, team in enumerate(teams):
             try:
                 players_data = scraper.scrape_players_from_team(team.team_url)
                 for player_data in players_data:
@@ -408,10 +418,14 @@ def scrape_category_players(category_slug):
                         )
                         db.session.add(player)
                     total_players += 1
+                
+                percent = int(((idx + 1) / total_teams) * 100)
+                scrape_progress[category_slug] = {'percent': percent, 'current': idx + 1, 'total': total_teams, 'status': 'running', 'team': team.name}
             except Exception as e:
                 continue
         
         db.session.commit()
+        scrape_progress[category_slug] = {'percent': 100, 'current': total_teams, 'total': total_teams, 'status': 'complete'}
         
         log = ScrapeLog(
             category=f'{category_slug}_players',
@@ -429,6 +443,7 @@ def scrape_category_players(category_slug):
         })
     
     except Exception as e:
+        scrape_progress[category_slug] = {'percent': 0, 'current': 0, 'total': 0, 'status': 'error'}
         log = ScrapeLog(
             category=f'{category_slug}_players',
             status='error',
