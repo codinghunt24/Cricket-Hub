@@ -504,6 +504,9 @@ def scrape_matches_from_series(series_url):
     matches_list = []
     matches_url = series_url.rstrip('/') + '/matches'
     
+    series_slug_match = re.search(r'/cricket-series/\d+/([^/]+)', series_url)
+    series_slug = series_slug_match.group(1) if series_slug_match else ''
+    
     html = fetch_page(matches_url)
     if not html:
         return matches_list
@@ -512,7 +515,29 @@ def scrape_matches_from_series(series_url):
     
     current_date = None
     
-    match_links = soup.find_all('a', href=lambda h: h and '/live-cricket-scores/' in h)
+    all_links = soup.find_all('a', href=lambda h: h and '/live-cricket-scores/' in h)
+    
+    if series_slug:
+        country_abbrevs = {
+            'new-zealand': 'nz', 'india': 'ind', 'australia': 'aus', 
+            'england': 'eng', 'pakistan': 'pak', 'south-africa': 'sa',
+            'west-indies': 'wi', 'sri-lanka': 'sl', 'bangladesh': 'ban'
+        }
+        slug_lower = series_slug.lower()
+        short_slugs = [series_slug]
+        temp_slug = slug_lower
+        for full, abbrev in country_abbrevs.items():
+            temp_slug = temp_slug.replace(full, abbrev)
+        short_slugs.append(temp_slug)
+        short_slugs.append(slug_lower.replace('-2026', '').replace('-2025', ''))
+        short_slugs.append(temp_slug.replace('-2026', '').replace('-2025', ''))
+        parts = series_slug.split('-')
+        if len(parts) >= 4:
+            short_slugs.append('-'.join(parts[:4]))
+        
+        match_links = [m for m in all_links if any(s in m.get('href', '').lower() for s in short_slugs if len(s) > 5)]
+    else:
+        match_links = all_links
     
     seen_ids = set()
     for link in match_links:

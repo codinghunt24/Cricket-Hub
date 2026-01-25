@@ -55,16 +55,46 @@
         </div>
     </div>
     
+    <div class="match-scrape-section">
+        <h3>Match Scraping Settings</h3>
+        <div class="match-settings-card">
+            <div class="auto-scrape-toggle">
+                <label class="toggle-label">
+                    <input type="checkbox" 
+                           id="match-auto-scrape" 
+                           {% if match_setting and match_setting.auto_scrape_enabled %}checked{% endif %}
+                           onchange="toggleMatchAutoScrape(this.checked)">
+                    <span class="toggle-text">Auto Scrape Matches Daily</span>
+                </label>
+                <input type="time" 
+                       id="match-auto-time" 
+                       value="{{ match_setting.scrape_time if match_setting else '10:00' }}"
+                       onchange="toggleMatchAutoScrape(document.getElementById('match-auto-scrape').checked)">
+            </div>
+            {% if match_setting and match_setting.last_scrape %}
+            <div class="last-scrape">
+                <small>Last: {{ match_setting.last_scrape.strftime('%Y-%m-%d %H:%M') }}</small>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
     <div class="series-list-section">
-        <h3>All Series</h3>
+        <h3>All Series (Click to Scrape Matches)</h3>
         {% for data in category_data %}
         {% if data.series %}
         <div class="category-series">
             <h4>{{ data.category.name }} ({{ data.series_count }})</h4>
             <div class="series-grid">
                 {% for series in data.series[:20] %}
-                <div class="series-item">
-                    <a href="{{ series.series_url }}" target="_blank">{{ series.name }}</a>
+                <div class="series-item" id="series-item-{{ series.id }}">
+                    <div class="series-info">
+                        <a href="{{ url_for('series_detail', series_id=series.id) }}">{{ series.name }}</a>
+                        <span class="match-count" id="match-count-{{ series.id }}"></span>
+                    </div>
+                    <button class="btn btn-xs btn-primary" onclick="scrapeSeriesMatches({{ series.id }}, '{{ series.name[:30] }}')">
+                        <i class="fas fa-download"></i>
+                    </button>
                 </div>
                 {% endfor %}
                 {% if data.series_count > 20 %}
@@ -229,6 +259,39 @@
     font-style: italic;
 }
 
+.series-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.series-info {
+    flex: 1;
+}
+
+.match-count {
+    font-size: 11px;
+    color: #888;
+    margin-left: 8px;
+}
+
+.btn-xs {
+    padding: 4px 8px;
+    font-size: 11px;
+}
+
+.match-scrape-section {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.match-settings-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 .logs-section {
     margin-top: 30px;
 }
@@ -344,6 +407,62 @@ async function toggleSeriesAutoScrape(category, enabled) {
                 category: category,
                 enabled: enabled,
                 scrape_time: scrapeTime
+            })
+        });
+        
+        const data = await response.json();
+        if (!data.success) {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error updating settings: ' + error.message);
+    }
+}
+
+async function scrapeSeriesMatches(seriesId, seriesName) {
+    const btn = event.target.closest('button');
+    const originalHTML = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch(`/api/scrape/matches/${seriesId}`, { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.success) {
+            const countSpan = document.getElementById(`match-count-${seriesId}`);
+            if (countSpan) {
+                countSpan.textContent = `(${data.matches_scraped} matches)`;
+            }
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }, 2000);
+        } else {
+            alert('Error: ' + data.message);
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        }
+    } catch (error) {
+        alert('Error scraping matches: ' + error.message);
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+    }
+}
+
+async function toggleMatchAutoScrape(enabled) {
+    const timeInput = document.getElementById('match-auto-time');
+    const scrapeTime = timeInput ? timeInput.value : '10:00';
+    
+    try {
+        const response = await fetch('/api/settings/match-auto-scrape', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                enabled: enabled,
+                time: scrapeTime
             })
         });
         

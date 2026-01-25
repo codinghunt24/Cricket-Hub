@@ -4,8 +4,9 @@
 A Cricbuzz-inspired cricket website built with Python Flask featuring web scraping for team and player data from Cricbuzz. Includes a responsive frontend with sticky navbar and dropdown submenus, plus an admin panel with sidebar navigation and scraping controls.
 
 ## Current State
-- **Status**: Format-wise stats display complete (Test, ODI, T20, IPL) with Career Timeline + Series Scraping
+- **Status**: Match Scraping Implementation - Click series to view matches with manual scrape button
 - **Last Updated**: January 25, 2026
+- **Note**: Match scraping limited due to Cricbuzz client-side rendering - partial match data available
 
 ## Project Structure
 ```
@@ -93,8 +94,10 @@ A Cricbuzz-inspired cricket website built with Python Flask featuring web scrapi
 - **ScrapeSetting**: auto_scrape_enabled, scrape_time, category-wise settings
 - **ProfileScrapeSetting**: category_slug, auto_scrape_enabled, scrape_time
 - **SeriesCategory**: All, International, Domestic, T20 Leagues, Women
-- **Series**: series_id, name, series_url, category_id
+- **Series**: series_id, name, series_url, start_date, end_date, date_range, category_id
 - **SeriesScrapeSetting**: category_slug, auto_scrape_enabled, scrape_time
+- **Match**: match_id, match_format, venue, match_date, team1_name, team1_score, team2_name, team2_score, result, match_url, series_id
+- **MatchScrapeSetting**: auto_scrape_enabled, scrape_time, last_scrape
 
 ## API Endpoints
 
@@ -111,6 +114,9 @@ A Cricbuzz-inspired cricket website built with Python Flask featuring web scrapi
 - `POST /api/scrape/series/<slug>` - Scrape series from category
 - `POST /api/settings/series-auto-scrape` - Toggle series auto-scrape
 - `GET /api/settings/series-scrape` - Get series scrape settings
+- `POST /api/scrape/matches/<series_id>` - Scrape matches from series
+- `POST /api/settings/match-auto-scrape` - Toggle match auto-scrape
+- `GET /api/settings/match-scrape` - Get match scrape settings
 
 ### Data APIs
 - `GET /api/teams/<category_slug>` - Get teams by category
@@ -124,7 +130,8 @@ A Cricbuzz-inspired cricket website built with Python Flask featuring web scrapi
 - `/teams/<category>` - Teams list by category
 - `/team/<id>` - Team detail with players
 - `/player/<id>` - Player profile with stats
-- `/live-scores`, `/series`, `/news` - Other pages
+- `/series/<id>` - Series detail with matches list
+- `/live-scores`, `/news` - Other pages
 
 ### Admin Routes
 - `/admin` - Dashboard

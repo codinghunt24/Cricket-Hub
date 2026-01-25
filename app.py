@@ -185,7 +185,9 @@ def admin_teams():
 @app.route('/admin/series')
 def admin_series():
     categories = SeriesCategory.query.all()
-    recent_logs = ScrapeLog.query.filter(ScrapeLog.category.like('series_%')).order_by(ScrapeLog.created_at.desc()).limit(10).all()
+    recent_logs = ScrapeLog.query.filter(
+        (ScrapeLog.category.like('series_%')) | (ScrapeLog.category.like('matches_%'))
+    ).order_by(ScrapeLog.created_at.desc()).limit(10).all()
     
     category_data = []
     for cat in categories:
@@ -199,9 +201,12 @@ def admin_series():
             'setting': setting
         })
     
+    match_setting = MatchScrapeSetting.query.first()
+    
     return render_template('admin/series.html', 
                          category_data=category_data,
-                         recent_logs=recent_logs)
+                         recent_logs=recent_logs,
+                         match_setting=match_setting)
 
 @app.route('/admin/news')
 def admin_news():
