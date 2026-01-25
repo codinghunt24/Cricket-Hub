@@ -820,14 +820,24 @@ def scrape_scorecard(match_id):
     
     innings_headers = soup.find_all('div', id=lambda x: x and x.startswith('team-') and '-innings-' in x and not x.startswith('scard-') and not x.startswith('caret-'))
     
+    seen_innings = set()
     for header in innings_headers:
         header_id = header.get('id', '')
+        
+        if header_id in seen_innings:
+            continue
         
         team_name_div = header.find('div', class_=lambda c: c and 'font-bold' in c if c else False)
         team_name = team_name_div.get_text(strip=True) if team_name_div else ''
         
         if not team_name:
             continue
+        
+        innings_key = f"{team_name}-{header_id}"
+        if team_name in [inn['team_name'] for inn in scorecard['innings']]:
+            continue
+        
+        seen_innings.add(header_id)
         
         score_span = header.find('span', class_=lambda c: c and 'font-bold' in c if c else False)
         total_score = score_span.get_text(strip=True).replace('-', '/') if score_span else ''
