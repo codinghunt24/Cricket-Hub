@@ -383,6 +383,30 @@
     color: var(--text-color);
 }
 
+.server-time-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 8px;
+    width: fit-content;
+}
+
+.server-time-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.server-clock {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--white);
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+}
+
 .auto-scrape-setting {
     display: flex;
     align-items: center;

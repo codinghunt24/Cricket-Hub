@@ -299,6 +299,12 @@ def scrape_all():
         db.session.commit()
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/api/server-time')
+def get_server_time():
+    from datetime import datetime
+    now = datetime.now()
+    return jsonify({'time': now.strftime('%H:%M:%S')})
+
 @app.route('/api/settings/auto-scrape', methods=['POST'])
 def toggle_auto_scrape():
     try:

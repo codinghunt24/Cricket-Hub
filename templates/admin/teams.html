@@ -11,6 +11,11 @@
             <button class="btn btn-primary" onclick="scrapeAll()">Scrape All Categories</button>
         </div>
         
+        <div class="server-time-display">
+            <span class="server-time-label">Server Time:</span>
+            <span id="serverClock" class="server-clock">--:--:--</span>
+        </div>
+        
         <div class="auto-scrape-setting">
             <label class="toggle-label">
                 <input type="checkbox" id="autoScrapeToggle" {% if setting and setting.auto_scrape_enabled %}checked{% endif %} onchange="toggleAutoScrape()">
@@ -164,5 +169,16 @@ function toggleAutoScrape() {
     })
     .catch(err => alert('Error: ' + err.message));
 }
+
+function updateServerClock() {
+    fetch('/api/server-time')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('serverClock').textContent = data.time;
+        });
+}
+
+updateServerClock();
+setInterval(updateServerClock, 1000);
 </script>
 {% endblock %}
