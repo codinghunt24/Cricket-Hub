@@ -10,12 +10,18 @@
                 <i class="fas fa-arrow-left"></i> Back to Series
             </a>
             <h1 class="match-title">{{ match.team1_name }} vs {{ match.team2_name }}, {{ match.match_format }}{% if series %}, {{ series.name }}{% endif %} - Scorecard</h1>
-            <div class="match-meta">
+            <div class="match-info-details">
                 {% if match.venue %}
-                <span class="venue"><i class="fas fa-map-marker-alt"></i> {{ match.venue }}</span>
+                <div class="info-row">
+                    <span class="info-label">Venue:</span>
+                    <span class="info-value">{{ match.venue }}</span>
+                </div>
                 {% endif %}
                 {% if match.match_date %}
-                <span class="date"><i class="far fa-calendar"></i> {{ match.match_date }}</span>
+                <div class="info-row">
+                    <span class="info-label">Date & Time:</span>
+                    <span class="info-value">{{ match.match_date }}</span>
+                </div>
                 {% endif %}
             </div>
             {% if match.result and match.result != 'Upcoming' %}
@@ -159,6 +165,27 @@
 .match-title {
     font-size: 26px;
     margin: 10px 0 15px 0;
+}
+
+.match-info-details {
+    margin: 15px 0;
+}
+
+.info-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 15px;
+    color: rgba(255,255,255,0.95);
+}
+
+.info-label {
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+}
+
+.info-value {
+    font-weight: 400;
 }
 
 .match-meta {
