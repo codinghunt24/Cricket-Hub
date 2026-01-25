@@ -846,6 +846,8 @@ def scrape_series(category_slug):
                 existing.name = series_data['name']
                 existing.series_url = series_data['series_url']
                 existing.start_date = series_data.get('start_date')
+                existing.end_date = series_data.get('end_date')
+                existing.date_range = series_data.get('date_range')
                 existing.category_id = category.id
                 existing.updated_at = datetime.utcnow()
             else:
@@ -854,6 +856,8 @@ def scrape_series(category_slug):
                     name=series_data['name'],
                     series_url=series_data['series_url'],
                     start_date=series_data.get('start_date'),
+                    end_date=series_data.get('end_date'),
+                    date_range=series_data.get('date_range'),
                     category_id=category.id
                 )
                 db.session.add(series)

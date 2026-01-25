@@ -145,6 +145,7 @@ def init_models(db):
         series_url = db.Column(db.String(500), nullable=True)
         start_date = db.Column(db.String(100), nullable=True)
         end_date = db.Column(db.String(100), nullable=True)
+        date_range = db.Column(db.String(100), nullable=True)
         category_id = db.Column(db.Integer, db.ForeignKey('series_categories.id'), nullable=False)
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
         updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

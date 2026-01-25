@@ -424,7 +424,7 @@ def parse_series_date(name):
     
     return None
 
-def parse_date_from_title(title):
+def parse_dates_from_title(title):
     months = {
         'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
         'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
@@ -432,12 +432,27 @@ def parse_date_from_title(title):
     }
     
     date_pattern = r'(\d{1,2})\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\s*(\d{4})'
-    match = re.search(date_pattern, title)
-    if match:
-        day = match.group(1).zfill(2)
-        month = months.get(match.group(2), '01')
-        year = match.group(3)
-        return f"{year}-{month}-{day}"
+    matches = re.findall(date_pattern, title)
+    
+    start_date = None
+    end_date = None
+    
+    if len(matches) >= 1:
+        day, month, year = matches[0]
+        start_date = f"{year}-{months.get(month, '01')}-{day.zfill(2)}"
+    
+    if len(matches) >= 2:
+        day, month, year = matches[1]
+        end_date = f"{year}-{months.get(month, '01')}-{day.zfill(2)}"
+    
+    return start_date, end_date
+
+def extract_date_range(link):
+    date_div = link.find('div', class_='text-cbTxtSec')
+    if date_div:
+        text = date_div.get_text(strip=True)
+        text = re.sub(r'\s+', ' ', text)
+        return text
     return None
 
 def scrape_series_from_category(category_url):
@@ -468,7 +483,8 @@ def scrape_series_from_category(category_url):
             continue
         
         title = link.get('title', '')
-        start_date = parse_date_from_title(title)
+        start_date, end_date = parse_dates_from_title(title)
+        date_range = extract_date_range(link)
         
         clean_href = href.replace('/matches', '')
         series_url = BASE_URL + clean_href if clean_href.startswith('/') else clean_href
@@ -477,7 +493,9 @@ def scrape_series_from_category(category_url):
             'series_id': series_id,
             'name': name,
             'series_url': series_url,
-            'start_date': start_date
+            'start_date': start_date,
+            'end_date': end_date,
+            'date_range': date_range
         })
     
     return series_list

@@ -27,6 +27,7 @@
                         <thead>
                             <tr>
                                 <th>Series Name</th>
+                                <th>Date</th>
                                 <th>Category</th>
                             </tr>
                         </thead>
@@ -38,6 +39,7 @@
                                         {{ series.name }}
                                     </a>
                                 </td>
+                                <td class="date-cell">{{ series.date_range or '-' }}</td>
                                 <td>
                                     <span class="category-badge {{ series.category.slug }}">{{ series.category.name }}</span>
                                 </td>
@@ -67,7 +69,7 @@
                     <thead>
                         <tr>
                             <th>Series Name</th>
-                            <th>Start Date</th>
+                            <th>Date</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,7 +80,7 @@
                                     {{ series.name }}
                                 </a>
                             </td>
-                            <td>{{ series.start_date or '-' }}</td>
+                            <td class="date-cell">{{ series.date_range or '-' }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -216,6 +218,12 @@
 
 .series-link:hover {
     color: #046a38;
+}
+
+.date-cell {
+    color: #666;
+    font-size: 14px;
+    white-space: nowrap;
 }
 
 .category-badge {
