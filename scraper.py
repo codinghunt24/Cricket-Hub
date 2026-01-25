@@ -236,10 +236,22 @@ def scrape_player_profile(player_url):
     
     tables = soup.find_all('table', class_='w-full')
     
-    bat_stat_keys = ['matches', 'innings', 'runs', 'balls', 'highest', 'average', 
-                     'strike rate', 'not outs', '4s', '6s', 'ducks', '50s', '100s', '200s']
-    bowl_stat_keys = ['matches', 'innings', 'balls', 'runs', 'maidens', 'wickets',
-                      'average', 'economy', 'strike rate', 'bbi', 'bbm', '4w', '5w', '10w']
+    bat_stat_aliases = {
+        'matches': 'matches', 'innings': 'innings', 'runs': 'runs', 'balls': 'balls',
+        'highest': 'highest', 'average': 'average', 'avg': 'average',
+        'strike rate': 'strike rate', 'sr': 'strike rate',
+        'not outs': 'not outs', 'not out': 'not outs',
+        '4s': '4s', 'fours': '4s', '6s': '6s', 'sixes': '6s',
+        'ducks': 'ducks', '50s': '50s', '100s': '100s', '200s': '200s'
+    }
+    bowl_stat_aliases = {
+        'matches': 'matches', 'innings': 'innings', 'balls': 'balls', 'runs': 'runs',
+        'maidens': 'maidens', 'wickets': 'wickets',
+        'average': 'average', 'avg': 'average',
+        'economy': 'economy', 'eco': 'economy',
+        'strike rate': 'strike rate', 'sr': 'strike rate',
+        'bbi': 'bbi', 'bbm': 'bbm', '4w': '4w', '5w': '5w', '10w': '10w'
+    }
     
     bat_stats_map = {
         'matches': 'bat_matches',
@@ -302,11 +314,11 @@ def scrape_player_profile(player_url):
         if is_batting:
             stats_map = bat_stats_map
             stats_dict = batting_stats
-            stat_keys = bat_stat_keys
+            stat_aliases = bat_stat_aliases
         elif is_bowling:
             stats_map = bowl_stats_map
             stats_dict = bowling_stats
-            stat_keys = bowl_stat_keys
+            stat_aliases = bowl_stat_aliases
         else:
             continue
         
@@ -319,18 +331,17 @@ def scrape_player_profile(player_url):
             
             stat_name = cells[0].get_text(strip=True).lower()
             
-            for key in stat_keys:
-                if key in stat_name:
-                    for fmt, idx in format_indices.items():
-                        if idx < len(cells):
-                            value = cells[idx].get_text(strip=True)
-                            if value and value != '-':
-                                stats_dict[fmt][key] = value
-                    
-                    if key in stats_map:
-                        if odi_idx < len(cells):
-                            profile[stats_map[key]] = cells[odi_idx].get_text(strip=True)
-                    break
+            normalized_key = stat_aliases.get(stat_name)
+            if normalized_key:
+                for fmt, idx in format_indices.items():
+                    if idx < len(cells):
+                        value = cells[idx].get_text(strip=True)
+                        if value and value != '-':
+                            stats_dict[fmt][normalized_key] = value
+                
+                if normalized_key in stats_map:
+                    if odi_idx < len(cells):
+                        profile[stats_map[normalized_key]] = cells[odi_idx].get_text(strip=True)
     
     profile['batting_stats'] = batting_stats
     profile['bowling_stats'] = bowling_stats
