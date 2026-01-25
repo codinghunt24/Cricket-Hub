@@ -6,9 +6,17 @@
 <div class="series-page">
     <h1 class="page-title">Cricket Series</h1>
     
+    <div class="category-tabs">
+        <button class="tab-btn active" data-category="all" onclick="showCategory('all')">All</button>
+        <button class="tab-btn" data-category="international" onclick="showCategory('international')">International</button>
+        <button class="tab-btn" data-category="domestic" onclick="showCategory('domestic')">Domestic</button>
+        <button class="tab-btn" data-category="league" onclick="showCategory('league')">T20 Leagues</button>
+        <button class="tab-btn" data-category="women" onclick="showCategory('women')">Women</button>
+    </div>
+    
     {% if category_data %}
         {% for data in category_data %}
-        <div class="series-category">
+        <div class="series-category" data-cat="{{ data.category.slug }}">
             <h2 class="category-title">{{ data.category.name }}</h2>
             <div class="series-grid">
                 {% for series in data.series %}
@@ -34,13 +42,49 @@
 .page-title {
     color: #046a38;
     font-size: 28px;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     padding-bottom: 10px;
     border-bottom: 3px solid #046a38;
 }
 
+.category-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    border: 2px solid #046a38;
+    background: white;
+    color: #046a38;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    background: #e8f5e9;
+}
+
+.tab-btn.active {
+    background: #046a38;
+    color: white;
+}
+
 .series-category {
     margin-bottom: 40px;
+}
+
+.series-category.hidden {
+    display: none;
 }
 
 .category-title {
@@ -98,6 +142,16 @@
         font-size: 24px;
     }
     
+    .category-tabs {
+        gap: 8px;
+        padding: 10px;
+    }
+    
+    .tab-btn {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+    
     .category-title {
         font-size: 18px;
     }
@@ -107,4 +161,29 @@
     }
 }
 </style>
+
+<script>
+function showCategory(category) {
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.category === category) {
+            tab.classList.add('active');
+        }
+    });
+    
+    const categories = document.querySelectorAll('.series-category');
+    categories.forEach(cat => {
+        if (category === 'all') {
+            cat.classList.remove('hidden');
+        } else {
+            if (cat.dataset.cat === category) {
+                cat.classList.remove('hidden');
+            } else {
+                cat.classList.add('hidden');
+            }
+        }
+    });
+}
+</script>
 {% endblock %}
