@@ -727,7 +727,7 @@ def scrape_matches_from_series(series_url):
                 match_date = re.sub(r',\s*New Zealand.*$', '', match_date)
                 break
         
-        # Get scores
+        # Get scores - try multiple patterns
         score_divs = match_soup.find_all('div', class_=lambda c: c and 'cb-col-scores' in c)
         for i, score_div in enumerate(score_divs[:2]):
             score_text = score_div.get_text(strip=True)
@@ -735,6 +735,26 @@ def scrape_matches_from_series(series_url):
                 team1_score = score_text
             else:
                 team2_score = score_text
+        
+        # If no scores found, try extracting from page text
+        if not team1_score or not team2_score:
+            # Look for score pattern like "300-8 (50)" or "306/6 (49)"
+            score_pattern = re.findall(r'(\d{1,3}(?:-|/)\d{1,2})\s*\((\d{1,2}(?:\.\d)?)\)', page_text)
+            if len(score_pattern) >= 2:
+                team1_score = f"{score_pattern[0][0]} ({score_pattern[0][1]})"
+                team2_score = f"{score_pattern[1][0]} ({score_pattern[1][1]})"
+            elif len(score_pattern) == 1:
+                team1_score = f"{score_pattern[0][0]} ({score_pattern[0][1]})"
+        
+        # Try to find innings scores with team names
+        if not team1_score or not team2_score:
+            innings_pattern = re.findall(r'(India|New Zealand|Australia|England|Pakistan|South Africa|West Indies|Sri Lanka|Bangladesh)\s*(\d{1,3}(?:-|/)\d{1,2})\s*\((\d{1,2}(?:\.\d)?)\s*(?:Ovs?|overs?)?\)', page_text, re.IGNORECASE)
+            for team, runs, overs in innings_pattern:
+                score = f"{runs} ({overs})"
+                if team.lower() == team1_name.lower():
+                    team1_score = score
+                elif team.lower() == team2_name.lower():
+                    team2_score = score
         
         # Get result - try multiple patterns
         result_div = match_soup.find('div', class_=lambda c: c and 'cb-text-complete' in c)
