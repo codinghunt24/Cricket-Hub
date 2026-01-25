@@ -211,102 +211,102 @@
 
 .matches-list {
     display: grid;
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
 }
 
 .match-card {
     background: #f8f9fa;
-    border-radius: 10px;
-    padding: 20px;
+    border-radius: 8px;
+    padding: 12px 15px;
     border-left: 4px solid #046a38;
 }
 
 .match-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    align-items: center;
+    margin-bottom: 8px;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 6px;
 }
 
 .match-date {
     color: #666;
-    font-size: 14px;
+    font-size: 11px;
 }
 
 .match-format {
     background: #046a38;
     color: white;
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 10px;
     font-weight: 600;
 }
 
 .match-venue {
     color: #888;
-    font-size: 13px;
-    margin-bottom: 15px;
+    font-size: 11px;
+    margin-bottom: 8px;
+    display: none;
 }
 
 .match-venue i {
-    margin-right: 5px;
+    margin-right: 4px;
     color: #046a38;
 }
 
 .match-teams {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    margin: 20px 0;
+    flex-direction: column;
+    gap: 6px;
+    margin: 8px 0;
 }
 
 .team {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    text-align: center;
-    flex: 1;
+    gap: 10px;
+    padding: 6px 8px;
+    background: white;
+    border-radius: 6px;
 }
 
 .team-flag {
-    width: 48px;
-    height: 32px;
+    width: 28px;
+    height: 20px;
     object-fit: cover;
-    border-radius: 4px;
-    margin-bottom: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 2px;
+    flex-shrink: 0;
 }
 
 .team-name {
     font-weight: 600;
-    font-size: 16px;
+    font-size: 13px;
     color: #333;
-    margin-bottom: 5px;
+    flex: 1;
 }
 
 .team-score {
-    font-size: 20px;
+    font-size: 13px;
     font-weight: 700;
     color: #046a38;
 }
 
 .vs-divider {
-    color: #888;
-    font-weight: 600;
-    font-size: 14px;
-    padding: 0 10px;
+    display: none;
 }
 
 .match-result {
     text-align: center;
     background: #e8f5e9;
     color: #2e7d32;
-    padding: 10px;
-    border-radius: 6px;
+    padding: 6px 8px;
+    border-radius: 4px;
     font-weight: 600;
-    margin-bottom: 15px;
+    font-size: 11px;
+    margin-bottom: 8px;
 }
 
 .view-details {
@@ -314,8 +314,8 @@
     text-align: center;
     color: #046a38;
     text-decoration: none;
-    font-size: 14px;
-    padding-top: 10px;
+    font-size: 11px;
+    padding-top: 6px;
     border-top: 1px solid #e0e0e0;
 }
 
@@ -324,8 +324,8 @@
 }
 
 .view-details i {
-    margin-left: 5px;
-    font-size: 12px;
+    margin-left: 4px;
+    font-size: 10px;
 }
 
 .no-matches {
