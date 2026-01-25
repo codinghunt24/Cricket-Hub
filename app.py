@@ -651,6 +651,9 @@ def scrape_profiles_task(category_slug, player_ids):
                         player.bowl_five_wickets = profile_data.get('bowl_five_wickets')
                         player.bowl_ten_wickets = profile_data.get('bowl_ten_wickets')
                         
+                        player.batting_stats = profile_data.get('batting_stats')
+                        player.bowling_stats = profile_data.get('bowling_stats')
+                        
                         player.profile_scraped = True
                         player.profile_scraped_at = datetime.utcnow()
                         scraped_count += 1

@@ -236,6 +236,11 @@ def scrape_player_profile(player_url):
     
     tables = soup.find_all('table', class_='w-full')
     
+    bat_stat_keys = ['matches', 'innings', 'runs', 'balls', 'highest', 'average', 
+                     'strike rate', 'not outs', '4s', '6s', 'ducks', '50s', '100s', '200s']
+    bowl_stat_keys = ['matches', 'innings', 'balls', 'runs', 'maidens', 'wickets',
+                      'average', 'economy', 'strike rate', 'bbi', 'bbm', '4w', '5w', '10w']
+    
     bat_stats_map = {
         'matches': 'bat_matches',
         'innings': 'bat_innings',
@@ -270,6 +275,11 @@ def scrape_player_profile(player_url):
         '10w': 'bowl_ten_wickets'
     }
     
+    batting_stats = {'test': {}, 'odi': {}, 't20': {}, 'ipl': {}}
+    bowling_stats = {'test': {}, 'odi': {}, 't20': {}, 'ipl': {}}
+    
+    format_map = {'test': 'test', 'odi': 'odi', 't20': 't20', 'ipl': 'ipl', 't20i': 't20'}
+    
     for table_idx, table in enumerate(tables):
         rows = table.find_all('tr')
         if len(rows) < 2:
@@ -277,17 +287,30 @@ def scrape_player_profile(player_url):
         
         headers = [th.get_text(strip=True).lower() for th in rows[0].find_all(['th', 'td'])]
         
-        if not headers or 'test' not in headers and 'odi' not in headers:
+        if not headers or ('test' not in headers and 'odi' not in headers and 't20' not in headers):
             continue
         
-        odi_idx = headers.index('odi') if 'odi' in headers else (headers.index('t20') if 't20' in headers else 1)
+        format_indices = {}
+        for i, h in enumerate(headers):
+            for fmt_key, fmt_name in format_map.items():
+                if fmt_key == h:
+                    format_indices[fmt_name] = i
         
         is_batting = table_idx == 2 or (len(tables) > 2 and table == tables[2])
         is_bowling = table_idx == 3 or (len(tables) > 3 and table == tables[3])
         
-        stats_map = bat_stats_map if is_batting else bowl_stats_map if is_bowling else None
-        if not stats_map:
+        if is_batting:
+            stats_map = bat_stats_map
+            stats_dict = batting_stats
+            stat_keys = bat_stat_keys
+        elif is_bowling:
+            stats_map = bowl_stats_map
+            stats_dict = bowling_stats
+            stat_keys = bowl_stat_keys
+        else:
             continue
+        
+        odi_idx = format_indices.get('odi', format_indices.get('t20', 1))
         
         for row in rows[1:]:
             cells = row.find_all('td')
@@ -296,10 +319,20 @@ def scrape_player_profile(player_url):
             
             stat_name = cells[0].get_text(strip=True).lower()
             
-            for key, field in stats_map.items():
+            for key in stat_keys:
                 if key in stat_name:
-                    if odi_idx < len(cells):
-                        profile[field] = cells[odi_idx].get_text(strip=True)
+                    for fmt, idx in format_indices.items():
+                        if idx < len(cells):
+                            value = cells[idx].get_text(strip=True)
+                            if value and value != '-':
+                                stats_dict[fmt][key] = value
+                    
+                    if key in stats_map:
+                        if odi_idx < len(cells):
+                            profile[stats_map[key]] = cells[odi_idx].get_text(strip=True)
                     break
+    
+    profile['batting_stats'] = batting_stats
+    profile['bowling_stats'] = bowling_stats
     
     return profile
