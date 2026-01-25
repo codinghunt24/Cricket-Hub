@@ -1,0 +1,39 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Dashboard - Admin Panel{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="dashboard-cards">
+        <div class="dashboard-card">
+            <div class="card-icon">&#9917;</div>
+            <div class="card-info">
+                <h3>Matches</h3>
+                <p>Manage live and upcoming matches</p>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="card-icon">&#128101;</div>
+            <div class="card-info">
+                <h3>Teams</h3>
+                <p>Manage cricket teams</p>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="card-icon">&#127942;</div>
+            <div class="card-info">
+                <h3>Series</h3>
+                <p>Manage tournaments and series</p>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="card-icon">&#128240;</div>
+            <div class="card-info">
+                <h3>News</h3>
+                <p>Manage news articles</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

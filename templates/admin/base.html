@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>{% block title %}Admin Panel - CricLive{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body class="admin-body">
+    <div class="admin-wrapper">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/admin" class="sidebar-logo">CricLive Admin</a>
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <span class="hamburger"></span>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item {% if request.path == '/admin' %}active{% endif %}">
+                        <a href="/admin" class="sidebar-link">
+                            <span class="sidebar-icon">&#128200;</span>
+                            <span class="sidebar-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% if request.path == '/admin/matches' %}active{% endif %}">
+                        <a href="/admin/matches" class="sidebar-link">
+                            <span class="sidebar-icon">&#9917;</span>
+                            <span class="sidebar-text">Matches</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% if request.path == '/admin/teams' %}active{% endif %}">
+                        <a href="/admin/teams" class="sidebar-link">
+                            <span class="sidebar-icon">&#128101;</span>
+                            <span class="sidebar-text">Teams</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% if request.path == '/admin/series' %}active{% endif %}">
+                        <a href="/admin/series" class="sidebar-link">
+                            <span class="sidebar-icon">&#127942;</span>
+                            <span class="sidebar-text">Series</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% if request.path == '/admin/news' %}active{% endif %}">
+                        <a href="/admin/news" class="sidebar-link">
+                            <span class="sidebar-icon">&#128240;</span>
+                            <span class="sidebar-text">News</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% if request.path == '/admin/settings' %}active{% endif %}">
+                        <a href="/admin/settings" class="sidebar-link">
+                            <span class="sidebar-icon">&#9881;</span>
+                            <span class="sidebar-text">Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="/" class="sidebar-link">
+                    <span class="sidebar-icon">&#8592;</span>
+                    <span class="sidebar-text">Back to Site</span>
+                </a>
+            </div>
+        </aside>
+        
+        <div class="admin-main">
+            <header class="admin-header">
+                <button class="mobile-sidebar-toggle" id="mobileSidebarToggle" aria-label="Toggle sidebar">
+                    <span class="hamburger"></span>
+                </button>
+                <h1 class="admin-page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                <div class="admin-user">
+                    <span>Admin</span>
+                </div>
+            </header>
+            
+            <main class="admin-content">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>{% block title %}CricLive - Live Cricket Scores{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar" id="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <a href="/">CricLive</a>
+                </div>
+                
+                <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                    <span class="hamburger"></span>
+                </button>
+                
+                <ul class="nav-menu" id="navMenu">
+                    <li class="nav-item has-submenu">
+                        <a href="/live-scores" class="nav-link">Live Score <span class="arrow">&#9662;</span></a>
+                        <ul class="submenu">
+                            <li><a href="/live-scores">All Matches</a></li>
+                            <li><a href="/live-scores">International</a></li>
+                            <li><a href="/live-scores">Domestic</a></li>
+                            <li><a href="/live-scores">T20 Leagues</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item has-submenu">
+                        <a href="/teams" class="nav-link">Teams <span class="arrow">&#9662;</span></a>
+                        <ul class="submenu">
+                            <li><a href="/teams">India</a></li>
+                            <li><a href="/teams">Australia</a></li>
+                            <li><a href="/teams">England</a></li>
+                            <li><a href="/teams">Pakistan</a></li>
+                            <li><a href="/teams">South Africa</a></li>
+                            <li><a href="/teams">New Zealand</a></li>
+                            <li><a href="/teams">West Indies</a></li>
+                            <li><a href="/teams">Sri Lanka</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item has-submenu">
+                        <a href="/series" class="nav-link">Series <span class="arrow">&#9662;</span></a>
+                        <ul class="submenu">
+                            <li><a href="/series">IPL 2026</a></li>
+                            <li><a href="/series">World Cup</a></li>
+                            <li><a href="/series">Asia Cup</a></li>
+                            <li><a href="/series">The Ashes</a></li>
+                            <li><a href="/series">Champions Trophy</a></li>
+                            <li><a href="/series">T20 World Cup</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/news" class="nav-link">News</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    
+    <main class="main-content">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 CricLive. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
