@@ -1,16 +1,168 @@
 {% extends 'admin/base.html' %}
 
 {% block title %}Teams - Admin Panel{% endblock %}
-{% block page_title %}Teams{% endblock %}
+{% block page_title %}Teams Management{% endblock %}
 
 {% block content %}
 <div class="admin-page">
-    <div class="page-header">
-        <h2>Manage Teams</h2>
-        <button class="btn btn-primary">Add Team</button>
+    <div class="scrape-controls">
+        <div class="control-header">
+            <h2>Scrape Controls</h2>
+            <button class="btn btn-primary" onclick="scrapeAll()">Scrape All Categories</button>
+        </div>
+        
+        <div class="auto-scrape-setting">
+            <label class="toggle-label">
+                <input type="checkbox" id="autoScrapeToggle" {% if setting and setting.auto_scrape_enabled %}checked{% endif %} onchange="toggleAutoScrape()">
+                <span class="toggle-text">Auto Scrape Daily</span>
+            </label>
+            <input type="time" id="scrapeTime" value="{{ setting.scrape_time if setting else '02:00' }}" class="time-input">
+            {% if setting and setting.last_scrape %}
+            <span class="last-scrape">Last: {{ setting.last_scrape.strftime('%d %b %Y, %H:%M') }}</span>
+            {% endif %}
+        </div>
     </div>
-    <div class="content-placeholder">
-        <p>Team management content will appear here</p>
+    
+    <div class="categories-section">
+        <h2>Categories</h2>
+        <div class="category-cards">
+            {% for item in category_data %}
+            <div class="category-admin-card">
+                <div class="category-header">
+                    <h3>{{ item.category.name }}</h3>
+                    <span class="team-count">{{ item.team_count }} teams</span>
+                </div>
+                <div class="category-actions">
+                    <button class="btn btn-secondary" onclick="scrapeCategory('{{ item.category.slug }}')">
+                        Scrape Teams
+                    </button>
+                </div>
+                
+                {% if item.teams %}
+                <div class="teams-list">
+                    {% for team in item.teams %}
+                    <div class="team-item">
+                        <div class="team-info">
+                            {% if team.flag_url %}
+                            <img src="{{ team.flag_url }}" alt="{{ team.name }}" class="team-flag-small">
+                            {% endif %}
+                            <span class="team-name">{{ team.name }}</span>
+                        </div>
+                        <button class="btn btn-small" onclick="scrapePlayers({{ team.id }})">
+                            Scrape Players
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="scrape-logs">
+        <h2>Recent Scrape Logs</h2>
+        <div class="logs-table">
+            {% if recent_logs %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_logs %}
+                    <tr class="log-{{ log.status }}">
+                        <td>{{ log.created_at.strftime('%d %b, %H:%M') }}</td>
+                        <td>{{ log.category }}</td>
+                        <td><span class="status-badge {{ log.status }}">{{ log.status }}</span></td>
+                        <td>{{ log.message }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="no-logs">No scrape logs yet</p>
+            {% endif %}
+        </div>
     </div>
 </div>
+
+<div id="loadingOverlay" class="loading-overlay" style="display:none;">
+    <div class="loading-spinner"></div>
+    <p>Scraping in progress...</p>
+</div>
+
+<script>
+function showLoading() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+function scrapeCategory(slug) {
+    showLoading();
+    fetch('/api/scrape/category/' + slug, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            hideLoading();
+            alert(data.message);
+            if (data.success) location.reload();
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error: ' + err.message);
+        });
+}
+
+function scrapeAll() {
+    showLoading();
+    fetch('/api/scrape/all', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            hideLoading();
+            alert(data.message);
+            if (data.success) location.reload();
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error: ' + err.message);
+        });
+}
+
+function scrapePlayers(teamId) {
+    showLoading();
+    fetch('/api/scrape/team/' + teamId + '/players', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            hideLoading();
+            alert(data.message);
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error: ' + err.message);
+        });
+}
+
+function toggleAutoScrape() {
+    const enabled = document.getElementById('autoScrapeToggle').checked;
+    const scrapeTime = document.getElementById('scrapeTime').value;
+    
+    fetch('/api/settings/auto-scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: enabled, scrape_time: scrapeTime })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+    })
+    .catch(err => alert('Error: ' + err.message));
+}
+</script>
 {% endblock %}

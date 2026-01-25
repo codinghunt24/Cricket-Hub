@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} Teams - CricLive{% endblock %}
+
+{% block content %}
+<section class="teams-list-page">
+    <div class="page-header">
+        <a href="/teams" class="back-link">&larr; Back to Categories</a>
+        <h1 class="page-title">{{ category.name }} Teams</h1>
+    </div>
+    
+    {% if teams %}
+    <div class="teams-grid">
+        {% for team in teams %}
+        <a href="/team/{{ team.id }}" class="team-card">
+            <div class="team-flag">
+                {% if team.flag_url %}
+                <img src="{{ team.flag_url }}" alt="{{ team.name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="flag-placeholder" style="display:none;">{{ team.name[0] }}</div>
+                {% else %}
+                <div class="flag-placeholder">{{ team.name[0] }}</div>
+                {% endif %}
+            </div>
+            <h3 class="team-name">{{ team.name }}</h3>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-data">
+        <p>No teams found. Please scrape teams from the admin panel.</p>
+        <a href="/admin/teams" class="btn btn-primary">Go to Admin</a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

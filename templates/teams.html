@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Teams - CricLive{% endblock %}
+
+{% block content %}
+<section class="teams-page">
+    <h1 class="page-title">Cricket Teams</h1>
+    
+    <div class="categories-grid">
+        {% for category in categories %}
+        <a href="/teams/{{ category.slug }}" class="category-card">
+            <div class="category-icon">
+                {% if category.slug == 'international' %}&#127760;
+                {% elif category.slug == 'domestic' %}&#127969;
+                {% elif category.slug == 'league' %}&#127942;
+                {% elif category.slug == 'women' %}&#128105;
+                {% endif %}
+            </div>
+            <h2>{{ category.name }}</h2>
+            <p>View all {{ category.name | lower }} cricket teams</p>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ team.name }} - CricLive{% endblock %}
+
+{% block content %}
+<section class="team-detail-page">
+    <div class="page-header">
+        <a href="/teams/{{ team.category.slug }}" class="back-link">&larr; Back to {{ team.category.name }}</a>
+        <div class="team-header">
+            <div class="team-flag-large">
+                {% if team.flag_url %}
+                <img src="{{ team.flag_url }}" alt="{{ team.name }}">
+                {% else %}
+                <div class="flag-placeholder-large">{{ team.name[0] }}</div>
+                {% endif %}
+            </div>
+            <h1 class="team-title">{{ team.name }}</h1>
+        </div>
+    </div>
+    
+    {% if players %}
+    <div class="players-section">
+        <h2>Squad</h2>
+        <div class="players-grid">
+            {% for player in players %}
+            <div class="player-card">
+                <div class="player-photo">
+                    {% if player.photo_url %}
+                    <img src="{{ player.photo_url }}" alt="{{ player.name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="photo-placeholder" style="display:none;">{{ player.name[0] }}</div>
+                    {% else %}
+                    <div class="photo-placeholder">{{ player.name[0] }}</div>
+                    {% endif %}
+                </div>
+                <div class="player-info">
+                    <h4 class="player-name">{{ player.name }}</h4>
+                    {% if player.role %}
+                    <span class="player-role">{{ player.role }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="no-data">
+        <p>No players found. Please scrape players from the admin panel.</p>
+        <a href="/admin/teams" class="btn btn-primary">Go to Admin</a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
