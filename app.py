@@ -353,6 +353,29 @@ def get_players_api(team_id):
         'player_url': p.player_url
     } for p in players])
 
+@app.route('/api/teams/clear-all', methods=['DELETE'])
+def clear_all_teams():
+    try:
+        Player.query.delete()
+        Team.query.delete()
+        db.session.commit()
+        
+        log = ScrapeLog(
+            category='clear',
+            status='success',
+            message='All teams and players cleared'
+        )
+        db.session.add(log)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'All teams and players have been cleared'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/scrape/category/<category_slug>/players', methods=['POST'])
 def scrape_category_players(category_slug):
     try:

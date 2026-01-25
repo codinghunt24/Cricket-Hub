@@ -383,6 +383,20 @@
     color: var(--text-color);
 }
 
+.control-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
 .server-time-display {
     display: flex;
     align-items: center;

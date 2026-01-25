@@ -9,7 +9,10 @@
 <div class="scrape-controls">
         <div class="control-header">
             <h2>Scrape Controls</h2>
-            <button class="btn btn-primary" onclick="scrapeAll()">Scrape All Categories</button>
+            <div class="control-buttons">
+                <button class="btn btn-primary" onclick="scrapeAll()">Scrape All Categories</button>
+                <button class="btn btn-danger" onclick="clearAllTeams()">Clear All Teams</button>
+            </div>
         </div>
         
         <div class="server-time-display">
@@ -185,6 +188,23 @@ function scrapeCategory(slug) {
 function scrapeAll() {
     showLoading();
     fetch('/api/scrape/all', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            hideLoading();
+            alert(data.message);
+            if (data.success) location.reload();
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error: ' + err.message);
+        });
+}
+
+function clearAllTeams() {
+    if (!confirm('Are you sure? This will delete ALL teams and players from the database!')) return;
+    
+    showLoading();
+    fetch('/api/teams/clear-all', { method: 'DELETE' })
         .then(res => res.json())
         .then(data => {
             hideLoading();
