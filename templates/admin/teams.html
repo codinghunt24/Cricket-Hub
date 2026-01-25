@@ -16,33 +16,33 @@
             <span id="serverClock" class="server-clock">--:--:--</span>
         </div>
         
-        <div class="scrape-section">
-            <h3>Teams Scraping</h3>
-            <div class="auto-scrape-setting">
-                <label class="toggle-label">
-                    <input type="checkbox" id="autoScrapeToggle" {% if setting and setting.auto_scrape_enabled %}checked{% endif %} onchange="toggleAutoScrape()">
-                    <span class="toggle-text">Auto Scrape Daily</span>
-                </label>
-                <input type="time" id="scrapeTime" value="{{ setting.scrape_time if setting else '02:00' }}" class="time-input">
+        <div class="scrape-sections-row">
+            <div class="scrape-section">
+                <h3>Teams</h3>
+                <div class="scrape-row">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="autoScrapeToggle" {% if setting and setting.auto_scrape_enabled %}checked{% endif %} onchange="toggleAutoScrape()">
+                        <span class="toggle-text">Auto Daily</span>
+                    </label>
+                    <input type="time" id="scrapeTime" value="{{ setting.scrape_time if setting else '02:00' }}" class="time-input-sm">
+                </div>
                 {% if setting and setting.last_scrape %}
-                <span class="last-scrape">Last: {{ setting.last_scrape.strftime('%d %b %Y, %H:%M') }}</span>
+                <span class="last-scrape-sm">Last: {{ setting.last_scrape.strftime('%d %b, %H:%M') }}</span>
                 {% endif %}
             </div>
-        </div>
-        
-        <div class="scrape-section">
-            <h3>Players Scraping</h3>
-            <div class="player-scrape-buttons">
-                <button class="btn btn-secondary" onclick="scrapeAllPlayers()">Scrape All Players</button>
-            </div>
-            <div class="auto-scrape-setting">
-                <label class="toggle-label">
-                    <input type="checkbox" id="playerAutoScrapeToggle" {% if setting and setting.player_auto_scrape_enabled %}checked{% endif %} onchange="togglePlayerAutoScrape()">
-                    <span class="toggle-text">Auto Scrape Daily</span>
-                </label>
-                <input type="time" id="playerScrapeTime" value="{{ setting.player_scrape_time if setting else '03:00' }}" class="time-input">
+            
+            <div class="scrape-section">
+                <h3>Players</h3>
+                <button class="btn btn-sm btn-secondary" onclick="scrapeAllPlayers()">Scrape All</button>
+                <div class="scrape-row">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="playerAutoScrapeToggle" {% if setting and setting.player_auto_scrape_enabled %}checked{% endif %} onchange="togglePlayerAutoScrape()">
+                        <span class="toggle-text">Auto Daily</span>
+                    </label>
+                    <input type="time" id="playerScrapeTime" value="{{ setting.player_scrape_time if setting else '03:00' }}" class="time-input-sm">
+                </div>
                 {% if setting and setting.last_player_scrape %}
-                <span class="last-scrape">Last: {{ setting.last_player_scrape.strftime('%d %b %Y, %H:%M') }}</span>
+                <span class="last-scrape-sm">Last: {{ setting.last_player_scrape.strftime('%d %b, %H:%M') }}</span>
                 {% endif %}
             </div>
         </div>

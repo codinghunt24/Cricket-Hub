@@ -394,22 +394,53 @@
     width: fit-content;
 }
 
+.scrape-sections-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
 .scrape-section {
-    padding: 15px;
+    flex: 1;
+    min-width: 200px;
+    padding: 12px 15px;
     background: var(--gray-light);
     border-radius: 8px;
-    margin-bottom: 15px;
 }
 
 .scrape-section h3 {
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: var(--primary-color);
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     font-weight: 600;
 }
 
-.player-scrape-buttons {
-    margin-bottom: 12px;
+.scrape-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.time-input-sm {
+    padding: 4px 8px;
+    border: 1px solid var(--gray);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    width: 90px;
+}
+
+.last-scrape-sm {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    display: block;
+    margin-top: 6px;
+}
+
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
 }
 
 .server-time-label {

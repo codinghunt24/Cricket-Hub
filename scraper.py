@@ -101,13 +101,18 @@ def scrape_teams_from_category(category_url):
 
 def scrape_players_from_team(team_url):
     players = []
-    html = fetch_page(team_url)
+    
+    players_url = team_url.rstrip('/') + '/players'
+    
+    html = fetch_page(players_url)
     if not html:
-        return players
+        html = fetch_page(team_url)
+        if not html:
+            return players
     
     soup = BeautifulSoup(html, 'html.parser')
     
-    player_links = soup.find_all('a', href=re.compile(r'/profiles/\d+/'))
+    player_links = soup.find_all('a', href=re.compile(r'/profiles/\d+/|/cricket-player/\d+/'))
     
     for link in player_links:
         href = link.get('href', '')
