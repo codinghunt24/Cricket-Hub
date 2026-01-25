@@ -18,11 +18,11 @@
         
         <div class="scrape-sections-row">
             <div class="scrape-section">
-                <h3>Teams</h3>
+                <h3>Teams (All)</h3>
                 <div class="scrape-row">
                     <label class="toggle-label">
                         <input type="checkbox" id="autoScrapeToggle" {% if setting and setting.auto_scrape_enabled %}checked{% endif %} onchange="toggleAutoScrape()">
-                        <span class="toggle-text">Auto Daily</span>
+                        <span class="toggle-text">Auto</span>
                     </label>
                     <input type="time" id="scrapeTime" value="{{ setting.scrape_time if setting else '02:00' }}" class="time-input-sm">
                 </div>
@@ -32,18 +32,38 @@
             </div>
             
             <div class="scrape-section">
-                <h3>Players</h3>
+                <h3>Players (All)</h3>
                 <button class="btn btn-sm btn-secondary" onclick="scrapeAllPlayers()">Scrape All</button>
                 <div class="scrape-row">
                     <label class="toggle-label">
                         <input type="checkbox" id="playerAutoScrapeToggle" {% if setting and setting.player_auto_scrape_enabled %}checked{% endif %} onchange="togglePlayerAutoScrape()">
-                        <span class="toggle-text">Auto Daily</span>
+                        <span class="toggle-text">Auto</span>
                     </label>
                     <input type="time" id="playerScrapeTime" value="{{ setting.player_scrape_time if setting else '03:00' }}" class="time-input-sm">
                 </div>
                 {% if setting and setting.last_player_scrape %}
                 <span class="last-scrape-sm">Last: {{ setting.last_player_scrape.strftime('%d %b, %H:%M') }}</span>
                 {% endif %}
+            </div>
+        </div>
+        
+        <h3 class="section-subtitle">Players by Category</h3>
+        <div class="scrape-sections-row">
+            <div class="scrape-section-mini">
+                <span class="cat-icon">🌍</span> International
+                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('international')">Scrape</button>
+            </div>
+            <div class="scrape-section-mini">
+                <span class="cat-icon">🏠</span> Domestic
+                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('domestic')">Scrape</button>
+            </div>
+            <div class="scrape-section-mini">
+                <span class="cat-icon">🏆</span> League
+                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('league')">Scrape</button>
+            </div>
+            <div class="scrape-section-mini">
+                <span class="cat-icon">👩</span> Women
+                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('women')">Scrape</button>
             </div>
         </div>
     </div>
@@ -193,6 +213,21 @@ function toggleAutoScrape() {
 function scrapeAllPlayers() {
     showLoading();
     fetch('/api/scrape/all-players', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            hideLoading();
+            alert(data.message);
+            if (data.success) location.reload();
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error: ' + err.message);
+        });
+}
+
+function scrapeCategoryPlayers(categorySlug) {
+    showLoading();
+    fetch('/api/scrape/category/' + categorySlug + '/players', { method: 'POST' })
         .then(res => res.json())
         .then(data => {
             hideLoading();

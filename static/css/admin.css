@@ -443,6 +443,42 @@
     margin-bottom: 8px;
 }
 
+.section-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    margin: 15px 0 10px 0;
+    font-weight: 600;
+}
+
+.scrape-section-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--gray-light);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--text-color);
+}
+
+.cat-icon {
+    font-size: 1rem;
+}
+
+.btn-xs {
+    padding: 3px 8px;
+    font-size: 0.75rem;
+    background: var(--secondary-color);
+    color: var(--white);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-xs:hover {
+    background: var(--primary-color);
+}
+
 .server-time-label {
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.9);

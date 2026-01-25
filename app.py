@@ -353,6 +353,68 @@ def get_players_api(team_id):
         'player_url': p.player_url
     } for p in players])
 
+@app.route('/api/scrape/category/<category_slug>/players', methods=['POST'])
+def scrape_category_players(category_slug):
+    try:
+        category = TeamCategory.query.filter_by(slug=category_slug).first()
+        if not category:
+            return jsonify({'success': False, 'message': 'Category not found'}), 404
+        
+        total_players = 0
+        teams = Team.query.filter_by(category_id=category.id).filter(Team.team_url.isnot(None)).all()
+        
+        for team in teams:
+            try:
+                players_data = scraper.scrape_players_from_team(team.team_url)
+                for player_data in players_data:
+                    existing = Player.query.filter_by(name=player_data['name'], team_id=team.id).first()
+                    if existing:
+                        existing.player_id = player_data.get('player_id')
+                        existing.photo_url = player_data.get('photo_url')
+                        existing.player_url = player_data.get('player_url')
+                        existing.role = player_data.get('role')
+                        existing.updated_at = datetime.utcnow()
+                    else:
+                        player = Player(
+                            player_id=player_data.get('player_id'),
+                            name=player_data['name'],
+                            photo_url=player_data.get('photo_url'),
+                            player_url=player_data.get('player_url'),
+                            role=player_data.get('role'),
+                            team_id=team.id
+                        )
+                        db.session.add(player)
+                    total_players += 1
+            except Exception as e:
+                continue
+        
+        db.session.commit()
+        
+        log = ScrapeLog(
+            category=f'{category_slug}_players',
+            status='success',
+            message=f'Scraped {total_players} players from {category.name}',
+            players_scraped=total_players
+        )
+        db.session.add(log)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Scraped {total_players} players from {category.name}',
+            'players_scraped': total_players
+        })
+    
+    except Exception as e:
+        log = ScrapeLog(
+            category=f'{category_slug}_players',
+            status='error',
+            message=str(e)
+        )
+        db.session.add(log)
+        db.session.commit()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/scrape/all-players', methods=['POST'])
 def scrape_all_players():
     try:
