@@ -6,20 +6,63 @@
 <section class="teams-page">
     <h1 class="page-title">Cricket Teams</h1>
     
-    <div class="categories-grid">
+    <div class="category-tabs">
         {% for category in categories %}
-        <a href="/teams/{{ category.slug }}" class="category-card">
-            <div class="category-icon">
-                {% if category.slug == 'international' %}&#127760;
-                {% elif category.slug == 'domestic' %}&#127969;
-                {% elif category.slug == 'league' %}&#127942;
-                {% elif category.slug == 'women' %}&#128105;
-                {% endif %}
-            </div>
-            <h2>{{ category.name }}</h2>
-            <p>View all {{ category.name | lower }} cricket teams</p>
-        </a>
+        <button class="category-tab {% if loop.first %}active{% endif %}" data-category="{{ category.slug }}">
+            {% if category.slug == 'international' %}&#127760;
+            {% elif category.slug == 'domestic' %}&#127969;
+            {% elif category.slug == 'league' %}&#127942;
+            {% elif category.slug == 'women' %}&#128105;
+            {% endif %}
+            {{ category.name }}
+        </button>
         {% endfor %}
     </div>
+    
+    {% for category in categories %}
+    <div class="teams-container {% if loop.first %}active{% endif %}" id="teams-{{ category.slug }}">
+        {% if category.teams %}
+        <div class="teams-grid">
+            {% for team in category.teams %}
+            <a href="/team/{{ team.id }}" class="team-card">
+                <div class="team-flag">
+                    {% if team.flag_url %}
+                    <img src="{{ team.flag_url }}" alt="{{ team.name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="flag-placeholder" style="display:none;">{{ team.name[0] }}</div>
+                    {% else %}
+                    <div class="flag-placeholder">{{ team.name[0] }}</div>
+                    {% endif %}
+                </div>
+                <h3 class="team-name">{{ team.name }}</h3>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-data">
+            <p>No teams found in this category. Please scrape teams from the admin panel.</p>
+            <a href="/admin/teams" class="btn btn-primary">Go to Admin</a>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.category-tab');
+    const containers = document.querySelectorAll('.teams-container');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const category = this.dataset.category;
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            containers.forEach(c => c.classList.remove('active'));
+            document.getElementById('teams-' + category).classList.add('active');
+        });
+    });
+});
+</script>
 {% endblock %}
