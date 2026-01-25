@@ -7,10 +7,353 @@
 <div class="admin-page">
     <div class="page-header">
         <h2>Manage Series</h2>
-        <button class="btn btn-primary">Add Series</button>
+        <button class="btn btn-primary" onclick="scrapeAllSeries()">
+            <i class="fas fa-sync-alt"></i> Scrape All Categories
+        </button>
     </div>
-    <div class="content-placeholder">
-        <p>Series management content will appear here</p>
+    
+    <div class="scrape-section">
+        <h3>Series Categories</h3>
+        <div class="category-grid">
+            {% for data in category_data %}
+            <div class="category-card" id="series-card-{{ data.category.slug }}">
+                <div class="category-header">
+                    <h4>{{ data.category.name }}</h4>
+                    <span class="badge">{{ data.series_count }} series</span>
+                </div>
+                <div class="category-actions">
+                    <button class="btn btn-sm btn-primary" onclick="scrapeSeries('{{ data.category.slug }}')">
+                        <i class="fas fa-download"></i> Scrape
+                    </button>
+                </div>
+                <div class="auto-scrape-toggle">
+                    <label class="toggle-label">
+                        <input type="checkbox" 
+                               id="series-auto-{{ data.category.slug }}" 
+                               {% if data.setting and data.setting.auto_scrape_enabled %}checked{% endif %}
+                               onchange="toggleSeriesAutoScrape('{{ data.category.slug }}', this.checked)">
+                        <span class="toggle-text">Auto Scrape Daily</span>
+                    </label>
+                    <input type="time" 
+                           id="series-time-{{ data.category.slug }}" 
+                           value="{{ data.setting.scrape_time if data.setting else '08:00' }}"
+                           onchange="toggleSeriesAutoScrape('{{ data.category.slug }}', document.getElementById('series-auto-{{ data.category.slug }}').checked)">
+                </div>
+                {% if data.setting and data.setting.last_scrape %}
+                <div class="last-scrape">
+                    <small>Last: {{ data.setting.last_scrape.strftime('%Y-%m-%d %H:%M') }}</small>
+                </div>
+                {% endif %}
+                <div class="progress-container" id="series-progress-{{ data.category.slug }}" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="series-fill-{{ data.category.slug }}"></div>
+                    </div>
+                    <span class="progress-text" id="series-text-{{ data.category.slug }}">0%</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="series-list-section">
+        <h3>All Series</h3>
+        {% for data in category_data %}
+        {% if data.series %}
+        <div class="category-series">
+            <h4>{{ data.category.name }} ({{ data.series_count }})</h4>
+            <div class="series-grid">
+                {% for series in data.series[:20] %}
+                <div class="series-item">
+                    <a href="{{ series.series_url }}" target="_blank">{{ series.name }}</a>
+                </div>
+                {% endfor %}
+                {% if data.series_count > 20 %}
+                <div class="series-item more">
+                    <span>+{{ data.series_count - 20 }} more...</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    
+    <div class="logs-section">
+        <h3>Recent Scrape Logs</h3>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in recent_logs %}
+                <tr>
+                    <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ log.category }}</td>
+                    <td><span class="status-badge status-{{ log.status }}">{{ log.status }}</span></td>
+                    <td>{{ log.message }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">No logs yet</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
+
+<style>
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.category-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.category-header h4 {
+    margin: 0;
+    color: #046a38;
+}
+
+.badge {
+    background: #e8f5e9;
+    color: #046a38;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.category-actions {
+    margin-bottom: 15px;
+}
+
+.auto-scrape-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.last-scrape {
+    color: #666;
+    font-size: 12px;
+}
+
+.progress-container {
+    margin-top: 10px;
+}
+
+.progress-bar {
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #046a38;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 12px;
+    color: #666;
+}
+
+.series-list-section {
+    margin-top: 30px;
+}
+
+.category-series {
+    margin-bottom: 25px;
+}
+
+.category-series h4 {
+    color: #046a38;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #e8f5e9;
+}
+
+.series-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 10px;
+}
+
+.series-item {
+    background: #f5f5f5;
+    padding: 10px 15px;
+    border-radius: 4px;
+}
+
+.series-item a {
+    color: #333;
+    text-decoration: none;
+}
+
+.series-item a:hover {
+    color: #046a38;
+}
+
+.series-item.more {
+    color: #666;
+    font-style: italic;
+}
+
+.logs-section {
+    margin-top: 30px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.admin-table th {
+    background: #046a38;
+    color: white;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.status-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-error {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: #046a38;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #035a30;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+</style>
+
+<script>
+async function scrapeSeries(slug) {
+    const card = document.getElementById(`series-card-${slug}`);
+    const btn = card.querySelector('.btn-primary');
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scraping...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch(`/api/scrape/series/${slug}`, { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error scraping series: ' + error.message);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function scrapeAllSeries() {
+    const categories = ['all', 'international', 'domestic', 'league', 'women'];
+    
+    for (const slug of categories) {
+        await scrapeSeries(slug);
+    }
+}
+
+async function toggleSeriesAutoScrape(category, enabled) {
+    const timeInput = document.getElementById(`series-time-${category}`);
+    const scrapeTime = timeInput ? timeInput.value : '08:00';
+    
+    try {
+        const response = await fetch('/api/settings/series-auto-scrape', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                category: category,
+                enabled: enabled,
+                scrape_time: scrapeTime
+            })
+        });
+        
+        const data = await response.json();
+        if (!data.success) {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error updating settings: ' + error.message);
+    }
+}
+</script>
 {% endblock %}

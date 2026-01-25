@@ -30,6 +30,29 @@ CATEGORIES = {
     }
 }
 
+SERIES_CATEGORIES = {
+    'all': {
+        'name': 'All',
+        'url': 'https://www.cricbuzz.com/cricket-schedule/series/all'
+    },
+    'international': {
+        'name': 'International',
+        'url': 'https://www.cricbuzz.com/cricket-schedule/series/international'
+    },
+    'domestic': {
+        'name': 'Domestic',
+        'url': 'https://www.cricbuzz.com/cricket-schedule/series/domestic'
+    },
+    'league': {
+        'name': 'T20 Leagues',
+        'url': 'https://www.cricbuzz.com/cricket-schedule/series/league'
+    },
+    'women': {
+        'name': 'Women',
+        'url': 'https://www.cricbuzz.com/cricket-schedule/series/women'
+    }
+}
+
 def fetch_page(url):
     try:
         response = requests.get(url, headers=HEADERS, timeout=30)
@@ -373,3 +396,44 @@ def scrape_player_profile(player_url):
     profile['career_timeline'] = career_timeline
     
     return profile
+
+def extract_series_id(url):
+    match = re.search(r'/cricket-series/(\d+)/', url)
+    if match:
+        return match.group(1)
+    return None
+
+def scrape_series_from_category(category_url):
+    series_list = []
+    html = fetch_page(category_url)
+    
+    if not html:
+        return series_list
+    
+    soup = BeautifulSoup(html, 'html.parser')
+    
+    series_links = soup.find_all('a', href=lambda h: h and '/cricket-series/' in h and h.count('/') >= 2)
+    
+    seen_ids = set()
+    for link in series_links:
+        href = link.get('href', '')
+        series_id = extract_series_id(href)
+        
+        if not series_id or series_id in seen_ids:
+            continue
+        
+        seen_ids.add(series_id)
+        name = link.get_text(strip=True)
+        
+        if not name or len(name) < 3:
+            continue
+        
+        series_url = BASE_URL + href if href.startswith('/') else href
+        
+        series_list.append({
+            'series_id': series_id,
+            'name': name,
+            'series_url': series_url
+        })
+    
+    return series_list

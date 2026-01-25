@@ -21,7 +21,7 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 db.init_app(app)
 
 from models import init_models
-TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting = init_models(db)
+TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting = init_models(db)
 
 import scraper
 from scheduler import init_scheduler, update_schedule, update_player_schedule
@@ -43,6 +43,17 @@ with app.app_context():
         if not ProfileScrapeSetting.query.filter_by(category_slug=slug).first():
             ps = ProfileScrapeSetting(category_slug=slug, auto_scrape_enabled=False, scrape_time='03:00')
             db.session.add(ps)
+    
+    for slug, info in scraper.SERIES_CATEGORIES.items():
+        existing = SeriesCategory.query.filter_by(slug=slug).first()
+        if not existing:
+            category = SeriesCategory(name=info['name'], slug=slug, url=info['url'])
+            db.session.add(category)
+    
+    for slug in ['all', 'international', 'domestic', 'league', 'women']:
+        if not SeriesScrapeSetting.query.filter_by(category_slug=slug).first():
+            ss = SeriesScrapeSetting(category_slug=slug, auto_scrape_enabled=False, scrape_time='08:00')
+            db.session.add(ss)
     
     db.session.commit()
 
@@ -125,7 +136,24 @@ def admin_teams():
 
 @app.route('/admin/series')
 def admin_series():
-    return render_template('admin/series.html')
+    categories = SeriesCategory.query.all()
+    recent_logs = ScrapeLog.query.filter(ScrapeLog.category.like('series_%')).order_by(ScrapeLog.created_at.desc()).limit(10).all()
+    
+    category_data = []
+    for cat in categories:
+        series_count = Series.query.filter_by(category_id=cat.id).count()
+        series_list = Series.query.filter_by(category_id=cat.id).order_by(Series.name).all()
+        setting = SeriesScrapeSetting.query.filter_by(category_slug=cat.slug).first()
+        category_data.append({
+            'category': cat,
+            'series_count': series_count,
+            'series': series_list,
+            'setting': setting
+        })
+    
+    return render_template('admin/series.html', 
+                         category_data=category_data,
+                         recent_logs=recent_logs)
 
 @app.route('/admin/news')
 def admin_news():
@@ -755,6 +783,104 @@ def toggle_profile_auto_scrape():
 def get_profile_scrape_settings():
     settings = ProfileScrapeSetting.query.all()
     return jsonify({s.category_slug: {'enabled': s.auto_scrape_enabled, 'time': s.scrape_time} for s in settings})
+
+series_scrape_progress = {}
+
+@app.route('/api/scrape/series/<category_slug>', methods=['POST'])
+def scrape_series(category_slug):
+    try:
+        if category_slug not in scraper.SERIES_CATEGORIES:
+            return jsonify({'success': False, 'message': 'Invalid category'}), 400
+        
+        category = SeriesCategory.query.filter_by(slug=category_slug).first()
+        if not category:
+            return jsonify({'success': False, 'message': 'Category not found'}), 404
+        
+        category_url = scraper.SERIES_CATEGORIES[category_slug]['url']
+        series_list = scraper.scrape_series_from_category(category_url)
+        
+        if not series_list:
+            return jsonify({'success': False, 'message': 'No series found'}), 404
+        
+        series_scraped = 0
+        for series_data in series_list:
+            existing = Series.query.filter_by(series_id=series_data['series_id']).first()
+            if existing:
+                existing.name = series_data['name']
+                existing.series_url = series_data['series_url']
+                existing.category_id = category.id
+                existing.updated_at = datetime.utcnow()
+            else:
+                series = Series(
+                    series_id=series_data['series_id'],
+                    name=series_data['name'],
+                    series_url=series_data['series_url'],
+                    category_id=category.id
+                )
+                db.session.add(series)
+            series_scraped += 1
+        
+        db.session.commit()
+        
+        log = ScrapeLog(
+            category=f'series_{category_slug}',
+            status='success',
+            message=f'Scraped {series_scraped} series',
+            teams_scraped=series_scraped
+        )
+        db.session.add(log)
+        db.session.commit()
+        
+        setting = SeriesScrapeSetting.query.filter_by(category_slug=category_slug).first()
+        if setting:
+            setting.last_scrape = datetime.utcnow()
+            db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Scraped {series_scraped} series successfully',
+            'series_scraped': series_scraped
+        })
+    
+    except Exception as e:
+        log = ScrapeLog(
+            category=f'series_{category_slug}',
+            status='error',
+            message=str(e)
+        )
+        db.session.add(log)
+        db.session.commit()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/settings/series-auto-scrape', methods=['POST'])
+def toggle_series_auto_scrape():
+    try:
+        data = request.get_json() or {}
+        category = data.get('category', '')
+        enabled = data.get('enabled', False)
+        scrape_time = data.get('scrape_time', '08:00')
+        
+        if category not in ['all', 'international', 'domestic', 'league', 'women']:
+            return jsonify({'success': False, 'message': 'Invalid category'}), 400
+        
+        setting = SeriesScrapeSetting.query.filter_by(category_slug=category).first()
+        if setting:
+            setting.auto_scrape_enabled = enabled
+            setting.scrape_time = scrape_time
+            db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'{category.title()} series auto scrape {"enabled" if enabled else "disabled"} at {scrape_time}'
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/settings/series-scrape')
+def get_series_scrape_settings():
+    settings = SeriesScrapeSetting.query.all()
+    return jsonify({s.category_slug: {'enabled': s.auto_scrape_enabled, 'time': s.scrape_time, 'last_scrape': s.last_scrape.isoformat() if s.last_scrape else None} for s in settings})
 
 if __name__ == '__main__':
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'

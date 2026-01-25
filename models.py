@@ -125,4 +125,38 @@ def init_models(db):
         last_scrape = db.Column(db.DateTime, nullable=True)
         updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting
+    class SeriesCategory(db.Model):
+        __tablename__ = 'series_categories'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String(50), unique=True, nullable=False)
+        slug = db.Column(db.String(50), unique=True, nullable=False)
+        url = db.Column(db.String(255), nullable=False)
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+        
+        series = db.relationship('Series', backref='category', lazy=True, cascade='all, delete-orphan')
+    
+    class Series(db.Model):
+        __tablename__ = 'series'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        series_id = db.Column(db.String(50), nullable=True)
+        name = db.Column(db.String(200), nullable=False)
+        series_url = db.Column(db.String(500), nullable=True)
+        start_date = db.Column(db.String(100), nullable=True)
+        end_date = db.Column(db.String(100), nullable=True)
+        category_id = db.Column(db.Integer, db.ForeignKey('series_categories.id'), nullable=False)
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+        updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    class SeriesScrapeSetting(db.Model):
+        __tablename__ = 'series_scrape_settings'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        category_slug = db.Column(db.String(50), unique=True, nullable=False)
+        auto_scrape_enabled = db.Column(db.Boolean, default=False)
+        scrape_time = db.Column(db.String(10), default='08:00')
+        last_scrape = db.Column(db.DateTime, nullable=True)
+        updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting
