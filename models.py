@@ -74,6 +74,9 @@ def init_models(db):
         bowl_five_wickets = db.Column(db.String(50), nullable=True)
         bowl_ten_wickets = db.Column(db.String(50), nullable=True)
         
+        batting_stats = db.Column(db.JSON, nullable=True)
+        bowling_stats = db.Column(db.JSON, nullable=True)
+        
         profile_scraped = db.Column(db.Boolean, default=False)
         profile_scraped_at = db.Column(db.DateTime, nullable=True)
         
