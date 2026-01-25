@@ -497,6 +497,9 @@ def toggle_category_auto_scrape():
                 setting.women_time = scrape_time
             db.session.commit()
         
+        from scheduler import update_category_player_schedule
+        update_category_player_schedule(app, db, ScrapeSetting, TeamCategory, Team, Player, ScrapeLog, scraper, category, enabled, scrape_time)
+        
         return jsonify({
             'success': True,
             'message': f'{category.title()} auto scrape {"enabled" if enabled else "disabled"} at {scrape_time}'

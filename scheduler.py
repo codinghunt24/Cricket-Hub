@@ -203,3 +203,74 @@ def update_player_schedule(app, db, ScrapeSetting, Team, Player, ScrapeLog, scra
         print(f"[SCHEDULER] Daily player scrape rescheduled at {scrape_time}")
     else:
         print("[SCHEDULER] Daily player scrape disabled")
+
+def run_category_player_scrape(app, db, TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, scraper, category_slug):
+    with app.app_context():
+        try:
+            category = TeamCategory.query.filter_by(slug=category_slug).first()
+            if not category:
+                return
+            
+            total_players = 0
+            teams = Team.query.filter_by(category_id=category.id).filter(Team.team_url.isnot(None)).all()
+            
+            for team in teams:
+                try:
+                    players_data = scraper.scrape_players_from_team(team.team_url)
+                    for player_data in players_data:
+                        existing = Player.query.filter_by(name=player_data['name'], team_id=team.id).first()
+                        if existing:
+                            existing.player_id = player_data.get('player_id')
+                            existing.photo_url = player_data.get('photo_url')
+                            existing.player_url = player_data.get('player_url')
+                            existing.role = player_data.get('role')
+                            existing.updated_at = datetime.utcnow()
+                        else:
+                            player = Player(
+                                player_id=player_data.get('player_id'),
+                                name=player_data['name'],
+                                photo_url=player_data.get('photo_url'),
+                                player_url=player_data.get('player_url'),
+                                role=player_data.get('role'),
+                                team_id=team.id
+                            )
+                            db.session.add(player)
+                        total_players += 1
+                except Exception as e:
+                    continue
+            
+            db.session.commit()
+            
+            log = ScrapeLog(
+                category=f'auto_{category_slug}_players',
+                status='success',
+                message=f'Auto scraped {total_players} players from {category.name}',
+                players_scraped=total_players
+            )
+            db.session.add(log)
+            db.session.commit()
+            
+            print(f"[SCHEDULER] Auto {category_slug} players scrape completed: {total_players} players")
+            
+        except Exception as e:
+            print(f"[SCHEDULER] Auto {category_slug} players scrape error: {e}")
+
+def update_category_player_schedule(app, db, ScrapeSetting, TeamCategory, Team, Player, ScrapeLog, scraper, category, enabled, scrape_time):
+    job_id = f'{category}_player_scrape'
+    
+    if job_id in [job.id for job in scheduler.get_jobs()]:
+        scheduler.remove_job(job_id)
+    
+    if enabled:
+        hour, minute = map(int, scrape_time.split(':'))
+        
+        scheduler.add_job(
+            func=lambda cat=category: run_category_player_scrape(app, db, TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, scraper, cat),
+            trigger=CronTrigger(hour=hour, minute=minute),
+            id=job_id,
+            replace_existing=True
+        )
+        
+        print(f"[SCHEDULER] {category.title()} player scrape scheduled at {scrape_time}")
+    else:
+        print(f"[SCHEDULER] {category.title()} player scrape disabled")
