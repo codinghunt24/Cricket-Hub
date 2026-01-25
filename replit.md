@@ -4,7 +4,7 @@
 A Cricbuzz-inspired cricket website built with Python Flask featuring web scraping for team and player data from Cricbuzz. Includes a responsive frontend with sticky navbar and dropdown submenus, plus an admin panel with sidebar navigation and scraping controls.
 
 ## Current State
-- **Status**: Format-wise stats display complete (Test, ODI, T20, IPL) with Career Timeline
+- **Status**: Format-wise stats display complete (Test, ODI, T20, IPL) with Career Timeline + Series Scraping
 - **Last Updated**: January 25, 2026
 
 ## Project Structure
@@ -92,6 +92,9 @@ A Cricbuzz-inspired cricket website built with Python Flask featuring web scrapi
 - **ScrapeLog**: category, status, message, timestamps
 - **ScrapeSetting**: auto_scrape_enabled, scrape_time, category-wise settings
 - **ProfileScrapeSetting**: category_slug, auto_scrape_enabled, scrape_time
+- **SeriesCategory**: All, International, Domestic, T20 Leagues, Women
+- **Series**: series_id, name, series_url, category_id
+- **SeriesScrapeSetting**: category_slug, auto_scrape_enabled, scrape_time
 
 ## API Endpoints
 
@@ -105,6 +108,9 @@ A Cricbuzz-inspired cricket website built with Python Flask featuring web scrapi
 - `POST /api/settings/auto-scrape` - Toggle auto-scrape
 - `POST /api/settings/profile-auto-scrape` - Toggle profile auto-scrape
 - `GET /api/settings/profile-scrape` - Get profile scrape settings
+- `POST /api/scrape/series/<slug>` - Scrape series from category
+- `POST /api/settings/series-auto-scrape` - Toggle series auto-scrape
+- `GET /api/settings/series-scrape` - Get series scrape settings
 
 ### Data APIs
 - `GET /api/teams/<category_slug>` - Get teams by category
