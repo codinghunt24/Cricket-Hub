@@ -653,6 +653,7 @@ def scrape_profiles_task(category_slug, player_ids):
                         
                         player.batting_stats = profile_data.get('batting_stats')
                         player.bowling_stats = profile_data.get('bowling_stats')
+                        player.career_timeline = profile_data.get('career_timeline')
                         
                         player.profile_scraped = True
                         player.profile_scraped_at = datetime.utcnow()

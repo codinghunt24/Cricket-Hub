@@ -76,6 +76,7 @@ def init_models(db):
         
         batting_stats = db.Column(db.JSON, nullable=True)
         bowling_stats = db.Column(db.JSON, nullable=True)
+        career_timeline = db.Column(db.JSON, nullable=True)
         
         profile_scraped = db.Column(db.Boolean, default=False)
         profile_scraped_at = db.Column(db.DateTime, nullable=True)

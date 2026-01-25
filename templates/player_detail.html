@@ -329,6 +329,32 @@
         {% endif %}
         {% endif %}
         
+        {% if player.career_timeline %}
+        <div class="player-stats-card">
+            <h3>Career Timeline</h3>
+            <div class="stats-table-wrapper">
+                <table class="format-stats-table timeline-table">
+                    <thead>
+                        <tr>
+                            <th>Format</th>
+                            <th>Debut</th>
+                            <th>Last Match</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for format, data in player.career_timeline.items() %}
+                        <tr>
+                            <td class="format-label">{{ format|upper }}</td>
+                            <td>{{ data.debut or '-' }}</td>
+                            <td>{{ data.last_match or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
         {% if not player.profile_scraped %}
         <div class="profile-not-scraped">
             <p>Detailed stats not yet available. Profile needs to be scraped from admin panel.</p>

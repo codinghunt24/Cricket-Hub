@@ -346,4 +346,30 @@ def scrape_player_profile(player_url):
     profile['batting_stats'] = batting_stats
     profile['bowling_stats'] = bowling_stats
     
+    career_timeline = {}
+    timeline_heading = soup.find(string=lambda t: t and 'Career Timeline' in t if t else False)
+    if timeline_heading:
+        section = timeline_heading.find_parent('div')
+        if section:
+            parent = section.find_parent('div')
+            if parent:
+                grandparent = parent.find_parent('div')
+                if grandparent:
+                    for child in grandparent.find_all('div', recursive=False):
+                        divs = child.find_all('div', recursive=False)
+                        for div in divs:
+                            text = div.get_text(separator=' | ', strip=True)
+                            if 'vs' in text and ' | ' in text:
+                                parts = text.split(' | ')
+                                if len(parts) >= 3:
+                                    format_name = parts[0].strip().lower()
+                                    debut = parts[1].strip()
+                                    last_match = parts[2].strip()
+                                    career_timeline[format_name] = {
+                                        'debut': debut,
+                                        'last_match': last_match
+                                    }
+    
+    profile['career_timeline'] = career_timeline
+    
     return profile

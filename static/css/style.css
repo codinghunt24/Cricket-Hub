@@ -962,3 +962,13 @@ body {
         width: 80px;
     }
 }
+
+.timeline-table td.format-label {
+    font-weight: 600;
+    color: var(--primary-color);
+    text-transform: uppercase;
+}
+
+.timeline-table td {
+    font-size: 0.9rem;
+}
