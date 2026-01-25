@@ -44,11 +44,79 @@
                     </div>
                 </div>
                 
+                {% if innings.batting and innings.batting|length > 0 %}
+                <div class="batting-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="batter-col">Batter</th>
+                                <th class="dismissal-col"></th>
+                                <th>R</th>
+                                <th>B</th>
+                                <th>4s</th>
+                                <th>6s</th>
+                                <th>SR</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for batter in innings.batting %}
+                            <tr>
+                                <td class="batter-name">{{ batter.name }}</td>
+                                <td class="dismissal">{{ batter.dismissal }}</td>
+                                <td class="runs">{{ batter.runs }}</td>
+                                <td>{{ batter.balls }}</td>
+                                <td>{{ batter.fours }}</td>
+                                <td>{{ batter.sixes }}</td>
+                                <td>{{ batter.strike_rate }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if innings.extras %}
+                <div class="extras-row">
+                    <span class="label">Extras:</span>
+                    <span class="value">{{ innings.extras }}</span>
+                </div>
+                {% endif %}
+                
+                {% if innings.bowling and innings.bowling|length > 0 %}
+                <div class="bowling-table">
+                    <h4><i class="fas fa-bowling-ball"></i> Bowling</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="bowler-col">Bowler</th>
+                                <th>O</th>
+                                <th>M</th>
+                                <th>R</th>
+                                <th>W</th>
+                                <th>ECO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bowler in innings.bowling %}
+                            <tr>
+                                <td class="bowler-name">{{ bowler.name }}</td>
+                                <td>{{ bowler.overs }}</td>
+                                <td>{{ bowler.maidens }}</td>
+                                <td>{{ bowler.runs }}</td>
+                                <td class="wickets">{{ bowler.wickets }}</td>
+                                <td>{{ bowler.economy }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+                {% else %}
                 <div class="no-details-msg">
                     <a href="https://www.cricbuzz.com/live-cricket-scorecard/{{ match.match_id }}" target="_blank" class="view-full-link">
                         <i class="fas fa-external-link-alt"></i> View Full Scorecard on Cricbuzz
                     </a>
                 </div>
+                {% endif %}
                 
             </div>
             {% endfor %}

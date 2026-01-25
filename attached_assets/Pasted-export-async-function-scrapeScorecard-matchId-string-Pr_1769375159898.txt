@@ -1,0 +1,272 @@
+export async function scrapeScorecard(matchId: string): Promise<Scorecard | null> {
+  const $ = await fetchPage(`${CRICBUZZ_BASE}/live-cricket-scorecard/${matchId}`);
+  
+  if (!$) {
+    return generateSampleScorecard(matchId);
+  }
+
+  try {
+    const innings: Innings[] = [];
+    
+    // Extract match info from page title: "Cricket scorecard | India vs New Zealand, 1st ODI, New Zealand tour of India, 2026"
+    const pageTitle = $('title').first().text().trim();
+    const titleMatch = pageTitle.match(/([^|]+)\s+vs\s+([^,]+),\s*([^,]+),\s*(.+)/);
+    
+    let team1Name = "Team 1";
+    let team2Name = "Team 2";
+    let matchNumber = "Match";
+    let seriesName = "Cricket Series";
+    
+    if (titleMatch) {
+      team1Name = titleMatch[1].replace(/Cricket scorecard \|/i, '').trim();
+      team2Name = titleMatch[2].trim();
+      matchNumber = titleMatch[3].trim();
+      seriesName = titleMatch[4].trim();
+    }
+    
+    // Get venue from page
+    const venueText = $('a[href*="/cricket-series/"][href*="/venues/"]').first().text().trim() || 
+                      $('span:contains("at ")').first().text().replace('at ', '').trim() ||
+                      "";
+    
+    // Get match result/status - look for specific result patterns
+    let statusText = "";
+    const htmlContent = $.html();
+    const resultMatch = htmlContent.match(/(India|New Zealand|Australia|England|South Africa|Pakistan|Sri Lanka|West Indies|Bangladesh|Afghanistan|Ireland|Zimbabwe|Scotland|Netherlands|Nepal|UAE|Oman|USA|Kenya|Namibia|PNG|Canada|Hong Kong|[A-Z]{2,4}) won by (\d+ (?:runs?|wkts?))/i);
+    if (resultMatch) {
+      statusText = `${resultMatch[1]} won by ${resultMatch[2]}`;
+    } else {
+      // Check for other match states
+      if (htmlContent.includes('Match drawn')) statusText = "Match drawn";
+      else if (htmlContent.includes('Match tied')) statusText = "Match tied";
+      else if (htmlContent.includes('No result')) statusText = "No result";
+    }
+    
+    // Store team scores for match header
+    const teamScores: { [key: string]: { score: string; overs: string } } = {};
+    
+    // Find all innings headers (id pattern: team-{id}-innings-{num})
+    $('[id^="team-"][id*="-innings-"]').each((idx, headerEl) => {
+      const $header = $(headerEl);
+      const headerId = $header.attr('id') || '';
+      
+      // Skip if this is a scorecard content div (scard-team-...)
+      if (headerId.startsWith('scard-') || headerId.startsWith('caret-')) return;
+      
+      // Get team name and score from header
+      const teamName = $header.find('.hidden.tb\\:block.font-bold, div.font-bold').first().text().trim() ||
+                       $header.find('.tb\\:hidden.font-bold').first().text().trim();
+      
+      if (!teamName) return;
+      
+      // Get score like "300-8" and overs like "(50 Ov)"
+      const scoreSpan = $header.find('span.font-bold').first().text().trim();
+      const oversSpan = $header.find('span').not('.font-bold').first().text().trim().replace(/[()]/g, '');
+      
+      if (!scoreSpan) return;
+      
+      const batsmen: Batsman[] = [];
+      const bowlers: Bowler[] = [];
+      
+      // Find corresponding scorecard content
+      const scardId = `scard-${headerId}`;
+      const $scard = $(`#${scardId}`);
+      
+      // Parse batting rows from grid
+      $scard.find('.grid.scorecard-bat-grid').each((rowIdx, row) => {
+        const $row = $(row);
+        
+        // Skip header row
+        if ($row.find('.bg-cbBorderGrey').length > 0) return;
+        if ($row.text().includes('Batter')) return;
+        
+        // Get player name from link
+        const $nameLink = $row.find('a[href*="/profiles/"]').first();
+        const name = $nameLink.text().trim();
+        
+        if (!name) return;
+        
+        // Get dismissal text
+        const dismissal = $row.find('.text-cbTxtSec').first().text().trim();
+        
+        // Get stats from grid cells
+        const cells = $row.find('.flex.justify-center.items-center');
+        const runs = parseInt($(cells[0]).text().trim()) || 0;
+        const balls = parseInt($(cells[1]).text().trim()) || 0;
+        const fours = parseInt($(cells[2]).text().trim()) || 0;
+        const sixes = parseInt($(cells[3]).text().trim()) || 0;
+        const sr = $(cells[4]).text().trim() || "0.00";
+        
+        // Get player ID from profile link
+        const profileHref = $nameLink.attr('href') || '';
+        const playerIdMatch = profileHref.match(/\/profiles\/(\d+)\//);
+        const playerId = playerIdMatch ? playerIdMatch[1] : `bat-${idx}-${rowIdx}`;
+        
+        const isNotOut = dismissal.toLowerCase().includes('not out') || dismissal === '';
+        
+        batsmen.push({
+          id: playerId,
+          name,
+          runs,
+          balls,
+          fours,
+          sixes,
+          strikeRate: sr,
+          isOut: !isNotOut,
+          dismissal: isNotOut ? undefined : dismissal,
+          isOnStrike: false,
+        });
+      });
+      
+      // Parse extras if available
+      let extras = 0;
+      $scard.find('div').each((_, el) => {
+        const text = $(el).text();
+        if (text.includes('Extras')) {
+          const extrasMatch = text.match(/Extras\s*(\d+)/);
+          if (extrasMatch) extras = parseInt(extrasMatch[1]) || 0;
+        }
+      });
+      
+      // Parse score
+      const scoreParts = scoreSpan.split(/[-\/]/);
+      const totalRuns = scoreParts[0] || "0";
+      const wickets = parseInt(scoreParts[1]) || batsmen.filter(b => b.isOut).length;
+      
+      // Calculate run rate
+      const oversMatch = oversSpan.match(/(\d+\.?\d*)/);
+      const oversNum = oversMatch ? parseFloat(oversMatch[1]) : 0;
+      const runRate = oversNum > 0 ? (parseInt(totalRuns) / oversNum).toFixed(2) : "0.00";
+      
+      // Store team score for match header
+      teamScores[teamName] = { score: `${totalRuns}/${wickets}`, overs: oversSpan || "0" };
+      
+      innings.push({
+        teamName,
+        teamShortName: teamName.substring(0, 3).toUpperCase(),
+        score: totalRuns,
+        overs: oversSpan || "0",
+        wickets,
+        runRate,
+        batting: batsmen,
+        bowling: bowlers,
+        extras,
+      });
+    });
+
+    // Build match object from scraped data
+    const team1ScoreData = teamScores[team1Name] || teamScores[Object.keys(teamScores)[0]] || { score: "-", overs: "" };
+    const team2ScoreData = teamScores[team2Name] || teamScores[Object.keys(teamScores)[1]] || { score: "-", overs: "" };
+    
+    // Get team short names from innings if available
+    const team1Short = innings.find(i => i.teamName.toLowerCase().includes(team1Name.toLowerCase().split(' ')[0]))?.teamShortName || team1Name.substring(0, 3).toUpperCase();
+    const team2Short = innings.find(i => i.teamName.toLowerCase().includes(team2Name.toLowerCase().split(' ')[0]))?.teamShortName || team2Name.substring(0, 3).toUpperCase();
+    
+    const scrapedMatch: Match = {
+      id: matchId,
+      seriesName: seriesName,
+      matchTitle: `${team1Name} vs ${team2Name}`,
+      matchNumber: matchNumber,
+      venue: venueText || "Cricket Stadium",
+      team1: {
+        id: `team-${team1Short.toLowerCase()}`,
+        name: team1Name,
+        shortName: team1Short,
+        flagUrl: getCountryFlag(team1Name),
+        score: team1ScoreData.score,
+        overs: team1ScoreData.overs,
+      },
+      team2: {
+        id: `team-${team2Short.toLowerCase()}`,
+        name: team2Name,
+        shortName: team2Short,
+        flagUrl: getCountryFlag(team2Name),
+        score: team2ScoreData.score,
+        overs: team2ScoreData.overs,
+      },
+      status: statusText ? "completed" : "live",
+      statusText: statusText || "In Progress",
+      startTime: new Date().toISOString(),
+      isLive: !statusText,
+      format: matchNumber.includes("ODI") ? "ODI" : matchNumber.includes("T20") ? "T20" : matchNumber.includes("Test") ? "TEST" : "ODI",
+    };
+    
+    return {
+      matchId,
+      match: scrapedMatch,
+      innings: innings.length > 0 ? innings : generateSampleInnings(),
+    };
+  } catch (error) {
+    console.error("Error scraping scorecard:", error);
+    return generateSampleScorecard(matchId);
+  }
+}
+
+// Scrape teams from Cricbuzz by category
+export async function scrapeTeamsByCategory(category: "international" | "domestic" | "league" | "women"): Promise<FullTeam[]> {
+  const urls: Record<string, string> = {
+    international: `${CRICBUZZ_BASE}/cricket-team`,
+    domestic: `${CRICBUZZ_BASE}/cricket-team/domestic`,
+    league: `${CRICBUZZ_BASE}/cricket-team/league`,
+    women: `${CRICBUZZ_BASE}/cricket-team/women`,
+  };
+  
+  console.log(`Scraping ${category} teams from Cricbuzz...`);
+  const $ = await fetchPage(urls[category]);
+  
+  if (!$) {
+    console.log(`Failed to fetch ${category} teams`);
+    return [];
+  }
+  
+  const teams: FullTeam[] = [];
+  
+  try {
+    // Find team links - they follow pattern /cricket-team/{team-name}/{id}
+    $('a[href*="/cricket-team/"]').each((_, el) => {
+      try {
+        const $link = $(el);
+        const href = $link.attr("href") || "";
+        
+        // Match team URL pattern: /cricket-team/team-name/id or /cricket-team/team-name/id/players
+        const teamMatch = href.match(/\/cricket-team\/([^\/]+)\/(\d+)(?:\/|$)/);
+        if (!teamMatch) return;
+        
+        const teamSlug = teamMatch[1];
+        const teamId = teamMatch[2];
+        
+        // Skip if already added
+        if (teams.some(t => t.id === teamId)) return;
+        
+        // Get team name from link text or title
+        let teamName = $link.text().trim() || $link.attr("title") || "";
+        
+        // Clean up team name
+        teamName = teamName.replace(/\s+/g, " ").trim();
+        if (!teamName || teamName.length < 2) {
+          teamName = teamSlug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+        }
+        
+        // Skip navigation/header links
+        if (teamName.toLowerCase().includes("all team") || 
+            teamName.toLowerCase() === "teams" ||
+            teamName.toLowerCase().includes("view all")) return;
+        
+        // Get flag URL
+        const $img = $link.find("img").first();
+        let flagUrl = $img.attr("src") || "";
+        if (!flagUrl || !flagUrl.includes("http")) {
+          flagUrl = getCountryFlag(teamName);
+        }
+        
+        teams.push({
+          id: teamId,
+          name: teamName,
+          shortName: teamName.length <= 4 ? teamName.toUpperCase() : teamName.substring(0, 3).toUpperCase(),
+          slug: teamSlug,
+          flagUrl,
+          category,
+          players: [],
+        });
+      } catch (err) {
+        // Skip invalid entries

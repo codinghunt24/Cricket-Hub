@@ -806,35 +806,41 @@ def scrape_scorecard(match_id):
     }
     
     page_text = soup.get_text()
+    html_content = str(soup)
     
-    result_patterns = [
-        r'([A-Za-z]+\s+won\s+by\s+\d+\s+(?:runs?|wkts?|wickets?))',
-        r'(Match\s+(?:tied|drawn|abandoned))',
-    ]
-    for pattern in result_patterns:
-        result_match = re.search(pattern, page_text, re.IGNORECASE)
-        if result_match:
-            scorecard['result'] = result_match.group(1).strip()
-            break
+    result_match = re.search(r'(India|New Zealand|Australia|England|South Africa|Pakistan|Sri Lanka|West Indies|Bangladesh|Afghanistan|Ireland|Zimbabwe|Scotland|Netherlands|Nepal|UAE|Oman|USA) won by (\d+ (?:runs?|wkts?))', html_content, re.IGNORECASE)
+    if result_match:
+        scorecard['result'] = f"{result_match.group(1)} won by {result_match.group(2)}"
+    elif 'Match drawn' in html_content:
+        scorecard['result'] = "Match drawn"
+    elif 'Match tied' in html_content:
+        scorecard['result'] = "Match tied"
+    elif 'No result' in html_content:
+        scorecard['result'] = "No result"
     
-    innings_divs = soup.find_all('div', id=lambda x: x and x.startswith('team-') and 'innings' in x)
+    innings_headers = soup.find_all('div', id=lambda x: x and x.startswith('team-') and '-innings-' in x and not x.startswith('scard-') and not x.startswith('caret-'))
     
-    for innings_div in innings_divs:
-        team_name = ''
-        total_score = ''
+    for header in innings_headers:
+        header_id = header.get('id', '')
+        
+        team_name_div = header.find('div', class_=lambda c: c and 'font-bold' in c if c else False)
+        team_name = team_name_div.get_text(strip=True) if team_name_div else ''
+        
+        if not team_name:
+            continue
+        
+        score_span = header.find('span', class_=lambda c: c and 'font-bold' in c if c else False)
+        total_score = score_span.get_text(strip=True).replace('-', '/') if score_span else ''
+        
+        overs_span = header.find_all('span')
         overs = ''
-        
-        team_name_div = innings_div.find('div', class_=lambda c: c and 'font-bold' in c if c else False)
-        if team_name_div:
-            team_name = team_name_div.get_text(strip=True)
-        
-        score_span = innings_div.find('span', class_=lambda c: c and 'font-bold' in c if c else False)
-        if score_span:
-            total_score = score_span.get_text(strip=True).replace('-', '/')
-        
-        overs_match = re.search(r'\((\d+(?:\.\d+)?)\s*Ov\)', innings_div.get_text())
-        if overs_match:
-            overs = overs_match.group(1)
+        for sp in overs_span:
+            sp_text = sp.get_text(strip=True)
+            if 'Ov' in sp_text:
+                overs_match = re.search(r'(\d+(?:\.\d+)?)', sp_text)
+                if overs_match:
+                    overs = overs_match.group(1)
+                break
         
         innings_data = {
             'innings_num': len(scorecard['innings']) + 1,
@@ -843,145 +849,87 @@ def scrape_scorecard(match_id):
             'overs': overs,
             'batting': [],
             'bowling': [],
-            'extras': '',
+            'extras': 0,
             'fall_of_wickets': []
         }
         
+        scard_id = f"scard-{header_id}"
+        scard_div = soup.find('div', id=scard_id)
+        
+        if scard_div:
+            bat_grids = scard_div.find_all('div', class_=lambda c: c and 'scorecard-bat-grid' in c if c else False)
+            
+            for grid in bat_grids:
+                if 'Batter' in grid.get_text():
+                    continue
+                if grid.find('div', class_=lambda c: c and 'bg-cbBorderGrey' in c if c else False):
+                    continue
+                
+                player_link = grid.find('a', href=lambda h: h and '/profiles/' in h if h else False)
+                if not player_link:
+                    continue
+                
+                batter_name = player_link.get_text(strip=True)
+                
+                dismissal_div = grid.find('div', class_=lambda c: c and 'text-cbTxtSec' in c if c else False)
+                dismissal = dismissal_div.get_text(strip=True) if dismissal_div else 'not out'
+                
+                stat_cells = grid.find_all('div', class_=lambda c: c and 'flex' in c and 'justify-center' in c and 'items-center' in c if c else False)
+                
+                runs = stat_cells[0].get_text(strip=True) if len(stat_cells) > 0 else '0'
+                balls = stat_cells[1].get_text(strip=True) if len(stat_cells) > 1 else '0'
+                fours = stat_cells[2].get_text(strip=True) if len(stat_cells) > 2 else '0'
+                sixes = stat_cells[3].get_text(strip=True) if len(stat_cells) > 3 else '0'
+                sr = stat_cells[4].get_text(strip=True) if len(stat_cells) > 4 else '0.00'
+                
+                innings_data['batting'].append({
+                    'name': batter_name,
+                    'dismissal': dismissal,
+                    'runs': runs,
+                    'balls': balls,
+                    'fours': fours,
+                    'sixes': sixes,
+                    'strike_rate': sr
+                })
+            
+            for div in scard_div.find_all('div'):
+                div_text = div.get_text()
+                if 'Extras' in div_text:
+                    extras_match = re.search(r'Extras\s*(\d+)', div_text)
+                    if extras_match:
+                        innings_data['extras'] = int(extras_match.group(1))
+                    break
+            
+            bowl_grids = scard_div.find_all('div', class_=lambda c: c and 'scorecard-bowl-grid' in c if c else False)
+            
+            for grid in bowl_grids:
+                if 'Bowler' in grid.get_text():
+                    continue
+                
+                player_link = grid.find('a', href=lambda h: h and '/profiles/' in h if h else False)
+                if not player_link:
+                    continue
+                
+                bowler_name = player_link.get_text(strip=True)
+                
+                stat_cells = grid.find_all('div', class_=lambda c: c and 'flex' in c and 'justify-center' in c and 'items-center' in c if c else False)
+                
+                overs_bowled = stat_cells[0].get_text(strip=True) if len(stat_cells) > 0 else '0'
+                maidens = stat_cells[1].get_text(strip=True) if len(stat_cells) > 1 else '0'
+                runs_given = stat_cells[2].get_text(strip=True) if len(stat_cells) > 2 else '0'
+                wickets = stat_cells[3].get_text(strip=True) if len(stat_cells) > 3 else '0'
+                economy = stat_cells[5].get_text(strip=True) if len(stat_cells) > 5 else '0.00'
+                
+                innings_data['bowling'].append({
+                    'name': bowler_name,
+                    'overs': overs_bowled,
+                    'maidens': maidens,
+                    'runs': runs_given,
+                    'wickets': wickets,
+                    'economy': economy
+                })
+        
         scorecard['innings'].append(innings_data)
-    
-    batter_tables = soup.find_all('div', class_=lambda c: c and 'overflow-x-auto' in c if c else False)
-    
-    for table_idx, table in enumerate(batter_tables):
-        rows = table.find_all('div', class_=lambda c: c and 'flex' in c and 'border-b' in c if c else False)
-        
-        is_batting = False
-        is_bowling = False
-        current_innings_idx = min(table_idx // 2, len(scorecard['innings']) - 1) if scorecard['innings'] else 0
-        
-        for row in rows:
-            row_text = row.get_text(strip=True)
-            
-            if 'Batter' in row_text and 'SR' in row_text:
-                is_batting = True
-                is_bowling = False
-                continue
-            elif 'Bowler' in row_text and 'ECO' in row_text:
-                is_batting = False
-                is_bowling = True
-                continue
-            
-            cells = row.find_all('div', recursive=False)
-            
-            if is_batting and len(cells) >= 6:
-                player_link = row.find('a', href=lambda h: h and '/profiles/' in h if h else False)
-                if player_link:
-                    batter_name = player_link.get_text(strip=True)
-                    
-                    dismissal_text = ''
-                    dismissal_span = cells[0].find('span') if cells else None
-                    if dismissal_span:
-                        dismissal_text = dismissal_span.get_text(strip=True)
-                    
-                    stats = [c.get_text(strip=True) for c in cells[1:]]
-                    
-                    if scorecard['innings'] and current_innings_idx < len(scorecard['innings']):
-                        scorecard['innings'][current_innings_idx]['batting'].append({
-                            'name': batter_name,
-                            'dismissal': dismissal_text,
-                            'runs': stats[0] if len(stats) > 0 else '0',
-                            'balls': stats[1] if len(stats) > 1 else '0',
-                            'fours': stats[2] if len(stats) > 2 else '0',
-                            'sixes': stats[3] if len(stats) > 3 else '0',
-                            'strike_rate': stats[4] if len(stats) > 4 else '0.00'
-                        })
-            
-            elif is_bowling and len(cells) >= 6:
-                player_link = row.find('a', href=lambda h: h and '/profiles/' in h if h else False)
-                if player_link:
-                    bowler_name = player_link.get_text(strip=True)
-                    stats = [c.get_text(strip=True) for c in cells[1:]]
-                    
-                    if scorecard['innings'] and current_innings_idx < len(scorecard['innings']):
-                        scorecard['innings'][current_innings_idx]['bowling'].append({
-                            'name': bowler_name,
-                            'overs': stats[0] if len(stats) > 0 else '0',
-                            'maidens': stats[1] if len(stats) > 1 else '0',
-                            'runs': stats[2] if len(stats) > 2 else '0',
-                            'wickets': stats[3] if len(stats) > 3 else '0',
-                            'economy': stats[5] if len(stats) > 5 else '0.00'
-                        })
-    
-    if scorecard['innings'] and not any(inn['batting'] for inn in scorecard['innings']):
-        all_rows = soup.find_all('div', class_=lambda c: c and 'flex' in c if c else False)
-        current_innings_idx = 0
-        is_batting = False
-        is_bowling = False
-        seen_batters = set()
-        
-        for row in all_rows:
-            row_text = row.get_text(strip=True)
-            
-            if 'BatterRB4s6sSR' in row_text.replace(' ', ''):
-                is_batting = True
-                is_bowling = False
-                continue
-            elif 'BowlerOMRWNBWDECO' in row_text.replace(' ', '') or 'BowlerOMRWECO' in row_text.replace(' ', ''):
-                is_batting = False
-                is_bowling = True
-                continue
-            
-            player_link = row.find('a', href=lambda h: h and '/profiles/' in h if h else False)
-            if not player_link:
-                continue
-            
-            player_name = player_link.get_text(strip=True)
-            
-            if is_batting:
-                if player_name in seen_batters and current_innings_idx == 0:
-                    current_innings_idx = 1
-                    seen_batters.clear()
-                
-                seen_batters.add(player_name)
-                
-                cells = row.find_all('div', recursive=False)
-                if len(cells) >= 2:
-                    dismissal_text = ''
-                    first_cell = cells[0]
-                    dismissal_span = first_cell.find_all('span')
-                    for sp in dismissal_span:
-                        txt = sp.get_text(strip=True)
-                        if txt and txt != player_name:
-                            dismissal_text = txt
-                            break
-                    
-                    stats = [c.get_text(strip=True) for c in cells[1:]]
-                    
-                    if current_innings_idx < len(scorecard['innings']):
-                        scorecard['innings'][current_innings_idx]['batting'].append({
-                            'name': player_name,
-                            'dismissal': dismissal_text if dismissal_text else 'not out',
-                            'runs': stats[0] if len(stats) > 0 else '0',
-                            'balls': stats[1] if len(stats) > 1 else '0',
-                            'fours': stats[2] if len(stats) > 2 else '0',
-                            'sixes': stats[3] if len(stats) > 3 else '0',
-                            'strike_rate': stats[4] if len(stats) > 4 else '0.00'
-                        })
-            
-            elif is_bowling:
-                cells = row.find_all('div', recursive=False)
-                if len(cells) >= 2:
-                    stats = [c.get_text(strip=True) for c in cells[1:]]
-                    
-                    target_innings = 1 - current_innings_idx if current_innings_idx < len(scorecard['innings']) else 0
-                    if target_innings < len(scorecard['innings']):
-                        scorecard['innings'][target_innings]['bowling'].append({
-                            'name': player_name,
-                            'overs': stats[0] if len(stats) > 0 else '0',
-                            'maidens': stats[1] if len(stats) > 1 else '0',
-                            'runs': stats[2] if len(stats) > 2 else '0',
-                            'wickets': stats[3] if len(stats) > 3 else '0',
-                            'economy': stats[5] if len(stats) > 5 else '0.00'
-                        })
     
     if not scorecard['innings']:
         team_score_pattern = r'(New Zealand|India|Australia|England|Pakistan|South Africa|West Indies|Sri Lanka|Bangladesh|Afghanistan|NZ|IND|AUS|ENG|PAK|SA|WI|SL|BAN|AFG)\s*(\d+)[-/](\d+)\s*\((\d+(?:\.\d+)?)\s*Ov\)'
@@ -1001,7 +949,7 @@ def scrape_scorecard(match_id):
                 'overs': overs,
                 'batting': [],
                 'bowling': [],
-                'extras': '',
+                'extras': 0,
                 'fall_of_wickets': []
             }
             scorecard['innings'].append(innings_data)
