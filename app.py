@@ -188,8 +188,9 @@ def series_detail(series_id):
 @app.route('/match/<match_id>')
 def match_detail(match_id):
     match = Match.query.filter_by(match_id=match_id).first_or_404()
+    series = Series.query.get(match.series_id)
     scorecard = scraper.scrape_scorecard(match_id)
-    return render_template('match_detail.html', match=match, scorecard=scorecard)
+    return render_template('match_detail.html', match=match, series=series, scorecard=scorecard)
 
 @app.route('/news')
 def news():

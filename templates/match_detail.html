@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ match.team1_name }} vs {{ match.team2_name }} - Scorecard - CricLive{% endblock %}
+{% block title %}{{ match.team1_name }} vs {{ match.team2_name }}, {{ match.match_format }}{% if series %}, {{ series.name }}{% endif %} - Scorecard - CricLive{% endblock %}
 
 {% block content %}
 <div class="match-detail-page">
@@ -9,9 +9,8 @@
             <a href="{{ url_for('series_detail', series_id=match.series_id) }}" class="back-link">
                 <i class="fas fa-arrow-left"></i> Back to Series
             </a>
-            <h1 class="match-title">{{ match.team1_name }} vs {{ match.team2_name }}</h1>
+            <h1 class="match-title">{{ match.team1_name }} vs {{ match.team2_name }}, {{ match.match_format }}{% if series %}, {{ series.name }}{% endif %} - Scorecard</h1>
             <div class="match-meta">
-                <span class="match-format">{{ match.match_format }}</span>
                 {% if match.venue %}
                 <span class="venue"><i class="fas fa-map-marker-alt"></i> {{ match.venue }}</span>
                 {% endif %}
