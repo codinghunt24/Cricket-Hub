@@ -131,6 +131,7 @@ A Cricbuzz-inspired cricket website built with Python Flask featuring web scrapi
 - `/team/<id>` - Team detail with players
 - `/player/<id>` - Player profile with stats
 - `/series/<id>` - Series detail with matches list
+- `/match/<id>` - Match scorecard with batting/bowling stats
 - `/live-scores`, `/news` - Other pages
 
 ### Admin Routes
