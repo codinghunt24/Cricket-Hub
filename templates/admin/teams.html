@@ -5,7 +5,8 @@
 
 {% block content %}
 <div class="admin-page">
-    <div class="scrape-controls">
+    <div id="scrapeStatus" class="scrape-status-bar" style="display:none;"></div>
+<div class="scrape-controls">
         <div class="control-header">
             <h2>Scrape Controls</h2>
             <button class="btn btn-primary" onclick="scrapeAll()">Scrape All Categories</button>
@@ -242,17 +243,18 @@ function scrapeAllPlayers() {
 }
 
 function scrapeCategoryPlayers(categorySlug) {
-    showLoading();
+    const statusDiv = document.getElementById('scrapeStatus');
+    statusDiv.innerHTML = '<div class="scrape-progress">Scraping ' + categorySlug + ' players... <span id="progressText">Starting</span></div>';
+    statusDiv.style.display = 'block';
+    
     fetch('/api/scrape/category/' + categorySlug + '/players', { method: 'POST' })
         .then(res => res.json())
         .then(data => {
-            hideLoading();
-            alert(data.message);
-            if (data.success) location.reload();
+            statusDiv.innerHTML = '<div class="scrape-success">' + data.message + '</div>';
+            setTimeout(() => { statusDiv.style.display = 'none'; location.reload(); }, 2000);
         })
         .catch(err => {
-            hideLoading();
-            alert('Error: ' + err.message);
+            statusDiv.innerHTML = '<div class="scrape-error">Error: ' + err.message + '</div>';
         });
 }
 
