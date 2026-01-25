@@ -387,11 +387,29 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     padding: 10px 15px;
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     border-radius: 8px;
     width: fit-content;
+}
+
+.scrape-section {
+    padding: 15px;
+    background: var(--gray-light);
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.scrape-section h3 {
+    font-size: 1rem;
+    color: var(--primary-color);
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.player-scrape-buttons {
+    margin-bottom: 12px;
 }
 
 .server-time-label {

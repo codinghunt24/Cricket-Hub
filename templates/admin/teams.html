@@ -16,15 +16,35 @@
             <span id="serverClock" class="server-clock">--:--:--</span>
         </div>
         
-        <div class="auto-scrape-setting">
-            <label class="toggle-label">
-                <input type="checkbox" id="autoScrapeToggle" {% if setting and setting.auto_scrape_enabled %}checked{% endif %} onchange="toggleAutoScrape()">
-                <span class="toggle-text">Auto Scrape Daily</span>
-            </label>
-            <input type="time" id="scrapeTime" value="{{ setting.scrape_time if setting else '02:00' }}" class="time-input">
-            {% if setting and setting.last_scrape %}
-            <span class="last-scrape">Last: {{ setting.last_scrape.strftime('%d %b %Y, %H:%M') }}</span>
-            {% endif %}
+        <div class="scrape-section">
+            <h3>Teams Scraping</h3>
+            <div class="auto-scrape-setting">
+                <label class="toggle-label">
+                    <input type="checkbox" id="autoScrapeToggle" {% if setting and setting.auto_scrape_enabled %}checked{% endif %} onchange="toggleAutoScrape()">
+                    <span class="toggle-text">Auto Scrape Daily</span>
+                </label>
+                <input type="time" id="scrapeTime" value="{{ setting.scrape_time if setting else '02:00' }}" class="time-input">
+                {% if setting and setting.last_scrape %}
+                <span class="last-scrape">Last: {{ setting.last_scrape.strftime('%d %b %Y, %H:%M') }}</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="scrape-section">
+            <h3>Players Scraping</h3>
+            <div class="player-scrape-buttons">
+                <button class="btn btn-secondary" onclick="scrapeAllPlayers()">Scrape All Players</button>
+            </div>
+            <div class="auto-scrape-setting">
+                <label class="toggle-label">
+                    <input type="checkbox" id="playerAutoScrapeToggle" {% if setting and setting.player_auto_scrape_enabled %}checked{% endif %} onchange="togglePlayerAutoScrape()">
+                    <span class="toggle-text">Auto Scrape Daily</span>
+                </label>
+                <input type="time" id="playerScrapeTime" value="{{ setting.player_scrape_time if setting else '03:00' }}" class="time-input">
+                {% if setting and setting.last_player_scrape %}
+                <span class="last-scrape">Last: {{ setting.last_player_scrape.strftime('%d %b %Y, %H:%M') }}</span>
+                {% endif %}
+            </div>
         </div>
     </div>
     
@@ -159,6 +179,37 @@ function toggleAutoScrape() {
     const scrapeTime = document.getElementById('scrapeTime').value;
     
     fetch('/api/settings/auto-scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: enabled, scrape_time: scrapeTime })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+    })
+    .catch(err => alert('Error: ' + err.message));
+}
+
+function scrapeAllPlayers() {
+    showLoading();
+    fetch('/api/scrape/all-players', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            hideLoading();
+            alert(data.message);
+            if (data.success) location.reload();
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error: ' + err.message);
+        });
+}
+
+function togglePlayerAutoScrape() {
+    const enabled = document.getElementById('playerAutoScrapeToggle').checked;
+    const scrapeTime = document.getElementById('playerScrapeTime').value;
+    
+    fetch('/api/settings/player-auto-scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled: enabled, scrape_time: scrapeTime })

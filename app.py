@@ -23,7 +23,7 @@ from models import init_models
 TeamCategory, Team, Player, ScrapeLog, ScrapeSetting = init_models(db)
 
 import scraper
-from scheduler import init_scheduler, update_schedule
+from scheduler import init_scheduler, update_schedule, update_player_schedule
 
 with app.app_context():
     db.create_all()
@@ -40,7 +40,7 @@ with app.app_context():
     
     db.session.commit()
 
-init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper)
+init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player)
 
 @app.route('/')
 def index():
@@ -352,6 +352,87 @@ def get_players_api(team_id):
         'role': p.role,
         'player_url': p.player_url
     } for p in players])
+
+@app.route('/api/scrape/all-players', methods=['POST'])
+def scrape_all_players():
+    try:
+        total_players = 0
+        teams = Team.query.filter(Team.team_url.isnot(None)).all()
+        
+        for team in teams:
+            try:
+                players_data = scraper.scrape_players_from_team(team.team_url)
+                for player_data in players_data:
+                    existing = Player.query.filter_by(name=player_data['name'], team_id=team.id).first()
+                    if existing:
+                        existing.player_id = player_data.get('player_id')
+                        existing.photo_url = player_data.get('photo_url')
+                        existing.player_url = player_data.get('player_url')
+                        existing.role = player_data.get('role')
+                        existing.updated_at = datetime.utcnow()
+                    else:
+                        player = Player(
+                            player_id=player_data.get('player_id'),
+                            name=player_data['name'],
+                            photo_url=player_data.get('photo_url'),
+                            player_url=player_data.get('player_url'),
+                            role=player_data.get('role'),
+                            team_id=team.id
+                        )
+                        db.session.add(player)
+                    total_players += 1
+            except Exception as e:
+                continue
+        
+        db.session.commit()
+        
+        log = ScrapeLog(
+            category='all_players',
+            status='success',
+            message=f'Scraped {total_players} players from all teams',
+            players_scraped=total_players
+        )
+        db.session.add(log)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Scraped {total_players} players from all teams',
+            'players_scraped': total_players
+        })
+    
+    except Exception as e:
+        log = ScrapeLog(
+            category='all_players',
+            status='error',
+            message=str(e)
+        )
+        db.session.add(log)
+        db.session.commit()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/settings/player-auto-scrape', methods=['POST'])
+def toggle_player_auto_scrape():
+    try:
+        data = request.get_json() or {}
+        enabled = data.get('enabled', False)
+        scrape_time = data.get('scrape_time', '03:00')
+        
+        setting = ScrapeSetting.query.first()
+        if setting:
+            setting.player_auto_scrape_enabled = enabled
+            setting.player_scrape_time = scrape_time
+            db.session.commit()
+        
+        update_player_schedule(app, db, ScrapeSetting, Team, Player, ScrapeLog, scraper, enabled, scrape_time)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Player auto scrape {"enabled" if enabled else "disabled"}'
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 if __name__ == '__main__':
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
