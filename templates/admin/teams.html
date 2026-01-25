@@ -458,16 +458,35 @@ function scrapeCategoryProfiles(categorySlug) {
     fetch('/api/scrape/profiles/' + categorySlug, { method: 'POST' })
         .then(res => res.json())
         .then(data => {
-            clearInterval(progressInterval);
-            document.getElementById('profileProgressPercent').textContent = '100%';
-            document.getElementById('profileProgressFill').style.width = '100%';
-            statusDiv.innerHTML = '<div class="scrape-success">' + data.message + '</div>';
-            setTimeout(() => { statusDiv.style.display = 'none'; location.reload(); }, 2000);
+            if (!data.success) {
+                clearInterval(progressInterval);
+                statusDiv.innerHTML = '<div class="scrape-error">' + data.message + '</div>';
+                return;
+            }
         })
         .catch(err => {
             clearInterval(progressInterval);
             statusDiv.innerHTML = '<div class="scrape-error">Error: ' + err.message + '</div>';
         });
+    
+    const completeCheck = setInterval(() => {
+        fetch('/api/scrape/profiles/' + categorySlug + '/progress')
+            .then(res => res.json())
+            .then(prog => {
+                if (prog.status === 'complete') {
+                    clearInterval(progressInterval);
+                    clearInterval(completeCheck);
+                    document.getElementById('profileProgressPercent').textContent = '100%';
+                    document.getElementById('profileProgressFill').style.width = '100%';
+                    statusDiv.innerHTML = '<div class="scrape-success">Scraped ' + (prog.scraped || prog.current) + ' player profiles!</div>';
+                    setTimeout(() => { statusDiv.style.display = 'none'; location.reload(); }, 2000);
+                } else if (prog.status === 'error') {
+                    clearInterval(progressInterval);
+                    clearInterval(completeCheck);
+                    statusDiv.innerHTML = '<div class="scrape-error">Error: ' + (prog.error || 'Unknown error') + '</div>';
+                }
+            });
+    }, 1000);
 }
 
 function saveProfileAuto(category) {

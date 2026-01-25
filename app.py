@@ -1,4 +1,5 @@
 import os
+import threading
 from datetime import datetime
 from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
@@ -586,9 +587,105 @@ def get_profile_scrape_progress(category_slug):
     progress = profile_scrape_progress.get(category_slug, {'percent': 0, 'current': 0, 'total': 0, 'status': 'idle', 'current_player': ''})
     return jsonify(progress)
 
+def scrape_profiles_task(category_slug, player_ids):
+    import time
+    with app.app_context():
+        try:
+            players = Player.query.filter(Player.id.in_(player_ids)).all()
+            scraped_count = 0
+            
+            for i, player in enumerate(players):
+                profile_scrape_progress[category_slug] = {
+                    'percent': int(((i + 1) / len(players)) * 100),
+                    'current': i + 1,
+                    'total': len(players),
+                    'status': 'running',
+                    'current_player': player.name
+                }
+                
+                if player.player_url:
+                    time.sleep(0.3)
+                    profile_data = scraper.scrape_player_profile(player.player_url)
+                    
+                    if profile_data:
+                        if profile_data.get('born'):
+                            player.born = profile_data['born']
+                        if profile_data.get('birth_place'):
+                            player.birth_place = profile_data['birth_place']
+                        if profile_data.get('nickname'):
+                            player.nickname = profile_data['nickname']
+                        if profile_data.get('role'):
+                            player.role = profile_data['role']
+                        if profile_data.get('batting_style'):
+                            player.batting_style = profile_data['batting_style']
+                        if profile_data.get('bowling_style'):
+                            player.bowling_style = profile_data['bowling_style']
+                        
+                        player.bat_matches = profile_data.get('bat_matches')
+                        player.bat_innings = profile_data.get('bat_innings')
+                        player.bat_runs = profile_data.get('bat_runs')
+                        player.bat_balls = profile_data.get('bat_balls')
+                        player.bat_highest = profile_data.get('bat_highest')
+                        player.bat_average = profile_data.get('bat_average')
+                        player.bat_strike_rate = profile_data.get('bat_strike_rate')
+                        player.bat_not_outs = profile_data.get('bat_not_outs')
+                        player.bat_fours = profile_data.get('bat_fours')
+                        player.bat_sixes = profile_data.get('bat_sixes')
+                        player.bat_ducks = profile_data.get('bat_ducks')
+                        player.bat_fifties = profile_data.get('bat_fifties')
+                        player.bat_hundreds = profile_data.get('bat_hundreds')
+                        player.bat_two_hundreds = profile_data.get('bat_two_hundreds')
+                        
+                        player.bowl_matches = profile_data.get('bowl_matches')
+                        player.bowl_innings = profile_data.get('bowl_innings')
+                        player.bowl_balls = profile_data.get('bowl_balls')
+                        player.bowl_runs = profile_data.get('bowl_runs')
+                        player.bowl_maidens = profile_data.get('bowl_maidens')
+                        player.bowl_wickets = profile_data.get('bowl_wickets')
+                        player.bowl_average = profile_data.get('bowl_average')
+                        player.bowl_economy = profile_data.get('bowl_economy')
+                        player.bowl_strike_rate = profile_data.get('bowl_strike_rate')
+                        player.bowl_best_innings = profile_data.get('bowl_best_innings')
+                        player.bowl_best_match = profile_data.get('bowl_best_match')
+                        player.bowl_four_wickets = profile_data.get('bowl_four_wickets')
+                        player.bowl_five_wickets = profile_data.get('bowl_five_wickets')
+                        player.bowl_ten_wickets = profile_data.get('bowl_ten_wickets')
+                        
+                        player.profile_scraped = True
+                        player.profile_scraped_at = datetime.utcnow()
+                        scraped_count += 1
+                        db.session.commit()
+            
+            profile_scrape_progress[category_slug] = {
+                'percent': 100,
+                'current': len(players),
+                'total': len(players),
+                'status': 'complete',
+                'current_player': '',
+                'scraped': scraped_count
+            }
+            
+            log = ScrapeLog(
+                category=f'{category_slug}_profiles',
+                status='success',
+                message=f'Scraped {scraped_count} player profiles',
+                players_scraped=scraped_count
+            )
+            db.session.add(log)
+            db.session.commit()
+            
+        except Exception as e:
+            profile_scrape_progress[category_slug] = {
+                'percent': 0, 'current': 0, 'total': 0, 
+                'status': 'error', 'current_player': '', 'error': str(e)
+            }
+
 @app.route('/api/scrape/profiles/<category_slug>', methods=['POST'])
 def scrape_category_profiles(category_slug):
     try:
+        if profile_scrape_progress.get(category_slug, {}).get('status') == 'running':
+            return jsonify({'success': False, 'message': 'Profile scraping already in progress'}), 400
+        
         category = TeamCategory.query.filter_by(slug=category_slug).first()
         if not category:
             return jsonify({'success': False, 'message': 'Category not found'}), 404
@@ -601,99 +698,24 @@ def scrape_category_profiles(category_slug):
         if not players:
             return jsonify({'success': False, 'message': 'No players to scrape'}), 400
         
+        player_ids = [p.id for p in players]
+        
         profile_scrape_progress[category_slug] = {
             'percent': 0,
             'current': 0,
             'total': len(players),
             'status': 'running',
-            'current_player': ''
+            'current_player': 'Starting...'
         }
         
-        scraped_count = 0
-        for i, player in enumerate(players):
-            profile_scrape_progress[category_slug] = {
-                'percent': int((i / len(players)) * 100),
-                'current': i,
-                'total': len(players),
-                'status': 'running',
-                'current_player': player.name
-            }
-            
-            if player.player_url:
-                import time
-                time.sleep(0.5)
-                profile_data = scraper.scrape_player_profile(player.player_url)
-                
-                if profile_data:
-                    if profile_data.get('born'):
-                        player.born = profile_data['born']
-                    if profile_data.get('birth_place'):
-                        player.birth_place = profile_data['birth_place']
-                    if profile_data.get('nickname'):
-                        player.nickname = profile_data['nickname']
-                    if profile_data.get('role'):
-                        player.role = profile_data['role']
-                    if profile_data.get('batting_style'):
-                        player.batting_style = profile_data['batting_style']
-                    if profile_data.get('bowling_style'):
-                        player.bowling_style = profile_data['bowling_style']
-                    
-                    player.bat_matches = profile_data.get('bat_matches')
-                    player.bat_innings = profile_data.get('bat_innings')
-                    player.bat_runs = profile_data.get('bat_runs')
-                    player.bat_balls = profile_data.get('bat_balls')
-                    player.bat_highest = profile_data.get('bat_highest')
-                    player.bat_average = profile_data.get('bat_average')
-                    player.bat_strike_rate = profile_data.get('bat_strike_rate')
-                    player.bat_not_outs = profile_data.get('bat_not_outs')
-                    player.bat_fours = profile_data.get('bat_fours')
-                    player.bat_sixes = profile_data.get('bat_sixes')
-                    player.bat_ducks = profile_data.get('bat_ducks')
-                    player.bat_fifties = profile_data.get('bat_fifties')
-                    player.bat_hundreds = profile_data.get('bat_hundreds')
-                    player.bat_two_hundreds = profile_data.get('bat_two_hundreds')
-                    
-                    player.bowl_matches = profile_data.get('bowl_matches')
-                    player.bowl_innings = profile_data.get('bowl_innings')
-                    player.bowl_balls = profile_data.get('bowl_balls')
-                    player.bowl_runs = profile_data.get('bowl_runs')
-                    player.bowl_maidens = profile_data.get('bowl_maidens')
-                    player.bowl_wickets = profile_data.get('bowl_wickets')
-                    player.bowl_average = profile_data.get('bowl_average')
-                    player.bowl_economy = profile_data.get('bowl_economy')
-                    player.bowl_strike_rate = profile_data.get('bowl_strike_rate')
-                    player.bowl_best_innings = profile_data.get('bowl_best_innings')
-                    player.bowl_best_match = profile_data.get('bowl_best_match')
-                    player.bowl_four_wickets = profile_data.get('bowl_four_wickets')
-                    player.bowl_five_wickets = profile_data.get('bowl_five_wickets')
-                    player.bowl_ten_wickets = profile_data.get('bowl_ten_wickets')
-                    
-                    player.profile_scraped = True
-                    player.profile_scraped_at = datetime.utcnow()
-                    scraped_count += 1
-                    db.session.commit()
-        
-        profile_scrape_progress[category_slug] = {
-            'percent': 100,
-            'current': len(players),
-            'total': len(players),
-            'status': 'complete',
-            'current_player': ''
-        }
-        
-        log = ScrapeLog(
-            category=f'{category_slug}_profiles',
-            status='success',
-            message=f'Scraped {scraped_count} player profiles',
-            players_scraped=scraped_count
-        )
-        db.session.add(log)
-        db.session.commit()
+        thread = threading.Thread(target=scrape_profiles_task, args=(category_slug, player_ids))
+        thread.daemon = True
+        thread.start()
         
         return jsonify({
             'success': True,
-            'message': f'Scraped {scraped_count} player profiles',
-            'scraped': scraped_count
+            'message': f'Started scraping {len(players)} player profiles in background',
+            'total': len(players)
         })
     
     except Exception as e:

@@ -214,118 +214,92 @@ def scrape_player_profile(player_url):
     soup = BeautifulSoup(html, 'html.parser')
     profile = {}
     
-    info_items = soup.find_all('div', class_='cb-col cb-col-40 cb-plyr-rt')
-    if not info_items:
-        info_items = soup.find_all('div', class_='cb-col-40')
-    
-    personal_info_map = {
-        'born': ['born', 'date of birth', 'dob'],
-        'birth_place': ['birth place', 'birthplace', 'place of birth'],
-        'nickname': ['nickname', 'nick name', 'also known as'],
-        'role': ['role', 'playing role'],
-        'batting_style': ['batting style', 'bat style', 'batting'],
-        'bowling_style': ['bowling style', 'bowl style', 'bowling']
+    personal_labels = {
+        'born': ['born', 'date of birth'],
+        'birth_place': ['birth place', 'birthplace'],
+        'nickname': ['nickname', 'also known'],
+        'role': ['role'],
+        'batting_style': ['batting style'],
+        'bowling_style': ['bowling style']
     }
     
-    info_container = soup.find('div', class_='cb-plyr-inf')
-    if info_container:
-        items = info_container.find_all('div', class_='cb-col-100')
-        for item in items:
-            label_elem = item.find('div', class_='cb-col-40')
-            value_elem = item.find('div', class_='cb-col-60')
-            if label_elem and value_elem:
-                label = label_elem.get_text(strip=True).lower()
-                value = value_elem.get_text(strip=True)
-                for field, keywords in personal_info_map.items():
-                    if any(kw in label for kw in keywords):
-                        profile[field] = value
+    for field, keywords in personal_labels.items():
+        for kw in keywords:
+            label_elem = soup.find('div', string=lambda t: t and kw.lower() in t.lower() if t else False)
+            if label_elem:
+                parent = label_elem.parent
+                if parent:
+                    divs = parent.find_all('div')
+                    if len(divs) > 1:
+                        profile[field] = divs[-1].get_text(strip=True)
                         break
     
-    for table in soup.find_all('table', class_='cb-plyr-tbl'):
-        header = table.find_previous(['h2', 'h3', 'div'])
-        header_text = header.get_text(strip=True).lower() if header else ''
-        
+    tables = soup.find_all('table', class_='w-full')
+    
+    bat_stats_map = {
+        'matches': 'bat_matches',
+        'innings': 'bat_innings',
+        'runs': 'bat_runs',
+        'balls': 'bat_balls',
+        'highest': 'bat_highest',
+        'average': 'bat_average',
+        'strike rate': 'bat_strike_rate',
+        'not outs': 'bat_not_outs',
+        '4s': 'bat_fours',
+        '6s': 'bat_sixes',
+        'ducks': 'bat_ducks',
+        '50s': 'bat_fifties',
+        '100s': 'bat_hundreds',
+        '200s': 'bat_two_hundreds'
+    }
+    
+    bowl_stats_map = {
+        'matches': 'bowl_matches',
+        'innings': 'bowl_innings',
+        'balls': 'bowl_balls',
+        'runs': 'bowl_runs',
+        'maidens': 'bowl_maidens',
+        'wickets': 'bowl_wickets',
+        'average': 'bowl_average',
+        'economy': 'bowl_economy',
+        'strike rate': 'bowl_strike_rate',
+        'bbi': 'bowl_best_innings',
+        'bbm': 'bowl_best_match',
+        '4w': 'bowl_four_wickets',
+        '5w': 'bowl_five_wickets',
+        '10w': 'bowl_ten_wickets'
+    }
+    
+    for table_idx, table in enumerate(tables):
         rows = table.find_all('tr')
         if len(rows) < 2:
             continue
         
         headers = [th.get_text(strip=True).lower() for th in rows[0].find_all(['th', 'td'])]
         
+        if not headers or 'test' not in headers and 'odi' not in headers:
+            continue
+        
+        odi_idx = headers.index('odi') if 'odi' in headers else (headers.index('t20') if 't20' in headers else 1)
+        
+        is_batting = table_idx == 2 or (len(tables) > 2 and table == tables[2])
+        is_bowling = table_idx == 3 or (len(tables) > 3 and table == tables[3])
+        
+        stats_map = bat_stats_map if is_batting else bowl_stats_map if is_bowling else None
+        if not stats_map:
+            continue
+        
         for row in rows[1:]:
             cells = row.find_all('td')
-            if not cells:
+            if len(cells) < 2:
                 continue
             
-            if 'batting' in header_text or 'bat' in header_text:
-                if profile.get('bat_matches'):
-                    continue
-                for i, cell in enumerate(cells[1:], 1):
-                    val = cell.get_text(strip=True)
-                    if i < len(headers):
-                        h = headers[i] if i < len(headers) else ''
-                        if 'match' in h:
-                            profile['bat_matches'] = val
-                        elif 'inn' in h:
-                            profile['bat_innings'] = val
-                        elif 'run' in h and 'rate' not in h:
-                            profile['bat_runs'] = val
-                        elif 'ball' in h:
-                            profile['bat_balls'] = val
-                        elif 'high' in h or 'hs' in h:
-                            profile['bat_highest'] = val
-                        elif 'avg' in h or 'average' in h:
-                            profile['bat_average'] = val
-                        elif 'sr' in h or 'strike' in h:
-                            profile['bat_strike_rate'] = val
-                        elif 'no' in h or 'not out' in h:
-                            profile['bat_not_outs'] = val
-                        elif '4s' in h or 'four' in h:
-                            profile['bat_fours'] = val
-                        elif '6s' in h or 'six' in h:
-                            profile['bat_sixes'] = val
-                        elif 'duck' in h:
-                            profile['bat_ducks'] = val
-                        elif '50' in h or 'fift' in h:
-                            profile['bat_fifties'] = val
-                        elif '100' in h or 'hundred' in h or 'cent' in h:
-                            profile['bat_hundreds'] = val
-                        elif '200' in h:
-                            profile['bat_two_hundreds'] = val
+            stat_name = cells[0].get_text(strip=True).lower()
             
-            elif 'bowling' in header_text or 'bowl' in header_text:
-                if profile.get('bowl_matches'):
-                    continue
-                for i, cell in enumerate(cells[1:], 1):
-                    val = cell.get_text(strip=True)
-                    if i < len(headers):
-                        h = headers[i] if i < len(headers) else ''
-                        if 'match' in h:
-                            profile['bowl_matches'] = val
-                        elif 'inn' in h:
-                            profile['bowl_innings'] = val
-                        elif 'ball' in h:
-                            profile['bowl_balls'] = val
-                        elif 'run' in h:
-                            profile['bowl_runs'] = val
-                        elif 'maid' in h:
-                            profile['bowl_maidens'] = val
-                        elif 'wkt' in h or 'wicket' in h:
-                            profile['bowl_wickets'] = val
-                        elif 'avg' in h or 'average' in h:
-                            profile['bowl_average'] = val
-                        elif 'eco' in h or 'economy' in h:
-                            profile['bowl_economy'] = val
-                        elif 'sr' in h or 'strike' in h:
-                            profile['bowl_strike_rate'] = val
-                        elif 'bbi' in h or 'best inn' in h:
-                            profile['bowl_best_innings'] = val
-                        elif 'bbm' in h or 'best match' in h:
-                            profile['bowl_best_match'] = val
-                        elif '4w' in h or '4 wkt' in h:
-                            profile['bowl_four_wickets'] = val
-                        elif '5w' in h or '5 wkt' in h:
-                            profile['bowl_five_wickets'] = val
-                        elif '10w' in h or '10 wkt' in h:
-                            profile['bowl_ten_wickets'] = val
+            for key, field in stats_map.items():
+                if key in stat_name:
+                    if odi_idx < len(cells):
+                        profile[field] = cells[odi_idx].get_text(strip=True)
+                    break
     
     return profile
