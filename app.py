@@ -21,7 +21,7 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 db.init_app(app)
 
 from models import init_models
-TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting = init_models(db)
+TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting = init_models(db)
 
 import scraper
 from scheduler import init_scheduler, update_schedule, update_player_schedule
@@ -54,6 +54,10 @@ with app.app_context():
         if not SeriesScrapeSetting.query.filter_by(category_slug=slug).first():
             ss = SeriesScrapeSetting(category_slug=slug, auto_scrape_enabled=False, scrape_time='08:00')
             db.session.add(ss)
+    
+    if not MatchScrapeSetting.query.first():
+        ms = MatchScrapeSetting(auto_scrape_enabled=False, scrape_time='10:00')
+        db.session.add(ms)
     
     db.session.commit()
 
@@ -129,6 +133,13 @@ def series_page():
             })
     
     return render_template('series.html', category_data=category_data, month_data=month_data, categories=categories)
+
+@app.route('/series/<int:series_id>')
+def series_detail(series_id):
+    series = Series.query.get_or_404(series_id)
+    matches = Match.query.filter_by(series_id=series_id).order_by(Match.match_date).all()
+    category = SeriesCategory.query.get(series.category_id)
+    return render_template('series_detail.html', series=series, matches=matches, category=category)
 
 @app.route('/news')
 def news():
@@ -894,6 +905,120 @@ def scrape_series(category_slug):
         db.session.add(log)
         db.session.commit()
         return jsonify({'success': False, 'message': str(e)}), 500
+
+match_scrape_progress = {}
+
+@app.route('/api/scrape/matches/<int:series_id>', methods=['POST'])
+def scrape_matches(series_id):
+    try:
+        series = Series.query.get(series_id)
+        if not series:
+            return jsonify({'success': False, 'message': 'Series not found'}), 404
+        
+        matches_list = scraper.scrape_matches_from_series(series.series_url)
+        
+        if not matches_list:
+            return jsonify({'success': False, 'message': 'No matches found'}), 404
+        
+        matches_scraped = 0
+        for match_data in matches_list:
+            existing = Match.query.filter_by(match_id=match_data['match_id']).first()
+            if existing:
+                existing.match_format = match_data.get('match_format')
+                existing.venue = match_data.get('venue')
+                existing.match_date = match_data.get('match_date')
+                existing.team1_name = match_data.get('team1_name')
+                existing.team1_score = match_data.get('team1_score')
+                existing.team2_name = match_data.get('team2_name')
+                existing.team2_score = match_data.get('team2_score')
+                existing.result = match_data.get('result')
+                existing.match_url = match_data.get('match_url')
+                existing.updated_at = datetime.utcnow()
+            else:
+                match = Match(
+                    match_id=match_data['match_id'],
+                    match_format=match_data.get('match_format'),
+                    venue=match_data.get('venue'),
+                    match_date=match_data.get('match_date'),
+                    team1_name=match_data.get('team1_name'),
+                    team1_score=match_data.get('team1_score'),
+                    team2_name=match_data.get('team2_name'),
+                    team2_score=match_data.get('team2_score'),
+                    result=match_data.get('result'),
+                    match_url=match_data.get('match_url'),
+                    series_id=series_id
+                )
+                db.session.add(match)
+            matches_scraped += 1
+        
+        db.session.commit()
+        
+        log = ScrapeLog(
+            category=f'matches_{series.name[:30]}',
+            status='success',
+            message=f'Scraped {matches_scraped} matches',
+            teams_scraped=matches_scraped
+        )
+        db.session.add(log)
+        db.session.commit()
+        
+        setting = MatchScrapeSetting.query.first()
+        if setting:
+            setting.last_scrape = datetime.utcnow()
+            db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Scraped {matches_scraped} matches successfully',
+            'matches_scraped': matches_scraped
+        })
+    
+    except Exception as e:
+        log = ScrapeLog(
+            category=f'matches_error',
+            status='error',
+            message=str(e)
+        )
+        db.session.add(log)
+        db.session.commit()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/settings/match-auto-scrape', methods=['POST'])
+def toggle_match_auto_scrape():
+    try:
+        data = request.get_json() or {}
+        enabled = data.get('enabled', False)
+        time = data.get('time', '10:00')
+        
+        setting = MatchScrapeSetting.query.first()
+        if not setting:
+            setting = MatchScrapeSetting(auto_scrape_enabled=enabled, scrape_time=time)
+            db.session.add(setting)
+        else:
+            setting.auto_scrape_enabled = enabled
+            setting.scrape_time = time
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Match auto-scrape {"enabled" if enabled else "disabled"}',
+            'enabled': enabled,
+            'time': time
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/settings/match-scrape', methods=['GET'])
+def get_match_scrape_settings():
+    setting = MatchScrapeSetting.query.first()
+    if setting:
+        return jsonify({
+            'enabled': setting.auto_scrape_enabled,
+            'time': setting.scrape_time,
+            'last_scrape': setting.last_scrape.isoformat() if setting.last_scrape else None
+        })
+    return jsonify({'enabled': False, 'time': '10:00', 'last_scrape': None})
 
 @app.route('/api/settings/series-auto-scrape', methods=['POST'])
 def toggle_series_auto_scrape():

@@ -499,3 +499,106 @@ def scrape_series_from_category(category_url):
         })
     
     return series_list
+
+def scrape_matches_from_series(series_url):
+    matches_list = []
+    matches_url = series_url.rstrip('/') + '/matches'
+    
+    html = fetch_page(matches_url)
+    if not html:
+        return matches_list
+    
+    soup = BeautifulSoup(html, 'html.parser')
+    
+    current_date = None
+    
+    match_links = soup.find_all('a', href=lambda h: h and '/live-cricket-scores/' in h)
+    
+    seen_ids = set()
+    for link in match_links:
+        href = link.get('href', '')
+        
+        match_id_match = re.search(r'/live-cricket-scores/(\d+)/', href)
+        if not match_id_match:
+            continue
+        
+        match_id = match_id_match.group(1)
+        
+        if match_id in seen_ids:
+            continue
+        seen_ids.add(match_id)
+        
+        parent = link.find_parent('div', class_=lambda c: c and 'cb-col-100' in c)
+        if not parent:
+            parent = link.parent
+        
+        date_header = None
+        prev = link.find_previous(['div', 'h3', 'span'], string=re.compile(r'(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+\w+\s+\d+\s+\d{4}'))
+        if prev:
+            date_header = prev.get_text(strip=True)
+        
+        if date_header:
+            current_date = date_header
+        
+        text = link.get_text(' ', strip=True)
+        text = re.sub(r'\s+', ' ', text)
+        
+        match_format = ''
+        venue = ''
+        team1_name = ''
+        team1_score = ''
+        team2_name = ''
+        team2_score = ''
+        result = ''
+        
+        format_match = re.search(r'(\d+(?:st|nd|rd|th)\s+(?:ODI|T20I|Test|T20|Match|Final|Semi-Final|Quarter-Final)[^•]*)', text, re.IGNORECASE)
+        if format_match:
+            match_format = format_match.group(1).strip()
+        
+        venue_match = re.search(r'•\s*([^•]+?(?:Stadium|Ground|Cricket|Arena|Oval|Park)[^•]*)', text, re.IGNORECASE)
+        if venue_match:
+            venue = venue_match.group(1).strip()
+        elif '•' in text:
+            parts = text.split('•')
+            if len(parts) > 1:
+                venue = parts[1].strip().split('\n')[0].strip()
+        
+        score_pattern = re.search(r'([A-Za-z\s]+(?:IND|NZ|AUS|ENG|SA|PAK|WI|SL|BAN|ZIM|AFG|IRE|SCO|UAE|NEP|NED|OMA|USA)?)[\s\n]+(\d+(?:-\d+)?(?:\s*\(\d+(?:\.\d+)?\))?)', text)
+        
+        title = link.get('title', '')
+        if title:
+            title_parts = title.split(' - ')
+            if len(title_parts) >= 1:
+                vs_match = re.search(r'(.+?)\s+vs\s+(.+?)(?:,|$)', title_parts[0])
+                if vs_match:
+                    team1_name = vs_match.group(1).strip()
+                    team2_name = vs_match.group(2).strip()
+            if len(title_parts) >= 2:
+                result = title_parts[-1].strip()
+        
+        score_matches = re.findall(r'(\d+(?:-\d+)?)\s*\((\d+(?:\.\d+)?)\)', text)
+        if len(score_matches) >= 1:
+            team1_score = f"{score_matches[0][0]} ({score_matches[0][1]})"
+        if len(score_matches) >= 2:
+            team2_score = f"{score_matches[1][0]} ({score_matches[1][1]})"
+        
+        result_match = re.search(r'(won by \d+\s*(?:runs?|wkts?|wickets?))', text, re.IGNORECASE)
+        if result_match:
+            result = result_match.group(1).strip()
+        
+        match_url = BASE_URL + href if href.startswith('/') else href
+        
+        matches_list.append({
+            'match_id': match_id,
+            'match_format': match_format,
+            'venue': venue,
+            'match_date': current_date,
+            'team1_name': team1_name,
+            'team1_score': team1_score,
+            'team2_name': team2_name,
+            'team2_score': team2_score,
+            'result': result,
+            'match_url': match_url
+        })
+    
+    return matches_list
