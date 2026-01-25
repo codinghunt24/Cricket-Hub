@@ -4,7 +4,7 @@
 A Cricbuzz-inspired cricket website built with Python Flask featuring web scraping for team and player data from Cricbuzz. Includes a responsive frontend with sticky navbar and dropdown submenus, plus an admin panel with sidebar navigation and scraping controls.
 
 ## Current State
-- **Status**: Player profile scraping feature complete
+- **Status**: Format-wise stats display complete (Test, ODI, T20, IPL)
 - **Last Updated**: January 25, 2026
 
 ## Project Structure
