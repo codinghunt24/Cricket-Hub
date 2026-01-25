@@ -713,6 +713,20 @@ def scrape_matches_from_series(series_url):
         if venue_div:
             venue = venue_div.get_text(strip=True)
         
+        # Get match date from page
+        match_date = None
+        date_patterns = [
+            r'((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s+)?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}(?:,?\s+\d{4})?(?:\s+\d{1,2}:\d{2}\s*(?:GMT|IST|Local)?)?',
+        ]
+        page_text = match_soup.get_text()
+        for pattern in date_patterns:
+            date_match = re.search(pattern, page_text)
+            if date_match:
+                match_date = date_match.group(0).strip()
+                # Clean up the date
+                match_date = re.sub(r',\s*New Zealand.*$', '', match_date)
+                break
+        
         # Get scores
         score_divs = match_soup.find_all('div', class_=lambda c: c and 'cb-col-scores' in c)
         for i, score_div in enumerate(score_divs[:2]):
@@ -722,10 +736,23 @@ def scrape_matches_from_series(series_url):
             else:
                 team2_score = score_text
         
-        # Get result
+        # Get result - try multiple patterns
         result_div = match_soup.find('div', class_=lambda c: c and 'cb-text-complete' in c)
         if result_div:
             result = result_div.get_text(strip=True)
+        
+        if not result:
+            # Try to find result in page text
+            result_patterns = [
+                r'((?:India|New Zealand|Australia|England|Pakistan|South Africa|West Indies|Sri Lanka|Bangladesh|Afghanistan|Zimbabwe|Ireland)\s+won\s+by\s+\d+\s*(?:runs?|wkts?|wickets?))',
+                r'(Match\s+(?:tied|drawn|abandoned))',
+                r'(No\s+Result)',
+            ]
+            for pattern in result_patterns:
+                result_match = re.search(pattern, page_text, re.IGNORECASE)
+                if result_match:
+                    result = result_match.group(1).strip()
+                    break
         
         match_url = match_page_url
         
