@@ -61,6 +61,14 @@ def init_models(db):
         player_auto_scrape_enabled = db.Column(db.Boolean, default=False)
         player_scrape_time = db.Column(db.String(10), default='03:00')
         last_player_scrape = db.Column(db.DateTime, nullable=True)
+        intl_auto = db.Column(db.Boolean, default=False)
+        intl_time = db.Column(db.String(10), default='04:00')
+        domestic_auto = db.Column(db.Boolean, default=False)
+        domestic_time = db.Column(db.String(10), default='05:00')
+        league_auto = db.Column(db.Boolean, default=False)
+        league_time = db.Column(db.String(10), default='06:00')
+        women_auto = db.Column(db.Boolean, default=False)
+        women_time = db.Column(db.String(10), default='07:00')
         updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting

@@ -473,6 +473,38 @@ def scrape_all_players():
         db.session.commit()
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/api/settings/category-auto-scrape', methods=['POST'])
+def toggle_category_auto_scrape():
+    try:
+        data = request.get_json() or {}
+        category = data.get('category')
+        enabled = data.get('enabled', False)
+        scrape_time = data.get('scrape_time', '04:00')
+        
+        setting = ScrapeSetting.query.first()
+        if setting:
+            if category == 'international':
+                setting.intl_auto = enabled
+                setting.intl_time = scrape_time
+            elif category == 'domestic':
+                setting.domestic_auto = enabled
+                setting.domestic_time = scrape_time
+            elif category == 'league':
+                setting.league_auto = enabled
+                setting.league_time = scrape_time
+            elif category == 'women':
+                setting.women_auto = enabled
+                setting.women_time = scrape_time
+            db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'{category.title()} auto scrape {"enabled" if enabled else "disabled"} at {scrape_time}'
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/settings/player-auto-scrape', methods=['POST'])
 def toggle_player_auto_scrape():
     try:

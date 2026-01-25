@@ -479,6 +479,54 @@
     background: var(--primary-color);
 }
 
+.category-row {
+    gap: 10px;
+}
+
+.scrape-section-cat {
+    flex: 1;
+    min-width: 140px;
+    padding: 10px;
+    background: var(--gray-light);
+    border-radius: 6px;
+    text-align: center;
+}
+
+.cat-header {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+}
+
+.cat-auto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 0.75rem;
+}
+
+.cat-auto label {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.cat-auto input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+}
+
+.time-xs {
+    padding: 2px 4px;
+    font-size: 0.7rem;
+    border: 1px solid var(--gray);
+    border-radius: 3px;
+    width: 70px;
+}
+
 .server-time-label {
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.9);

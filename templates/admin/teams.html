@@ -48,22 +48,38 @@
         </div>
         
         <h3 class="section-subtitle">Players by Category</h3>
-        <div class="scrape-sections-row">
-            <div class="scrape-section-mini">
-                <span class="cat-icon">🌍</span> International
-                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('international')">Scrape</button>
+        <div class="scrape-sections-row category-row">
+            <div class="scrape-section-cat">
+                <div class="cat-header">🌍 International</div>
+                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('international')">Scrape Now</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="autoIntl" {% if setting and setting.intl_auto %}checked{% endif %} onchange="saveCategoryAuto('international')"> Auto</label>
+                    <input type="time" id="timeIntl" value="{{ setting.intl_time if setting and setting.intl_time else '04:00' }}" class="time-xs" onchange="saveCategoryAuto('international')">
+                </div>
             </div>
-            <div class="scrape-section-mini">
-                <span class="cat-icon">🏠</span> Domestic
-                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('domestic')">Scrape</button>
+            <div class="scrape-section-cat">
+                <div class="cat-header">🏠 Domestic</div>
+                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('domestic')">Scrape Now</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="autoDomestic" {% if setting and setting.domestic_auto %}checked{% endif %} onchange="saveCategoryAuto('domestic')"> Auto</label>
+                    <input type="time" id="timeDomestic" value="{{ setting.domestic_time if setting and setting.domestic_time else '05:00' }}" class="time-xs" onchange="saveCategoryAuto('domestic')">
+                </div>
             </div>
-            <div class="scrape-section-mini">
-                <span class="cat-icon">🏆</span> League
-                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('league')">Scrape</button>
+            <div class="scrape-section-cat">
+                <div class="cat-header">🏆 League</div>
+                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('league')">Scrape Now</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="autoLeague" {% if setting and setting.league_auto %}checked{% endif %} onchange="saveCategoryAuto('league')"> Auto</label>
+                    <input type="time" id="timeLeague" value="{{ setting.league_time if setting and setting.league_time else '06:00' }}" class="time-xs" onchange="saveCategoryAuto('league')">
+                </div>
             </div>
-            <div class="scrape-section-mini">
-                <span class="cat-icon">👩</span> Women
-                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('women')">Scrape</button>
+            <div class="scrape-section-cat">
+                <div class="cat-header">👩 Women</div>
+                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('women')">Scrape Now</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="autoWomen" {% if setting and setting.women_auto %}checked{% endif %} onchange="saveCategoryAuto('women')"> Auto</label>
+                    <input type="time" id="timeWomen" value="{{ setting.women_time if setting and setting.women_time else '07:00' }}" class="time-xs" onchange="saveCategoryAuto('women')">
+                </div>
             </div>
         </div>
     </div>
@@ -238,6 +254,27 @@ function scrapeCategoryPlayers(categorySlug) {
             hideLoading();
             alert('Error: ' + err.message);
         });
+}
+
+function saveCategoryAuto(category) {
+    const catMap = {
+        'international': 'Intl',
+        'domestic': 'Domestic', 
+        'league': 'League',
+        'women': 'Women'
+    };
+    const suffix = catMap[category];
+    const enabled = document.getElementById('auto' + suffix).checked;
+    const time = document.getElementById('time' + suffix).value;
+    
+    fetch('/api/settings/category-auto-scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: category, enabled: enabled, scrape_time: time })
+    })
+    .then(res => res.json())
+    .then(data => alert(data.message))
+    .catch(err => alert('Error: ' + err.message));
 }
 
 function togglePlayerAutoScrape() {
