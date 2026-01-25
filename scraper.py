@@ -424,6 +424,22 @@ def parse_series_date(name):
     
     return None
 
+def parse_date_from_title(title):
+    months = {
+        'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+        'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+        'Sep': '09', 'Sept': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+    }
+    
+    date_pattern = r'(\d{1,2})\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\s*(\d{4})'
+    match = re.search(date_pattern, title)
+    if match:
+        day = match.group(1).zfill(2)
+        month = months.get(match.group(2), '01')
+        year = match.group(3)
+        return f"{year}-{month}-{day}"
+    return None
+
 def scrape_series_from_category(category_url):
     series_list = []
     html = fetch_page(category_url)
@@ -433,7 +449,7 @@ def scrape_series_from_category(category_url):
     
     soup = BeautifulSoup(html, 'html.parser')
     
-    series_links = soup.find_all('a', href=lambda h: h and '/cricket-series/' in h and h.count('/') >= 2)
+    series_links = soup.find_all('a', class_='flex justify-between items-center', href=lambda h: h and '/cricket-series/' in h and '/matches' in h)
     
     seen_ids = set()
     for link in series_links:
@@ -444,13 +460,18 @@ def scrape_series_from_category(category_url):
             continue
         
         seen_ids.add(series_id)
-        name = link.get_text(strip=True)
+        
+        name_div = link.find('div', class_='text-ellipsis')
+        name = name_div.get_text(strip=True) if name_div else ''
         
         if not name or len(name) < 3:
             continue
         
-        series_url = BASE_URL + href if href.startswith('/') else href
-        start_date = parse_series_date(name)
+        title = link.get('title', '')
+        start_date = parse_date_from_title(title)
+        
+        clean_href = href.replace('/matches', '')
+        series_url = BASE_URL + clean_href if clean_href.startswith('/') else clean_href
         
         series_list.append({
             'series_id': series_id,
