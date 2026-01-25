@@ -515,6 +515,19 @@ def scrape_matches_from_series(series_url):
     
     current_date = None
     
+    # First, find all match IDs directly in the page source (includes JS-embedded IDs)
+    all_match_ids = set(re.findall(r'/live-cricket-scores/(\d+)/', html))
+    
+    # Also find bare 6-digit match IDs that might be in JavaScript data
+    # Look for IDs that start with 121 (common pattern for 2026 matches)
+    series_id_match = re.search(r'/cricket-series/(\d+)/', series_url)
+    if series_id_match:
+        series_num = series_id_match.group(1)
+        # Find IDs that are numerically close to IDs we've already found
+        bare_ids = re.findall(r'\b(12\d{4})\b', html)
+        for bid in bare_ids:
+            all_match_ids.add(bid)
+    
     all_links = soup.find_all('a', href=lambda h: h and '/live-cricket-scores/' in h)
     
     if series_slug:
@@ -580,6 +593,12 @@ def scrape_matches_from_series(series_url):
         if format_match:
             match_format = format_match.group(1).strip()
         
+        # Also try to extract format from URL
+        if not match_format:
+            url_format = re.search(r'(\d+(?:st|nd|rd|th)-(?:odi|t20i|test|t20))', href, re.IGNORECASE)
+            if url_format:
+                match_format = url_format.group(1).replace('-', ' ').title()
+        
         venue_match = re.search(r'•\s*([^•]+?(?:Stadium|Ground|Cricket|Arena|Oval|Park)[^•]*)', text, re.IGNORECASE)
         if venue_match:
             venue = venue_match.group(1).strip()
@@ -618,6 +637,103 @@ def scrape_matches_from_series(series_url):
             'match_format': match_format,
             'venue': venue,
             'match_date': current_date,
+            'team1_name': team1_name,
+            'team1_score': team1_score,
+            'team2_name': team2_name,
+            'team2_score': team2_score,
+            'result': result,
+            'match_url': match_url
+        })
+    
+    # Now fetch details for match IDs found in source but not in anchor tags
+    # Only process IDs that look like they belong to this series (within a reasonable ID range)
+    if seen_ids:
+        min_id = min(int(m) for m in seen_ids)
+        max_id = max(int(m) for m in seen_ids)
+        id_range = max_id - min_id + 100  # Allow some buffer
+    else:
+        min_id = 0
+        max_id = 999999999
+        id_range = 100
+    
+    for match_id in all_match_ids:
+        if match_id in seen_ids:
+            continue
+        
+        # Only fetch if ID is within reasonable range of known series matches
+        match_id_int = int(match_id)
+        if seen_ids and (match_id_int < min_id - 100 or match_id_int > max_id + 100):
+            continue
+        
+        # Fetch the match page to get details
+        match_page_url = f"{BASE_URL}/live-cricket-scores/{match_id}/"
+        match_html = fetch_page(match_page_url)
+        if not match_html:
+            continue
+        
+        match_soup = BeautifulSoup(match_html, 'html.parser')
+        
+        # Strict check: match page must contain exact series slug in a link
+        series_link = match_soup.find('a', href=lambda h: h and series_slug in h.lower() if series_slug else False)
+        if not series_link and series_slug:
+            continue
+        
+        seen_ids.add(match_id)
+        
+        # Extract match info from page
+        title_tag = match_soup.find('title')
+        title = title_tag.get_text() if title_tag else ''
+        
+        team1_name = ''
+        team2_name = ''
+        match_format = ''
+        venue = ''
+        result = ''
+        team1_score = ''
+        team2_score = ''
+        
+        # Parse title: "India vs New Zealand, 1st ODI, New Zealand tour of India, 2026"
+        title_match = re.search(r'([A-Za-z\s]+)\s+vs\s+([A-Za-z\s]+),\s*(\d+(?:st|nd|rd|th)\s+(?:ODI|T20I|Test|T20))', title)
+        if title_match:
+            team1_name = title_match.group(1).strip()
+            team2_name = title_match.group(2).strip()
+            match_format = title_match.group(3).strip()
+        else:
+            # Try alternate pattern
+            alt_match = re.search(r'([A-Z]+)\s+vs\s+([A-Z]+)', title)
+            if alt_match:
+                team1_name = alt_match.group(1)
+                team2_name = alt_match.group(2)
+            format_match = re.search(r'(\d+(?:st|nd|rd|th)\s+(?:ODI|T20I|Test|T20|Match))', title)
+            if format_match:
+                match_format = format_match.group(1)
+        
+        # Get venue
+        venue_div = match_soup.find('a', href=lambda h: h and '/cricket-stadium' in h if h else False)
+        if venue_div:
+            venue = venue_div.get_text(strip=True)
+        
+        # Get scores
+        score_divs = match_soup.find_all('div', class_=lambda c: c and 'cb-col-scores' in c)
+        for i, score_div in enumerate(score_divs[:2]):
+            score_text = score_div.get_text(strip=True)
+            if i == 0:
+                team1_score = score_text
+            else:
+                team2_score = score_text
+        
+        # Get result
+        result_div = match_soup.find('div', class_=lambda c: c and 'cb-text-complete' in c)
+        if result_div:
+            result = result_div.get_text(strip=True)
+        
+        match_url = match_page_url
+        
+        matches_list.append({
+            'match_id': match_id,
+            'match_format': match_format,
+            'venue': venue,
+            'match_date': None,
             'team1_name': team1_name,
             'team1_score': team1_score,
             'team2_name': team2_name,
