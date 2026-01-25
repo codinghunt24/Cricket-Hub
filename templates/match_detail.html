@@ -1,0 +1,399 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ match.team1_name }} vs {{ match.team2_name }} - Scorecard - CricLive{% endblock %}
+
+{% block content %}
+<div class="match-detail-page">
+    <div class="match-header">
+        <div class="header-content">
+            <a href="{{ url_for('series_detail', series_id=match.series_id) }}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Series
+            </a>
+            <h1 class="match-title">{{ match.team1_name }} vs {{ match.team2_name }}</h1>
+            <div class="match-meta">
+                <span class="match-format">{{ match.match_format }}</span>
+                {% if match.venue %}
+                <span class="venue"><i class="fas fa-map-marker-alt"></i> {{ match.venue }}</span>
+                {% endif %}
+                {% if match.match_date %}
+                <span class="date"><i class="far fa-calendar"></i> {{ match.match_date }}</span>
+                {% endif %}
+            </div>
+            {% if match.result and match.result != 'Upcoming' %}
+            <div class="result-banner">{{ match.result }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="scorecard-section">
+        <div class="section-header">
+            <h2><i class="fas fa-clipboard-list"></i> Scorecard</h2>
+        </div>
+        
+        {% if scorecard and scorecard.innings %}
+            {% for innings in scorecard.innings %}
+            <div class="innings-card">
+                <div class="innings-header">
+                    <div class="team-info">
+                        <img class="team-flag" src="{{ get_team_flag(innings.team_name) }}" alt="{{ innings.team_name }}" onerror="this.style.display='none'">
+                        <span class="team-name">{{ innings.team_name }}</span>
+                    </div>
+                    <div class="innings-score">
+                        <span class="score">{{ innings.total_score }}</span>
+                        <span class="overs">({{ innings.overs }} Ov)</span>
+                    </div>
+                </div>
+                
+                {% if innings.batting %}
+                <div class="batting-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="batter-col">Batter</th>
+                                <th class="dismissal-col"></th>
+                                <th>R</th>
+                                <th>B</th>
+                                <th>4s</th>
+                                <th>6s</th>
+                                <th>SR</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for batter in innings.batting %}
+                            <tr>
+                                <td class="batter-name">{{ batter.name }}</td>
+                                <td class="dismissal">{{ batter.dismissal }}</td>
+                                <td class="runs">{{ batter.runs }}</td>
+                                <td>{{ batter.balls }}</td>
+                                <td>{{ batter.fours }}</td>
+                                <td>{{ batter.sixes }}</td>
+                                <td>{{ batter.strike_rate }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+                
+                {% if innings.extras %}
+                <div class="extras-row">
+                    <span class="label">Extras:</span>
+                    <span class="value">{{ innings.extras }}</span>
+                </div>
+                {% endif %}
+                
+                {% if innings.bowling %}
+                <div class="bowling-table">
+                    <h4>Bowling</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="bowler-col">Bowler</th>
+                                <th>O</th>
+                                <th>M</th>
+                                <th>R</th>
+                                <th>W</th>
+                                <th>ECO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bowler in innings.bowling %}
+                            <tr>
+                                <td class="bowler-name">{{ bowler.name }}</td>
+                                <td>{{ bowler.overs }}</td>
+                                <td>{{ bowler.maidens }}</td>
+                                <td>{{ bowler.runs }}</td>
+                                <td class="wickets">{{ bowler.wickets }}</td>
+                                <td>{{ bowler.economy }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-scorecard">
+                <div class="no-scorecard-icon">
+                    <i class="fas fa-cricket-bat-ball"></i>
+                </div>
+                <h3>Scorecard not available</h3>
+                <p>{% if match.result == 'Upcoming' %}Match has not started yet{% else %}Scorecard data is being updated{% endif %}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.match-detail-page {
+    padding: 20px 0;
+}
+
+.match-header {
+    background: linear-gradient(135deg, #046a38 0%, #0a8f4f 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.back-link {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 15px;
+    display: inline-block;
+}
+
+.back-link:hover {
+    color: white;
+}
+
+.match-title {
+    font-size: 26px;
+    margin: 10px 0 15px 0;
+}
+
+.match-meta {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 14px;
+    color: rgba(255,255,255,0.9);
+}
+
+.match-meta i {
+    margin-right: 5px;
+}
+
+.match-format {
+    background: rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-weight: 600;
+}
+
+.result-banner {
+    margin-top: 15px;
+    background: #fff;
+    color: #046a38;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.scorecard-section {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.section-header {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e8f5e9;
+}
+
+.section-header h2 {
+    color: #046a38;
+    margin: 0;
+    font-size: 20px;
+}
+
+.section-header h2 i {
+    margin-right: 10px;
+}
+
+.innings-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+.innings-header {
+    background: linear-gradient(135deg, #046a38 0%, #0a8f4f 100%);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.team-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.team-flag {
+    width: 36px;
+    height: 24px;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+.team-name {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.innings-score {
+    text-align: right;
+}
+
+.innings-score .score {
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.innings-score .overs {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-left: 8px;
+}
+
+.batting-table, .bowling-table {
+    padding: 0;
+}
+
+.batting-table table, .bowling-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.batting-table th, .bowling-table th {
+    background: #e8f5e9;
+    color: #046a38;
+    padding: 10px 12px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.batting-table th.batter-col, .bowling-table th.bowler-col {
+    text-align: left;
+    width: 30%;
+}
+
+.batting-table th.dismissal-col {
+    text-align: left;
+    width: 25%;
+}
+
+.batting-table td, .bowling-table td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 13px;
+}
+
+.batter-name, .bowler-name {
+    text-align: left !important;
+    font-weight: 600;
+    color: #333;
+}
+
+.dismissal {
+    text-align: left !important;
+    color: #666;
+    font-size: 12px;
+}
+
+.runs {
+    font-weight: 700;
+    color: #046a38;
+}
+
+.wickets {
+    font-weight: 700;
+    color: #d32f2f;
+}
+
+.bowling-table h4 {
+    background: #fff3e0;
+    color: #e65100;
+    margin: 0;
+    padding: 10px 15px;
+    font-size: 14px;
+}
+
+.extras-row {
+    padding: 10px 15px;
+    background: #fafafa;
+    border-top: 1px solid #e0e0e0;
+    font-size: 13px;
+}
+
+.extras-row .label {
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+.no-scorecard {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.no-scorecard-icon {
+    font-size: 60px;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.no-scorecard h3 {
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.no-scorecard p {
+    color: #888;
+}
+
+@media (max-width: 768px) {
+    .match-header {
+        padding: 20px;
+    }
+    
+    .match-title {
+        font-size: 20px;
+    }
+    
+    .match-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .innings-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .team-info {
+        justify-content: center;
+    }
+    
+    .innings-score {
+        text-align: center;
+    }
+    
+    .batting-table th.dismissal-col,
+    .batting-table td.dismissal {
+        display: none;
+    }
+    
+    .batting-table td, .bowling-table td {
+        padding: 8px 5px;
+        font-size: 12px;
+    }
+}
+</style>
+{% endblock %}

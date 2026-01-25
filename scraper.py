@@ -790,3 +790,85 @@ def scrape_matches_from_series(series_url):
         })
     
     return matches_list
+
+
+def scrape_scorecard(match_id):
+    scorecard_url = f"https://www.cricbuzz.com/live-cricket-scorecard/{match_id}"
+    html = fetch_page(scorecard_url)
+    
+    if not html:
+        return None
+    
+    soup = BeautifulSoup(html, 'html.parser')
+    scorecard = {
+        'match_id': match_id,
+        'innings': []
+    }
+    
+    page_text = soup.get_text()
+    
+    title_match = re.search(r'([A-Za-z\s]+vs[A-Za-z\s]+,\s*\d+(?:st|nd|rd|th)\s+(?:ODI|T20I|Test|T20)[^,]*)', page_text)
+    if title_match:
+        scorecard['title'] = title_match.group(1).strip()
+    
+    venue_elem = soup.find('a', href=lambda h: h and '/venues/' in h if h else False)
+    if venue_elem:
+        scorecard['venue'] = venue_elem.get_text(strip=True)
+    
+    result_patterns = [
+        r'([A-Za-z]+\s+won\s+by\s+\d+\s+(?:runs?|wkts?|wickets?))',
+        r'(Match\s+(?:tied|drawn|abandoned))',
+    ]
+    for pattern in result_patterns:
+        result_match = re.search(pattern, page_text, re.IGNORECASE)
+        if result_match:
+            scorecard['result'] = result_match.group(1).strip()
+            break
+    
+    team_score_pattern = r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?|NZ|IND|AUS|ENG|PAK|SA|SL|WI|BAN)\s*(\d+)[-/](\d+)\s*\((\d+(?:\.\d+)?)\s*Ov\)'
+    team_matches = re.findall(team_score_pattern, page_text)
+    
+    for idx, (team, runs, wickets, overs) in enumerate(team_matches[:2]):
+        innings_data = {
+            'innings_num': idx + 1,
+            'team_name': team.strip(),
+            'total_score': f"{runs}/{wickets}",
+            'overs': overs,
+            'batting': [],
+            'bowling': [],
+            'extras': '',
+            'fall_of_wickets': ''
+        }
+        scorecard['innings'].append(innings_data)
+    
+    batter_rows = soup.find_all('div', class_='cb-col cb-col-100 cb-scrd-itms')
+    current_innings = 0
+    
+    for row in batter_rows:
+        cells = row.find_all('div', class_='cb-col')
+        if len(cells) >= 7:
+            batter_link = cells[0].find('a')
+            if batter_link and '/profiles/' in str(batter_link.get('href', '')):
+                batter_name = batter_link.get_text(strip=True)
+                
+                dismissal_span = cells[0].find('span', class_='text-gray')
+                dismissal = dismissal_span.get_text(strip=True) if dismissal_span else ''
+                
+                runs = cells[2].get_text(strip=True) if len(cells) > 2 else '0'
+                balls = cells[3].get_text(strip=True) if len(cells) > 3 else '0'
+                fours = cells[4].get_text(strip=True) if len(cells) > 4 else '0'
+                sixes = cells[5].get_text(strip=True) if len(cells) > 5 else '0'
+                sr = cells[6].get_text(strip=True) if len(cells) > 6 else '0.00'
+                
+                if scorecard['innings'] and current_innings < len(scorecard['innings']):
+                    scorecard['innings'][current_innings]['batting'].append({
+                        'name': batter_name,
+                        'dismissal': dismissal,
+                        'runs': runs,
+                        'balls': balls,
+                        'fours': fours,
+                        'sixes': sixes,
+                        'strike_rate': sr
+                    })
+    
+    return scorecard

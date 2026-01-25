@@ -29,38 +29,40 @@
         {% if matches %}
         <div class="matches-list">
             {% for match in matches %}
-            <div class="match-item">
-                <div class="match-date-bar">
-                    <i class="far fa-calendar-alt"></i> {{ match.match_date or 'TBD' }}
-                </div>
-                <div class="match-card">
-                    <div class="match-header">
-                        <span class="match-info">
-                            {% if match.match_format %}{{ match.match_format }}{% endif %}{% if match.match_format and match.venue %} • {% endif %}{% if match.venue %}{{ match.venue }}{% endif %}
-                        </span>
+            <a href="{{ url_for('match_detail', match_id=match.match_id) }}" class="match-item-link">
+                <div class="match-item">
+                    <div class="match-date-bar">
+                        <i class="far fa-calendar-alt"></i> {{ match.match_date or 'TBD' }}
                     </div>
-                    
-                    <div class="match-teams">
-                        <div class="team team1">
-                            <img class="team-flag" src="{{ get_team_flag(match.team1_name) }}" alt="{{ match.team1_name }}" onerror="this.style.display='none'">
-                            <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
-                            <span class="team-score">{{ match.team1_score or '-' }}</span>
+                    <div class="match-card">
+                        <div class="match-header">
+                            <span class="match-info">
+                                {% if match.match_format %}{{ match.match_format }}{% endif %}{% if match.match_format and match.venue %} • {% endif %}{% if match.venue %}{{ match.venue }}{% endif %}
+                            </span>
                         </div>
-                        <div class="team team2">
-                            <img class="team-flag" src="{{ get_team_flag(match.team2_name) }}" alt="{{ match.team2_name }}" onerror="this.style.display='none'">
-                            <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
-                            <span class="team-score">{{ match.team2_score or '-' }}</span>
+                        
+                        <div class="match-teams">
+                            <div class="team team1">
+                                <img class="team-flag" src="{{ get_team_flag(match.team1_name) }}" alt="{{ match.team1_name }}" onerror="this.style.display='none'">
+                                <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
+                                <span class="team-score">{{ match.team1_score or '-' }}</span>
+                            </div>
+                            <div class="team team2">
+                                <img class="team-flag" src="{{ get_team_flag(match.team2_name) }}" alt="{{ match.team2_name }}" onerror="this.style.display='none'">
+                                <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
+                                <span class="team-score">{{ match.team2_score or '-' }}</span>
+                            </div>
                         </div>
+                        
+                        {% if match.result %}
+                        <div class="match-result">
+                            {{ match.result }}
+                        </div>
+                        {% endif %}
+                        
                     </div>
-                    
-                    {% if match.result %}
-                    <div class="match-result">
-                        {{ match.result }}
-                    </div>
-                    {% endif %}
-                    
                 </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
         {% else %}
@@ -200,6 +202,21 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
+}
+
+.match-item-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.match-item-link:hover {
+    transform: translateY(-2px);
+}
+
+.match-item-link:hover .match-card {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .match-item {

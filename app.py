@@ -185,6 +185,12 @@ def series_detail(series_id):
     category = SeriesCategory.query.get(series.category_id)
     return render_template('series_detail.html', series=series, matches=matches, category=category)
 
+@app.route('/match/<match_id>')
+def match_detail(match_id):
+    match = Match.query.filter_by(match_id=match_id).first_or_404()
+    scorecard = scraper.scrape_scorecard(match_id)
+    return render_template('match_detail.html', match=match, scorecard=scorecard)
+
 @app.route('/news')
 def news():
     return render_template('index.html')
