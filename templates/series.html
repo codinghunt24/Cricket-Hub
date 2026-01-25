@@ -18,14 +18,33 @@
         {% if month_data %}
             {% for month_key, data in month_data.items() %}
             <div class="month-section">
-                <h2 class="month-title">{{ data.label }}</h2>
-                <div class="series-grid">
-                    {% for series in data.series %}
-                    <a href="{{ series.series_url }}" target="_blank" class="series-card" data-category="{{ series.category.slug }}">
-                        <div class="series-name">{{ series.name }}</div>
-                        <div class="series-category-badge">{{ series.category.name }}</div>
-                    </a>
-                    {% endfor %}
+                <div class="month-header">
+                    <h2 class="month-title">{{ data.label }}</h2>
+                    <span class="series-count">{{ data.series|length }} Series</span>
+                </div>
+                <div class="series-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Series Name</th>
+                                <th>Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for series in data.series %}
+                            <tr>
+                                <td>
+                                    <a href="{{ series.series_url }}" target="_blank" class="series-link">
+                                        {{ series.name }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="category-badge {{ series.category.slug }}">{{ series.category.name }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
             {% endfor %}
@@ -39,13 +58,31 @@
     <div id="category-view" style="display: none;">
         {% for data in category_data %}
         <div class="series-category" data-cat="{{ data.category.slug }}">
-            <h2 class="category-title">{{ data.category.name }}</h2>
-            <div class="series-grid">
-                {% for series in data.series %}
-                <a href="{{ series.series_url }}" target="_blank" class="series-card">
-                    <div class="series-name">{{ series.name }}</div>
-                </a>
-                {% endfor %}
+            <div class="month-header">
+                <h2 class="category-title">{{ data.category.name }}</h2>
+                <span class="series-count">{{ data.series|length }} Series</span>
+            </div>
+            <div class="series-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Series Name</th>
+                            <th>Start Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for series in data.series %}
+                        <tr>
+                            <td>
+                                <a href="{{ series.series_url }}" target="_blank" class="series-link">
+                                    {{ series.name }}
+                                </a>
+                            </td>
+                            <td>{{ series.start_date or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
         {% endfor %}
@@ -98,75 +135,116 @@
 }
 
 .month-section {
-    margin-bottom: 40px;
+    margin-bottom: 30px;
 }
 
-.month-title {
+.month-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.month-title, .category-title {
     color: white;
-    font-size: 20px;
-    margin-bottom: 20px;
-    padding: 12px 20px;
+    font-size: 18px;
+    margin: 0;
+    padding: 10px 20px;
     background: linear-gradient(135deg, #046a38 0%, #0a8f4f 100%);
-    border-radius: 8px;
+    border-radius: 6px;
     display: inline-block;
 }
 
+.series-count {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+}
+
 .series-category {
-    margin-bottom: 40px;
+    margin-bottom: 30px;
 }
 
 .series-category.hidden {
     display: none;
 }
 
-.category-title {
-    color: #333;
-    font-size: 22px;
-    margin-bottom: 20px;
-    padding-left: 15px;
-    border-left: 4px solid #046a38;
-}
-
-.series-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 15px;
-}
-
-.series-card {
+.series-table {
     background: white;
     border-radius: 8px;
-    padding: 20px;
-    text-decoration: none;
-    color: #333;
+    overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-    border-left: 4px solid transparent;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
 }
 
-.series-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    border-left-color: #046a38;
+.series-table table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-.series-name {
-    font-size: 15px;
+.series-table thead {
+    background: #f8f9fa;
+}
+
+.series-table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #046a38;
+}
+
+.series-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+
+.series-table tbody tr:hover {
+    background: #f8fdf9;
+}
+
+.series-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.series-link {
+    color: #333;
+    text-decoration: none;
     font-weight: 500;
-    line-height: 1.4;
+    transition: color 0.2s;
 }
 
-.series-category-badge {
-    font-size: 11px;
-    color: white;
-    background: #046a38;
-    padding: 3px 10px;
-    border-radius: 12px;
+.series-link:hover {
+    color: #046a38;
+}
+
+.category-badge {
     display: inline-block;
-    width: fit-content;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+}
+
+.category-badge.international {
+    background: #2196F3;
+}
+
+.category-badge.domestic {
+    background: #FF9800;
+}
+
+.category-badge.league {
+    background: #9C27B0;
+}
+
+.category-badge.women {
+    background: #E91E63;
+}
+
+.category-badge.all {
+    background: #046a38;
 }
 
 .no-series {
@@ -197,17 +275,25 @@
         font-size: 12px;
     }
     
-    .month-title {
+    .month-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .month-title, .category-title {
         font-size: 16px;
-        padding: 10px 15px;
+        padding: 8px 15px;
     }
     
-    .category-title {
-        font-size: 18px;
+    .series-table {
+        overflow-x: auto;
     }
     
-    .series-grid {
-        grid-template-columns: 1fr;
+    .series-table th,
+    .series-table td {
+        padding: 10px 12px;
+        font-size: 14px;
     }
 }
 </style>
