@@ -802,8 +802,27 @@ def scrape_scorecard(match_id):
     soup = BeautifulSoup(html, 'html.parser')
     scorecard = {
         'match_id': match_id,
-        'innings': []
+        'innings': [],
+        'venue': '',
+        'match_date': ''
     }
+    
+    venue_link = soup.find('a', href=lambda h: h and '/cricket-series/' in h and '/venues/' in h)
+    if venue_link:
+        scorecard['venue'] = venue_link.get_text(strip=True)
+    else:
+        at_span = soup.find('span', string=lambda s: s and 'at ' in s if s else False)
+        if at_span:
+            scorecard['venue'] = at_span.get_text(strip=True).replace('at ', '')
+    
+    date_span = soup.find('span', class_=lambda c: c and 'schedule-date' in c if c else False)
+    if date_span:
+        scorecard['match_date'] = date_span.get_text(strip=True)
+    else:
+        date_pattern = r'(Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}(?:,?\s+\d{4})?,?\s+\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?\s*(?:LOCAL|IST|GMT)?'
+        date_match = re.search(date_pattern, str(soup))
+        if date_match:
+            scorecard['match_date'] = date_match.group(0)
     
     page_text = soup.get_text()
     html_content = str(soup)

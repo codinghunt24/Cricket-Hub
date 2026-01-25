@@ -190,6 +190,13 @@ def match_detail(match_id):
     match = Match.query.filter_by(match_id=match_id).first_or_404()
     series = Series.query.get(match.series_id)
     scorecard = scraper.scrape_scorecard(match_id)
+    
+    if scorecard:
+        if not match.venue and scorecard.get('venue'):
+            match.venue = scorecard.get('venue')
+        if not match.match_date and scorecard.get('match_date'):
+            match.match_date = scorecard.get('match_date')
+    
     return render_template('match_detail.html', match=match, series=series, scorecard=scorecard)
 
 @app.route('/news')
