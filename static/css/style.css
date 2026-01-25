@@ -338,9 +338,9 @@ body {
 }
 
 .page-title {
-    font-size: 2rem;
+    font-size: 1.8rem;
     color: var(--primary-color);
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     text-align: center;
 }
 
@@ -363,8 +363,8 @@ body {
 /* Category Tabs */
 .category-tabs {
     display: flex;
-    gap: 10px;
-    margin-bottom: 25px;
+    gap: 8px;
+    margin-bottom: 20px;
     flex-wrap: wrap;
     justify-content: center;
 }
@@ -372,27 +372,30 @@ body {
 .category-tab {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
+    gap: 5px;
+    padding: 6px 14px;
     background: var(--white);
-    border: 2px solid var(--gray);
-    border-radius: 25px;
-    font-size: 0.95rem;
+    border: 1px solid var(--gray);
+    border-radius: 20px;
+    font-size: 0.85rem;
     font-weight: 500;
-    color: var(--text-color);
+    color: var(--text-light);
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
 .category-tab:hover {
-    border-color: var(--secondary-color);
-    color: var(--secondary-color);
+    border-color: var(--accent-color);
+    color: var(--primary-color);
+    background: var(--gray-light);
 }
 
 .category-tab.active {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-color: transparent;
     color: var(--white);
+    box-shadow: 0 2px 6px rgba(26, 71, 42, 0.3);
 }
 
 .teams-container {
