@@ -50,11 +50,13 @@
                 
                 <div class="match-teams">
                     <div class="team team1">
+                        <img class="team-flag" src="{{ get_team_flag(match.team1_name) }}" alt="{{ match.team1_name }}" onerror="this.style.display='none'">
                         <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
                         <span class="team-score">{{ match.team1_score or '-' }}</span>
                     </div>
                     <div class="vs-divider">vs</div>
                     <div class="team team2">
+                        <img class="team-flag" src="{{ get_team_flag(match.team2_name) }}" alt="{{ match.team2_name }}" onerror="this.style.display='none'">
                         <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
                         <span class="team-score">{{ match.team2_score or '-' }}</span>
                     </div>
@@ -266,6 +268,15 @@
     align-items: center;
     text-align: center;
     flex: 1;
+}
+
+.team-flag {
+    width: 48px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .team-name {

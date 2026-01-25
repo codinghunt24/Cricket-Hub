@@ -20,6 +20,50 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 
 db.init_app(app)
 
+# Team flag URLs mapping using FlagCDN
+TEAM_FLAGS = {
+    'india': 'https://flagcdn.com/48x36/in.png',
+    'new zealand': 'https://flagcdn.com/48x36/nz.png',
+    'australia': 'https://flagcdn.com/48x36/au.png',
+    'england': 'https://flagcdn.com/48x36/gb-eng.png',
+    'pakistan': 'https://flagcdn.com/48x36/pk.png',
+    'south africa': 'https://flagcdn.com/48x36/za.png',
+    'west indies': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/WestIndiesCricketFlagPre1999.svg/48px-WestIndiesCricketFlagPre1999.svg.png',
+    'sri lanka': 'https://flagcdn.com/48x36/lk.png',
+    'bangladesh': 'https://flagcdn.com/48x36/bd.png',
+    'afghanistan': 'https://flagcdn.com/48x36/af.png',
+    'zimbabwe': 'https://flagcdn.com/48x36/zw.png',
+    'ireland': 'https://flagcdn.com/48x36/ie.png',
+    'scotland': 'https://flagcdn.com/48x36/gb-sct.png',
+    'netherlands': 'https://flagcdn.com/48x36/nl.png',
+    'nepal': 'https://flagcdn.com/48x36/np.png',
+    'uae': 'https://flagcdn.com/48x36/ae.png',
+    'usa': 'https://flagcdn.com/48x36/us.png',
+    'oman': 'https://flagcdn.com/48x36/om.png',
+    'ind': 'https://flagcdn.com/48x36/in.png',
+    'nz': 'https://flagcdn.com/48x36/nz.png',
+    'aus': 'https://flagcdn.com/48x36/au.png',
+    'eng': 'https://flagcdn.com/48x36/gb-eng.png',
+    'pak': 'https://flagcdn.com/48x36/pk.png',
+    'sa': 'https://flagcdn.com/48x36/za.png',
+    'wi': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/WestIndiesCricketFlagPre1999.svg/48px-WestIndiesCricketFlagPre1999.svg.png',
+    'sl': 'https://flagcdn.com/48x36/lk.png',
+    'ban': 'https://flagcdn.com/48x36/bd.png',
+    'afg': 'https://flagcdn.com/48x36/af.png',
+    'zim': 'https://flagcdn.com/48x36/zw.png',
+    'ire': 'https://flagcdn.com/48x36/ie.png',
+}
+
+def get_team_flag(team_name):
+    if not team_name:
+        return ''
+    team_lower = team_name.lower().strip()
+    return TEAM_FLAGS.get(team_lower, '')
+
+@app.context_processor
+def utility_processor():
+    return dict(get_team_flag=get_team_flag)
+
 from models import init_models
 TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting = init_models(db)
 
