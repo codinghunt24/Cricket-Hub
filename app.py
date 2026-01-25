@@ -90,8 +90,17 @@ def player_detail(player_id):
     return render_template('player_detail.html', player=player)
 
 @app.route('/series')
-def series():
-    return render_template('index.html')
+def series_page():
+    categories = SeriesCategory.query.all()
+    category_data = []
+    for cat in categories:
+        series_list = Series.query.filter_by(category_id=cat.id).order_by(Series.name).all()
+        if series_list:
+            category_data.append({
+                'category': cat,
+                'series': series_list
+            })
+    return render_template('series.html', category_data=category_data)
 
 @app.route('/news')
 def news():

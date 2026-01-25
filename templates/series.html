@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Series - CricLive{% endblock %}
+
+{% block content %}
+<div class="series-page">
+    <h1 class="page-title">Cricket Series</h1>
+    
+    {% if category_data %}
+        {% for data in category_data %}
+        <div class="series-category">
+            <h2 class="category-title">{{ data.category.name }}</h2>
+            <div class="series-grid">
+                {% for series in data.series %}
+                <a href="{{ series.series_url }}" target="_blank" class="series-card">
+                    <div class="series-name">{{ series.name }}</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-series">
+            <p>No series available yet. Please check back later.</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.series-page {
+    padding: 20px 0;
+}
+
+.page-title {
+    color: #046a38;
+    font-size: 28px;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #046a38;
+}
+
+.series-category {
+    margin-bottom: 40px;
+}
+
+.category-title {
+    color: #333;
+    font-size: 22px;
+    margin-bottom: 20px;
+    padding-left: 15px;
+    border-left: 4px solid #046a38;
+}
+
+.series-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+}
+
+.series-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    text-decoration: none;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.series-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    border-left-color: #046a38;
+}
+
+.series-name {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.no-series {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.no-series p {
+    color: #666;
+    font-size: 18px;
+}
+
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 24px;
+    }
+    
+    .category-title {
+        font-size: 18px;
+    }
+    
+    .series-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
