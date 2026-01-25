@@ -160,4 +160,31 @@ def init_models(db):
         last_scrape = db.Column(db.DateTime, nullable=True)
         updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting
+    class Match(db.Model):
+        __tablename__ = 'matches'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        match_id = db.Column(db.String(50), unique=True, nullable=False)
+        match_format = db.Column(db.String(50), nullable=True)
+        venue = db.Column(db.String(200), nullable=True)
+        match_date = db.Column(db.String(50), nullable=True)
+        team1_name = db.Column(db.String(100), nullable=True)
+        team1_score = db.Column(db.String(50), nullable=True)
+        team2_name = db.Column(db.String(100), nullable=True)
+        team2_score = db.Column(db.String(50), nullable=True)
+        result = db.Column(db.String(200), nullable=True)
+        match_url = db.Column(db.String(500), nullable=True)
+        series_id = db.Column(db.Integer, db.ForeignKey('series.id'), nullable=False)
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+        updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    class MatchScrapeSetting(db.Model):
+        __tablename__ = 'match_scrape_settings'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        auto_scrape_enabled = db.Column(db.Boolean, default=False)
+        scrape_time = db.Column(db.String(10), default='10:00')
+        last_scrape = db.Column(db.DateTime, nullable=True)
+        updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting
