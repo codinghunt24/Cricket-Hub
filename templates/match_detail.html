@@ -73,6 +73,10 @@
                         </tbody>
                     </table>
                 </div>
+                {% else %}
+                <div class="no-details-msg">
+                    <i class="fas fa-info-circle"></i> Detailed batting stats loading...
+                </div>
                 {% endif %}
                 
                 {% if innings.extras %}
@@ -84,7 +88,7 @@
                 
                 {% if innings.bowling %}
                 <div class="bowling-table">
-                    <h4>Bowling</h4>
+                    <h4><i class="fas fa-bowling-ball"></i> Bowling</h4>
                     <table>
                         <thead>
                             <tr>
@@ -334,6 +338,19 @@
 .extras-row .label {
     font-weight: 600;
     margin-right: 10px;
+}
+
+.no-details-msg {
+    padding: 20px;
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    background: #fafafa;
+}
+
+.no-details-msg i {
+    margin-right: 8px;
+    color: #046a38;
 }
 
 .no-scorecard {
