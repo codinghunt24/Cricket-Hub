@@ -91,16 +91,44 @@ def player_detail(player_id):
 
 @app.route('/series')
 def series_page():
+    from collections import OrderedDict
+    
     categories = SeriesCategory.query.all()
+    all_series = Series.query.order_by(Series.start_date).all()
+    
+    month_names = {
+        '01': 'January', '02': 'February', '03': 'March', '04': 'April',
+        '05': 'May', '06': 'June', '07': 'July', '08': 'August',
+        '09': 'September', '10': 'October', '11': 'November', '12': 'December'
+    }
+    
+    month_data = OrderedDict()
+    for s in all_series:
+        if s.start_date:
+            parts = s.start_date.split('-')
+            if len(parts) >= 2:
+                year = parts[0]
+                month = parts[1]
+                month_key = f"{year}-{month}"
+                month_label = f"{month_names.get(month, month)} {year}"
+        else:
+            month_key = "unknown"
+            month_label = "Upcoming"
+        
+        if month_key not in month_data:
+            month_data[month_key] = {'label': month_label, 'series': []}
+        month_data[month_key]['series'].append(s)
+    
     category_data = []
     for cat in categories:
-        series_list = Series.query.filter_by(category_id=cat.id).order_by(Series.name).all()
+        series_list = Series.query.filter_by(category_id=cat.id).order_by(Series.start_date).all()
         if series_list:
             category_data.append({
                 'category': cat,
                 'series': series_list
             })
-    return render_template('series.html', category_data=category_data)
+    
+    return render_template('series.html', category_data=category_data, month_data=month_data, categories=categories)
 
 @app.route('/news')
 def news():
@@ -817,6 +845,7 @@ def scrape_series(category_slug):
             if existing:
                 existing.name = series_data['name']
                 existing.series_url = series_data['series_url']
+                existing.start_date = series_data.get('start_date')
                 existing.category_id = category.id
                 existing.updated_at = datetime.utcnow()
             else:
@@ -824,6 +853,7 @@ def scrape_series(category_slug):
                     series_id=series_data['series_id'],
                     name=series_data['name'],
                     series_url=series_data['series_url'],
+                    start_date=series_data.get('start_date'),
                     category_id=category.id
                 )
                 db.session.add(series)

@@ -14,7 +14,29 @@
         <button class="tab-btn" data-category="women" onclick="showCategory('women')">Women</button>
     </div>
     
-    {% if category_data %}
+    <div id="all-view">
+        {% if month_data %}
+            {% for month_key, data in month_data.items() %}
+            <div class="month-section">
+                <h2 class="month-title">{{ data.label }}</h2>
+                <div class="series-grid">
+                    {% for series in data.series %}
+                    <a href="{{ series.series_url }}" target="_blank" class="series-card" data-category="{{ series.category.slug }}">
+                        <div class="series-name">{{ series.name }}</div>
+                        <div class="series-category-badge">{{ series.category.name }}</div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-series">
+                <p>No series available yet. Please check back later.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div id="category-view" style="display: none;">
         {% for data in category_data %}
         <div class="series-category" data-cat="{{ data.category.slug }}">
             <h2 class="category-title">{{ data.category.name }}</h2>
@@ -27,11 +49,7 @@
             </div>
         </div>
         {% endfor %}
-    {% else %}
-        <div class="no-series">
-            <p>No series available yet. Please check back later.</p>
-        </div>
-    {% endif %}
+    </div>
 </div>
 
 <style>
@@ -79,6 +97,20 @@
     color: white;
 }
 
+.month-section {
+    margin-bottom: 40px;
+}
+
+.month-title {
+    color: white;
+    font-size: 20px;
+    margin-bottom: 20px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #046a38 0%, #0a8f4f 100%);
+    border-radius: 8px;
+    display: inline-block;
+}
+
 .series-category {
     margin-bottom: 40px;
 }
@@ -97,7 +129,7 @@
 
 .series-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 15px;
 }
 
@@ -110,6 +142,9 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
     border-left: 4px solid transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .series-card:hover {
@@ -119,9 +154,19 @@
 }
 
 .series-name {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
     line-height: 1.4;
+}
+
+.series-category-badge {
+    font-size: 11px;
+    color: white;
+    background: #046a38;
+    padding: 3px 10px;
+    border-radius: 12px;
+    display: inline-block;
+    width: fit-content;
 }
 
 .no-series {
@@ -152,6 +197,11 @@
         font-size: 12px;
     }
     
+    .month-title {
+        font-size: 16px;
+        padding: 10px 15px;
+    }
+    
     .category-title {
         font-size: 18px;
     }
@@ -172,18 +222,25 @@ function showCategory(category) {
         }
     });
     
-    const categories = document.querySelectorAll('.series-category');
-    categories.forEach(cat => {
-        if (category === 'all') {
-            cat.classList.remove('hidden');
-        } else {
+    const allView = document.getElementById('all-view');
+    const categoryView = document.getElementById('category-view');
+    
+    if (category === 'all') {
+        allView.style.display = 'block';
+        categoryView.style.display = 'none';
+    } else {
+        allView.style.display = 'none';
+        categoryView.style.display = 'block';
+        
+        const categories = document.querySelectorAll('.series-category');
+        categories.forEach(cat => {
             if (cat.dataset.cat === category) {
                 cat.classList.remove('hidden');
             } else {
                 cat.classList.add('hidden');
             }
-        }
-    });
+        });
+    }
 }
 </script>
 {% endblock %}

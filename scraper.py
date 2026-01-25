@@ -403,6 +403,27 @@ def extract_series_id(url):
         return match.group(1)
     return None
 
+def parse_series_date(name):
+    months = {
+        'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+        'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+        'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+    }
+    
+    date_pattern = r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s*(\d{1,2})'
+    year_pattern = r'(\d{4})'
+    
+    year_match = re.search(year_pattern, name)
+    year = year_match.group(1) if year_match else '2026'
+    
+    date_match = re.search(date_pattern, name)
+    if date_match:
+        month = months.get(date_match.group(1), '01')
+        day = date_match.group(2).zfill(2)
+        return f"{year}-{month}-{day}"
+    
+    return None
+
 def scrape_series_from_category(category_url):
     series_list = []
     html = fetch_page(category_url)
@@ -429,11 +450,13 @@ def scrape_series_from_category(category_url):
             continue
         
         series_url = BASE_URL + href if href.startswith('/') else href
+        start_date = parse_series_date(name)
         
         series_list.append({
             'series_id': series_id,
             'name': name,
-            'series_url': series_url
+            'series_url': series_url,
+            'start_date': start_date
         })
     
     return series_list
