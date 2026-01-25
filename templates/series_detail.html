@@ -24,9 +24,6 @@
     <div class="matches-section">
         <div class="section-header">
             <h2>Matches ({{ matches|length }})</h2>
-            <button class="btn btn-primary scrape-btn" onclick="scrapeMatches({{ series.id }})">
-                <i class="fas fa-sync-alt"></i> Scrape Matches
-            </button>
         </div>
         
         {% if matches %}
@@ -71,8 +68,8 @@
             <div class="no-matches-icon">
                 <i class="far fa-calendar-times"></i>
             </div>
-            <h3>No matches scraped yet</h3>
-            <p>Click "Scrape Matches" button to fetch match data from Cricbuzz</p>
+            <h3>No matches available</h3>
+            <p>Match schedule will be updated soon</p>
         </div>
         {% endif %}
     </div>
@@ -361,30 +358,4 @@
 }
 </style>
 
-<script>
-async function scrapeMatches(seriesId) {
-    const btn = document.querySelector('.scrape-btn');
-    const originalText = btn.innerHTML;
-    
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scraping...';
-    btn.disabled = true;
-    
-    try {
-        const response = await fetch(`/api/scrape/matches/${seriesId}`, { method: 'POST' });
-        const data = await response.json();
-        
-        if (data.success) {
-            alert(data.message);
-            location.reload();
-        } else {
-            alert('Error: ' + data.message);
-        }
-    } catch (error) {
-        alert('Error scraping matches: ' + error.message);
-    } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    }
-}
-</script>
 {% endblock %}
