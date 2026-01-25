@@ -4,7 +4,7 @@
 A Cricbuzz-inspired cricket website built with Python Flask featuring web scraping for team and player data from Cricbuzz. Includes a responsive frontend with sticky navbar and dropdown submenus, plus an admin panel with sidebar navigation and scraping controls.
 
 ## Current State
-- **Status**: Format-wise stats display complete (Test, ODI, T20, IPL)
+- **Status**: Format-wise stats display complete (Test, ODI, T20, IPL) with Career Timeline
 - **Last Updated**: January 25, 2026
 
 ## Project Structure
@@ -87,6 +87,7 @@ A Cricbuzz-inspired cricket website built with Python Flask featuring web scrapi
   - Personal: born, birth_place, nickname, batting_style, bowling_style
   - Batting: bat_matches, bat_innings, bat_runs, bat_balls, bat_highest, bat_average, bat_strike_rate, bat_not_outs, bat_fours, bat_sixes, bat_ducks, bat_fifties, bat_hundreds, bat_two_hundreds
   - Bowling: bowl_matches, bowl_innings, bowl_balls, bowl_runs, bowl_maidens, bowl_wickets, bowl_average, bowl_economy, bowl_strike_rate, bowl_best_innings, bowl_best_match, bowl_four_wickets, bowl_five_wickets, bowl_ten_wickets
+  - Career Timeline: career_timeline (JSON with format keys containing debut/last_match)
   - profile_scraped, profile_scraped_at
 - **ScrapeLog**: category, status, message, timestamps
 - **ScrapeSetting**: auto_scrape_enabled, scrape_time, category-wise settings
