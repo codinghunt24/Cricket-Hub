@@ -23,22 +23,24 @@
         <h2>Squad</h2>
         <div class="players-grid">
             {% for player in players %}
-            <div class="player-card">
-                <div class="player-photo">
-                    {% if player.photo_url %}
-                    <img src="{{ player.photo_url }}" alt="{{ player.name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div class="photo-placeholder" style="display:none;">{{ player.name[0] }}</div>
-                    {% else %}
-                    <div class="photo-placeholder">{{ player.name[0] }}</div>
-                    {% endif %}
+            <a href="/player/{{ player.id }}" class="player-card-link">
+                <div class="player-card">
+                    <div class="player-photo">
+                        {% if player.photo_url %}
+                        <img src="{{ player.photo_url }}" alt="{{ player.name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="photo-placeholder" style="display:none;">{{ player.name[0] }}</div>
+                        {% else %}
+                        <div class="photo-placeholder">{{ player.name[0] }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="player-info">
+                        <h4 class="player-name">{{ player.name }}</h4>
+                        {% if player.role %}
+                        <span class="player-role">{{ player.role }}</span>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="player-info">
-                    <h4 class="player-name">{{ player.name }}</h4>
-                    {% if player.role %}
-                    <span class="player-role">{{ player.role }}</span>
-                    {% endif %}
-                </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
     </div>

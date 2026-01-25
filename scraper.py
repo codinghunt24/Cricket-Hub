@@ -147,9 +147,18 @@ def scrape_players_from_team(team_url):
         role = None
         parent_div = link.find_parent('div')
         if parent_div:
-            role_elem = parent_div.find(string=re.compile(r'(Batsman|Bowler|All-rounder|Wicketkeeper|Batting Allrounder|Bowling Allrounder)', re.I))
+            role_elem = parent_div.find(string=re.compile(r'(Batsman|Batter|Bowler|All-rounder|Allrounder|Wicketkeeper|Batting Allrounder|Bowling Allrounder|WK-Batter|Pace Bowler|Spin Bowler)', re.I))
             if role_elem:
                 role = role_elem.strip()
+        
+        if not role:
+            container = link.find_parent(['div', 'li', 'article'])
+            if container:
+                for elem in container.find_all(['span', 'div', 'p']):
+                    text = elem.get_text(strip=True)
+                    if re.match(r'^(Batsman|Batter|Bowler|All-rounder|Allrounder|Wicketkeeper|WK-Batter|Pace Bowler|Spin Bowler)$', text, re.I):
+                        role = text
+                        break
         
         players.append({
             'player_id': player_id,

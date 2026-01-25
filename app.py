@@ -67,6 +67,11 @@ def team_detail(team_id):
     players = Player.query.filter_by(team_id=team.id).all()
     return render_template('team_detail.html', team=team, players=players)
 
+@app.route('/player/<int:player_id>')
+def player_detail(player_id):
+    player = Player.query.get_or_404(player_id)
+    return render_template('player_detail.html', player=player)
+
 @app.route('/series')
 def series():
     return render_template('index.html')

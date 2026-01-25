@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ player.name }} - CricLive{% endblock %}
+
+{% block content %}
+<section class="player-detail-page">
+    <div class="page-header">
+        <a href="/team/{{ player.team.id }}" class="back-link">&larr; Back to {{ player.team.name }}</a>
+    </div>
+    
+    <div class="player-profile">
+        <div class="player-profile-header">
+            <div class="player-photo-large">
+                {% if player.photo_url %}
+                <img src="{{ player.photo_url }}" alt="{{ player.name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="photo-placeholder-large" style="display:none;">{{ player.name[0] }}</div>
+                {% else %}
+                <div class="photo-placeholder-large">{{ player.name[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="player-profile-info">
+                <h1 class="player-profile-name">{{ player.name }}</h1>
+                {% if player.role %}
+                <span class="player-profile-role">{{ player.role }}</span>
+                {% endif %}
+                <div class="player-team-info">
+                    <div class="team-badge">
+                        {% if player.team.flag_url %}
+                        <img src="{{ player.team.flag_url }}" alt="{{ player.team.name }}">
+                        {% endif %}
+                        <span>{{ player.team.name }}</span>
+                    </div>
+                    <span class="team-category">{{ player.team.category.name }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="player-details-card">
+            <h3>Player Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Full Name</span>
+                    <span class="info-value">{{ player.name }}</span>
+                </div>
+                {% if player.role %}
+                <div class="info-item">
+                    <span class="info-label">Role</span>
+                    <span class="info-value">{{ player.role }}</span>
+                </div>
+                {% endif %}
+                <div class="info-item">
+                    <span class="info-label">Team</span>
+                    <span class="info-value">{{ player.team.name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Category</span>
+                    <span class="info-value">{{ player.team.category.name }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
