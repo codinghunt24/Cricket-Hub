@@ -181,7 +181,7 @@ def series_page():
 @app.route('/series/<int:series_id>')
 def series_detail(series_id):
     series = Series.query.get_or_404(series_id)
-    matches = Match.query.filter_by(series_id=series_id).order_by(Match.match_date).all()
+    matches = Match.query.filter_by(series_id=series_id).order_by(Match.match_id).all()
     category = SeriesCategory.query.get(series.category_id)
     return render_template('series_detail.html', series=series, matches=matches, category=category)
 
