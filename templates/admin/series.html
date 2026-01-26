@@ -81,6 +81,33 @@
     cursor: not-allowed;
 }
 
+.btn-match {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 10px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+}
+
+.btn-match:hover {
+    background: #2563eb;
+}
+
+.btn-match:disabled {
+    background: #374151;
+    cursor: not-allowed;
+}
+
+.btn-match.expanded {
+    background: #ef4444;
+}
+
 .data-preview {
     background: #1f2937;
     border-radius: 6px;
@@ -114,7 +141,7 @@
 
 .preview-content {
     padding: 15px;
-    max-height: 500px;
+    max-height: 600px;
     overflow-y: auto;
 }
 
@@ -147,6 +174,7 @@
     padding: 6px 10px;
     border-bottom: 1px solid #374151;
     color: #e4e4e7;
+    vertical-align: middle;
 }
 
 .series-table tbody tr:hover {
@@ -164,30 +192,16 @@
     font-weight: 500;
 }
 
-.series-table .url-col {
-    font-family: monospace;
-    font-size: 9px;
-    color: #9ca3af;
-    max-width: 300px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.series-table .url-col a {
-    color: #60a5fa;
-    text-decoration: none;
-}
-
-.series-table .url-col a:hover {
-    text-decoration: underline;
-}
-
 .series-table .month-col {
     color: #fbbf24;
     font-weight: 600;
     font-size: 10px;
     white-space: nowrap;
+}
+
+.series-table .action-col {
+    width: 100px;
+    text-align: center;
 }
 
 .loading {
@@ -203,63 +217,109 @@
     color: #10b981;
 }
 
-.matches-table {
+.matches-dropdown {
+    display: none;
+    background: #111827;
+    border-top: 1px solid #374151;
+}
+
+.matches-dropdown.show {
+    display: table-row;
+}
+
+.matches-dropdown td {
+    padding: 0;
+}
+
+.matches-container {
+    padding: 10px 15px;
+    background: #111827;
+}
+
+.matches-loading {
+    text-align: center;
+    padding: 15px;
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+.matches-list {
     width: 100%;
     border-collapse: collapse;
     font-size: 10px;
 }
 
-.matches-table th {
-    background: #111827;
-    color: #e4e4e7;
+.matches-list th {
+    background: #1f2937;
+    color: #9ca3af;
     padding: 6px 8px;
     text-align: left;
     font-weight: 600;
     font-size: 9px;
     text-transform: uppercase;
-    position: sticky;
-    top: 0;
 }
 
-.matches-table td {
+.matches-list td {
     padding: 5px 8px;
     border-bottom: 1px solid #374151;
     color: #e4e4e7;
 }
 
-.matches-table tbody tr:hover {
-    background: #374151;
+.matches-list tbody tr:hover {
+    background: #1f2937;
 }
 
-.matches-table .format-col {
+.matches-list .match-id {
     color: #10b981;
+    font-family: monospace;
+    font-size: 9px;
+    width: 60px;
+}
+
+.matches-list .match-format {
+    color: #3b82f6;
     font-weight: 600;
     width: 80px;
 }
 
-.matches-table .date-col {
+.matches-list .match-date {
     color: #9ca3af;
     font-size: 9px;
-    width: 120px;
+    width: 100px;
 }
 
-.matches-table .teams-col {
+.matches-list .match-teams {
     font-weight: 500;
 }
 
-.matches-table .score-col {
+.matches-list .match-venue {
+    color: #9ca3af;
+    font-size: 9px;
+    max-width: 150px;
+}
+
+.matches-list .match-score {
     font-family: monospace;
     font-size: 9px;
 }
 
-.matches-table .result-col {
+.matches-list .match-result {
     color: #fbbf24;
     font-size: 9px;
-    max-width: 150px;
+    max-width: 120px;
+}
+
+.no-matches {
+    text-align: center;
+    padding: 15px;
+    color: #9ca3af;
+    font-size: 11px;
 }
 </style>
 
 <script>
+let seriesData = [];
+
 async function scrapeSeriesFromUrl() {
     const urlInput = document.getElementById('series-url');
     const btn = document.querySelector('.btn-scrape');
@@ -285,64 +345,112 @@ async function scrapeSeriesFromUrl() {
         
         const data = await response.json();
         
-        if (data.success) {
-            if (data.type === 'matches' && data.matches && data.matches.length > 0) {
-                countBadge.textContent = data.matches.length + ' matches';
-                
-                let html = '<table class="matches-table"><thead><tr>';
-                html += '<th>Format</th>';
-                html += '<th>Date</th>';
-                html += '<th>Teams</th>';
-                html += '<th>Score</th>';
-                html += '<th>Result</th>';
-                html += '</tr></thead><tbody>';
-                
-                data.matches.forEach(m => {
-                    html += `<tr>
-                        <td class="format-col">${m.match_format || '-'}</td>
-                        <td class="date-col">${m.match_date || '-'}</td>
-                        <td class="teams-col">${m.team1 || '?'} vs ${m.team2 || '?'}</td>
-                        <td class="score-col">${m.team1_score || '-'} vs ${m.team2_score || '-'}</td>
-                        <td class="result-col">${m.result || '-'}</td>
-                    </tr>`;
-                });
-                
-                html += '</tbody></table>';
-                previewContent.innerHTML = html;
-                
-            } else if (data.series && data.series.length > 0) {
-                countBadge.textContent = data.series.length + ' series';
-                
-                let html = '<table class="series-table"><thead><tr>';
-                html += '<th>ID</th>';
-                html += '<th>Series Name</th>';
-                html += '<th>Month</th>';
-                html += '<th>URL</th>';
-                html += '</tr></thead><tbody>';
-                
-                data.series.forEach(s => {
-                    html += `<tr>
-                        <td class="id-col">${s.id}</td>
-                        <td class="name-col">${s.name}</td>
-                        <td class="month-col">${s.month_year || '-'}</td>
-                        <td class="url-col"><a href="${s.url}" target="_blank">${s.url}</a></td>
-                    </tr>`;
-                });
-                
-                html += '</tbody></table>';
-                previewContent.innerHTML = html;
-            } else {
-                previewContent.innerHTML = '<p class="hint-text">No data found</p>';
-                countBadge.textContent = '0';
-            }
+        if (data.success && data.series && data.series.length > 0) {
+            seriesData = data.series;
+            countBadge.textContent = data.series.length + ' series';
+            
+            let html = '<table class="series-table"><thead><tr>';
+            html += '<th>ID</th>';
+            html += '<th>Series Name</th>';
+            html += '<th>Month</th>';
+            html += '<th>Action</th>';
+            html += '</tr></thead><tbody>';
+            
+            data.series.forEach((s, index) => {
+                html += `<tr id="series-row-${index}">
+                    <td class="id-col">${s.id}</td>
+                    <td class="name-col">${s.name}</td>
+                    <td class="month-col">${s.month_year || '-'}</td>
+                    <td class="action-col">
+                        <button class="btn-match" id="btn-${index}" onclick="toggleMatches(${index}, '${s.url}')">
+                            <i class="fas fa-cricket-bat-ball"></i> Scrape Match
+                        </button>
+                    </td>
+                </tr>
+                <tr class="matches-dropdown" id="matches-row-${index}">
+                    <td colspan="4">
+                        <div class="matches-container" id="matches-container-${index}">
+                        </div>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            previewContent.innerHTML = html;
         } else {
-            previewContent.innerHTML = '<p class="hint-text">Error: ' + (data.message || 'Unknown error') + '</p>';
+            previewContent.innerHTML = '<p class="hint-text">No series found</p>';
+            countBadge.textContent = '0';
         }
     } catch (error) {
         previewContent.innerHTML = '<p class="hint-text">Error: ' + error.message + '</p>';
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-download"></i> Scrape';
+    }
+}
+
+async function toggleMatches(index, url) {
+    const matchesRow = document.getElementById(`matches-row-${index}`);
+    const container = document.getElementById(`matches-container-${index}`);
+    const btn = document.getElementById(`btn-${index}`);
+    
+    if (matchesRow.classList.contains('show')) {
+        matchesRow.classList.remove('show');
+        btn.classList.remove('expanded');
+        btn.innerHTML = '<i class="fas fa-cricket-bat-ball"></i> Scrape Match';
+        return;
+    }
+    
+    matchesRow.classList.add('show');
+    btn.classList.add('expanded');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+    container.innerHTML = '<div class="matches-loading"><i class="fas fa-spinner fa-spin"></i> Fetching matches...</div>';
+    
+    try {
+        const response = await fetch('/api/scrape/series-json', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: url })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.type === 'matches' && data.matches && data.matches.length > 0) {
+            let html = '<table class="matches-list"><thead><tr>';
+            html += '<th>ID</th>';
+            html += '<th>Format</th>';
+            html += '<th>Date</th>';
+            html += '<th>Teams</th>';
+            html += '<th>Venue</th>';
+            html += '<th>Score</th>';
+            html += '<th>Result</th>';
+            html += '</tr></thead><tbody>';
+            
+            data.matches.forEach(m => {
+                html += `<tr>
+                    <td class="match-id">${m.match_id || '-'}</td>
+                    <td class="match-format">${m.match_format || '-'}</td>
+                    <td class="match-date">${m.match_date || '-'}</td>
+                    <td class="match-teams">${m.team1 || '?'} vs ${m.team2 || '?'}</td>
+                    <td class="match-venue">${m.venue || '-'}</td>
+                    <td class="match-score">${m.team1_score || '-'}<br>${m.team2_score || '-'}</td>
+                    <td class="match-result">${m.result || '-'}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+            btn.innerHTML = '<i class="fas fa-times"></i> Close';
+        } else {
+            container.innerHTML = '<div class="no-matches">No matches found</div>';
+            btn.innerHTML = '<i class="fas fa-times"></i> Close';
+        }
+    } catch (error) {
+        container.innerHTML = '<div class="no-matches">Error: ' + error.message + '</div>';
+        btn.innerHTML = '<i class="fas fa-times"></i> Close';
+    } finally {
+        btn.disabled = false;
     }
 }
 </script>
