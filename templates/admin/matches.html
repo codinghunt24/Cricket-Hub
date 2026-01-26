@@ -23,23 +23,22 @@
         <div id="liveScrapingResult" style="display: none; padding: 10px; border-radius: 5px; margin-top: 10px;"></div>
     </div>
     
-    <div class="stats-row">
-        <div class="stat-box">
-            <span class="stat-num" id="totalCount">{{ matches|length }}</span>
-            <span class="stat-label">Total</span>
-        </div>
-        <div class="stat-box" style="border-left: 3px solid #ff4444;">
-            <span class="stat-num" id="liveCount">{{ live_count }}</span>
-            <span class="stat-label">Live</span>
-        </div>
-        <div class="stat-box" style="border-left: 3px solid #ffaa00;">
-            <span class="stat-num" id="inningsCount">{{ innings_count }}</span>
-            <span class="stat-label">Innings Break</span>
-        </div>
-        <div class="stat-box" style="border-left: 3px solid #00cc66;">
-            <span class="stat-num" id="completeCount">{{ complete_count }}</span>
-            <span class="stat-label">Complete</span>
-        </div>
+    <div class="filter-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+        <button class="filter-tab active" data-filter="all" onclick="filterMatches('all')">
+            All <span class="tab-count">{{ matches|length }}</span>
+        </button>
+        <button class="filter-tab" data-filter="Live" onclick="filterMatches('Live')" style="border-color: #ff4444;">
+            Live <span class="tab-count" style="background: #ff4444;">{{ live_count }}</span>
+        </button>
+        <button class="filter-tab" data-filter="Innings Break" onclick="filterMatches('Innings Break')" style="border-color: #ffaa00;">
+            Innings Break <span class="tab-count" style="background: #ffaa00; color: #333;">{{ innings_count }}</span>
+        </button>
+        <button class="filter-tab" data-filter="Complete" onclick="filterMatches('Complete')" style="border-color: #00cc66;">
+            Complete <span class="tab-count" style="background: #00cc66;">{{ complete_count }}</span>
+        </button>
+        <button class="filter-tab" data-filter="Upcoming" onclick="filterMatches('Upcoming')" style="border-color: #3498db;">
+            Upcoming <span class="tab-count" style="background: #3498db;">{{ upcoming_count }}</span>
+        </button>
     </div>
     
     {% if matches %}
@@ -47,6 +46,7 @@
         <table class="matches-table">
             <thead>
                 <tr>
+                    <th>Status</th>
                     <th>Date</th>
                     <th>Match</th>
                     <th>Teams</th>
@@ -57,7 +57,12 @@
             </thead>
             <tbody>
                 {% for match in matches %}
-                <tr>
+                <tr data-state="{{ match.state or 'Unknown' }}">
+                    <td class="status-col">
+                        <span class="status-badge {% if match.state == 'Live' %}live{% elif match.state == 'Innings Break' %}innings{% elif match.state == 'Complete' %}complete{% else %}upcoming{% endif %}">
+                            {{ match.state or 'Unknown' }}
+                        </span>
+                    </td>
                     <td class="date-col">{{ match.match_date or 'TBD' }}</td>
                     <td class="format-col">{{ match.match_format or '-' }}</td>
                     <td class="teams-col">
@@ -116,6 +121,79 @@
 
 .btn-danger:hover {
     background: #c82333;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-tab {
+    background: #2a2a2a;
+    border: 2px solid #444;
+    color: #ccc;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.filter-tab:hover {
+    background: #333;
+}
+
+.filter-tab.active {
+    background: #00deaa;
+    border-color: #00deaa;
+    color: #111;
+}
+
+.tab-count {
+    background: #444;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.filter-tab.active .tab-count {
+    background: rgba(0,0,0,0.2);
+    color: #111;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.live {
+    background: #ff4444;
+    color: white;
+}
+
+.status-badge.innings {
+    background: #ffaa00;
+    color: #333;
+}
+
+.status-badge.complete {
+    background: #00cc66;
+    color: white;
+}
+
+.status-badge.upcoming {
+    background: #3498db;
+    color: white;
 }
 
 .stats-row {
@@ -301,6 +379,25 @@ function clearAllMatches() {
                 btn.textContent = 'Clear All';
             });
     }
+}
+
+function filterMatches(status) {
+    const tabs = document.querySelectorAll('.filter-tab');
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.filter === status) {
+            tab.classList.add('active');
+        }
+    });
+    
+    const rows = document.querySelectorAll('.matches-table tbody tr');
+    rows.forEach(row => {
+        if (status === 'all') {
+            row.style.display = '';
+        } else {
+            row.style.display = row.dataset.state === status ? '' : 'none';
+        }
+    });
 }
 </script>
 {% endblock %}
