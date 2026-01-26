@@ -351,19 +351,28 @@ def scrape_live_scores():
         if series_match:
             series_id = series_match.group(1)
         
-        # Determine match status
+        # Determine match status from title attribute
         status = 'Upcoming'
-        has_live_tag = link.find('span', class_=re.compile(r'cbPlusLiveTag')) is not None
+        title_lower = title.lower()
         
-        if has_live_tag:
+        # Check for live indicators in title
+        if ' - live' in title_lower or title_lower.endswith(' live') or '- live ' in title_lower:
             status = 'Live'
-        elif 'Innings Break' in title or 'Ings Break' in title:
+        elif 'innings break' in title_lower or 'ings break' in title_lower:
             status = 'Innings Break'
-        elif 'Complete' in title or 'Won' in title:
+        elif 'stumps' in title_lower or 'lunch' in title_lower or 'tea' in title_lower or 'drinks' in title_lower:
+            status = 'Innings Break'
+        elif ' won' in title_lower or 'complete' in title_lower or ' tied' in title_lower or 'drawn' in title_lower:
             status = 'Complete'
-        elif 'Preview' in title:
+        elif 'preview' in title_lower or 'upcoming' in title_lower or 'scheduled' in title_lower:
             status = 'Upcoming'
-        elif 'Live' in title:
+        elif 'need' in title_lower or 'trail' in title_lower or 'lead' in title_lower:
+            # Match is in progress if there's a "need X runs" or "trail by" or "lead by"
+            status = 'Live'
+        
+        # Also check for live tag in HTML
+        has_live_tag = link.find('span', class_=re.compile(r'cbPlusLiveTag|live', re.IGNORECASE)) is not None
+        if has_live_tag:
             status = 'Live'
         
         # Extract team names and match format from title
@@ -395,6 +404,17 @@ def scrape_live_scores():
             team_parts = teams.split(' vs ')
             team1 = team_parts[0].strip()
             team2 = team_parts[1].strip() if len(team_parts) > 1 else ''
+            
+            # Clean team2 - remove match format like ", 3rd T20I", ", 1st ODI", etc.
+            # Pattern: team name followed by comma and match format
+            format_patterns = [
+                r',\s*\d+(?:st|nd|rd|th)\s+(?:T20I?|ODI|Test|T10).*$',  # ", 3rd T20I", ", 1st ODI"
+                r',\s*(?:Final|Semi[- ]?[Ff]inal|Quarter[- ]?[Ff]inal).*$',  # ", Final", ", Semi-final"
+                r',\s*(?:Group\s+[A-Z]|Qualifier|Play[- ]?off).*$',  # ", Group A", ", Qualifier"
+                r',\s*\d+(?:st|nd|rd|th)\s+Match.*$',  # ", 16th Match"
+            ]
+            for pattern in format_patterns:
+                team2 = re.sub(pattern, '', team2, flags=re.IGNORECASE).strip()
         
         match_data = {
             'match_id': match_id,
