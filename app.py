@@ -111,6 +111,137 @@ with app.app_context():
 
 init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player)
 
+def upsert_series(series_data, category_id):
+    """Insert or update series by series_id"""
+    if not series_data.get('series_id'):
+        return None
+    
+    existing = Series.query.filter_by(series_id=series_data['series_id']).first()
+    if existing:
+        existing.name = series_data.get('name', existing.name)
+        existing.series_url = series_data.get('series_url', existing.series_url)
+        existing.start_date = series_data.get('start_date', existing.start_date)
+        existing.end_date = series_data.get('end_date', existing.end_date)
+        existing.date_range = series_data.get('date_range', existing.date_range)
+        existing.category_id = category_id
+        return existing
+    else:
+        new_series = Series(
+            series_id=series_data['series_id'],
+            name=series_data.get('name', ''),
+            series_url=series_data.get('series_url', ''),
+            start_date=series_data.get('start_date'),
+            end_date=series_data.get('end_date'),
+            date_range=series_data.get('date_range'),
+            category_id=category_id
+        )
+        db.session.add(new_series)
+        return new_series
+
+def upsert_match(match_data, db_series_id=None):
+    """Insert or update match by match_id"""
+    if not match_data.get('match_id'):
+        return None
+    
+    existing = Match.query.filter_by(match_id=str(match_data['match_id'])).first()
+    if existing:
+        existing.cricbuzz_series_id = match_data.get('series_id', existing.cricbuzz_series_id)
+        existing.team1_id = match_data.get('team1_id', existing.team1_id)
+        existing.team2_id = match_data.get('team2_id', existing.team2_id)
+        existing.venue_id = match_data.get('venue_id', existing.venue_id)
+        existing.match_format = match_data.get('match_format', existing.match_format)
+        existing.format_type = match_data.get('format_type', existing.format_type)
+        existing.venue = match_data.get('venue', existing.venue)
+        existing.match_date = match_data.get('match_date', existing.match_date)
+        existing.state = match_data.get('state', existing.state)
+        existing.team1_name = match_data.get('team1') or match_data.get('team1_name', existing.team1_name)
+        existing.team1_score = match_data.get('team1_score', existing.team1_score)
+        existing.team2_name = match_data.get('team2') or match_data.get('team2_name', existing.team2_name)
+        existing.team2_score = match_data.get('team2_score', existing.team2_score)
+        existing.result = match_data.get('result', existing.result)
+        existing.match_url = match_data.get('match_url', existing.match_url)
+        existing.series_name = match_data.get('series_name', existing.series_name)
+        if db_series_id:
+            existing.series_id = db_series_id
+        if match_data.get('batting'):
+            existing.batting_data = match_data.get('batting')
+        if match_data.get('bowling'):
+            existing.bowling_data = match_data.get('bowling')
+        return existing
+    else:
+        new_match = Match(
+            match_id=str(match_data['match_id']),
+            cricbuzz_series_id=match_data.get('series_id', ''),
+            team1_id=match_data.get('team1_id', ''),
+            team2_id=match_data.get('team2_id', ''),
+            venue_id=match_data.get('venue_id', ''),
+            match_format=match_data.get('match_format', ''),
+            format_type=match_data.get('format_type', ''),
+            venue=match_data.get('venue', ''),
+            match_date=match_data.get('match_date', ''),
+            state=match_data.get('state', ''),
+            team1_name=match_data.get('team1') or match_data.get('team1_name', ''),
+            team1_score=match_data.get('team1_score', ''),
+            team2_name=match_data.get('team2') or match_data.get('team2_name', ''),
+            team2_score=match_data.get('team2_score', ''),
+            result=match_data.get('result', ''),
+            match_url=match_data.get('match_url', ''),
+            series_name=match_data.get('series_name', ''),
+            series_id=db_series_id,
+            batting_data=match_data.get('batting'),
+            bowling_data=match_data.get('bowling')
+        )
+        db.session.add(new_match)
+        return new_match
+
+def upsert_team(team_data, category_id):
+    """Insert or update team by team_id"""
+    if not team_data.get('team_id'):
+        return None
+    
+    existing = Team.query.filter_by(team_id=team_data['team_id']).first()
+    if existing:
+        existing.name = team_data.get('name', existing.name)
+        existing.flag_url = team_data.get('flag_url', existing.flag_url)
+        existing.team_url = team_data.get('team_url', existing.team_url)
+        existing.category_id = category_id
+        return existing
+    else:
+        new_team = Team(
+            team_id=team_data['team_id'],
+            name=team_data.get('name', ''),
+            flag_url=team_data.get('flag_url'),
+            team_url=team_data.get('team_url'),
+            category_id=category_id
+        )
+        db.session.add(new_team)
+        return new_team
+
+def upsert_player(player_data, db_team_id):
+    """Insert or update player by player_id"""
+    if not player_data.get('player_id'):
+        return None
+    
+    existing = Player.query.filter_by(player_id=player_data['player_id']).first()
+    if existing:
+        existing.name = player_data.get('name', existing.name)
+        existing.role = player_data.get('role', existing.role)
+        existing.photo_url = player_data.get('photo_url', existing.photo_url)
+        existing.player_url = player_data.get('player_url', existing.player_url)
+        existing.team_id = db_team_id
+        return existing
+    else:
+        new_player = Player(
+            player_id=player_data['player_id'],
+            name=player_data.get('name', ''),
+            role=player_data.get('role'),
+            photo_url=player_data.get('photo_url'),
+            player_url=player_data.get('player_url'),
+            team_id=db_team_id
+        )
+        db.session.add(new_player)
+        return new_player
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -292,39 +423,48 @@ def scrape_category(category_slug):
             return jsonify({'success': False, 'message': 'Failed to scrape'}), 500
         
         teams_scraped = 0
+        teams_updated = 0
         for team_data in result['teams']:
-            existing = Team.query.filter_by(name=team_data['name'], category_id=category.id).first()
+            if not team_data.get('team_id'):
+                continue
+            
+            # Use team_id for lookup (more reliable than name)
+            existing = Team.query.filter_by(team_id=team_data['team_id']).first()
             if existing:
-                existing.team_id = team_data.get('team_id')
-                existing.flag_url = team_data.get('flag_url')
-                existing.team_url = team_data.get('team_url')
+                existing.name = team_data.get('name', existing.name)
+                existing.flag_url = team_data.get('flag_url', existing.flag_url)
+                existing.team_url = team_data.get('team_url', existing.team_url)
+                existing.category_id = category.id
                 existing.updated_at = datetime.utcnow()
+                teams_updated += 1
             else:
                 team = Team(
-                    team_id=team_data.get('team_id'),
+                    team_id=team_data['team_id'],
                     name=team_data['name'],
                     flag_url=team_data.get('flag_url'),
                     team_url=team_data.get('team_url'),
                     category_id=category.id
                 )
                 db.session.add(team)
-            teams_scraped += 1
+                teams_scraped += 1
         
         db.session.commit()
         
+        total = teams_scraped + teams_updated
         log = ScrapeLog(
             category=category_slug,
             status='success',
-            message=f'Scraped {teams_scraped} teams',
-            teams_scraped=teams_scraped
+            message=f'Saved {teams_scraped} new, updated {teams_updated} teams',
+            teams_scraped=total
         )
         db.session.add(log)
         db.session.commit()
         
         return jsonify({
             'success': True, 
-            'message': f'Scraped {teams_scraped} teams successfully',
-            'teams_scraped': teams_scraped
+            'message': f'Saved {teams_scraped} new teams, updated {teams_updated} existing',
+            'teams_scraped': teams_scraped,
+            'teams_updated': teams_updated
         })
     
     except Exception as e:
@@ -348,17 +488,24 @@ def scrape_team_players(team_id):
         players_data = scraper.scrape_players_from_team(team.team_url)
         
         players_scraped = 0
+        players_updated = 0
         for player_data in players_data:
-            existing = Player.query.filter_by(name=player_data['name'], team_id=team.id).first()
+            if not player_data.get('player_id'):
+                continue
+            
+            # Use player_id for lookup (more reliable than name)
+            existing = Player.query.filter_by(player_id=player_data['player_id']).first()
             if existing:
-                existing.player_id = player_data.get('player_id')
-                existing.photo_url = player_data.get('photo_url')
-                existing.player_url = player_data.get('player_url')
-                existing.role = player_data.get('role')
+                existing.name = player_data.get('name', existing.name)
+                existing.photo_url = player_data.get('photo_url', existing.photo_url)
+                existing.player_url = player_data.get('player_url', existing.player_url)
+                existing.role = player_data.get('role', existing.role)
+                existing.team_id = team.id
                 existing.updated_at = datetime.utcnow()
+                players_updated += 1
             else:
                 player = Player(
-                    player_id=player_data.get('player_id'),
+                    player_id=player_data['player_id'],
                     name=player_data['name'],
                     photo_url=player_data.get('photo_url'),
                     player_url=player_data.get('player_url'),
@@ -366,23 +513,25 @@ def scrape_team_players(team_id):
                     team_id=team.id
                 )
                 db.session.add(player)
-            players_scraped += 1
+                players_scraped += 1
         
         db.session.commit()
         
+        total = players_scraped + players_updated
         log = ScrapeLog(
             category=f'team_{team.name}',
             status='success',
-            message=f'Scraped {players_scraped} players',
-            players_scraped=players_scraped
+            message=f'Saved {players_scraped} new, updated {players_updated} players',
+            players_scraped=total
         )
         db.session.add(log)
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'message': f'Scraped {players_scraped} players successfully',
-            'players_scraped': players_scraped
+            'message': f'Saved {players_scraped} new players, updated {players_updated} existing',
+            'players_scraped': players_scraped,
+            'players_updated': players_updated
         })
     
     except Exception as e:
@@ -1101,11 +1250,31 @@ def scrape_series_json():
             
             matches_data.sort(key=lambda x: x.get('date_timestamp', 0))
             
+            # AUTO-SAVE: Dynamically save all matches to database
+            saved_count = 0
+            updated_count = 0
+            for match in matches_data:
+                if match.get('match_id'):
+                    existing = Match.query.filter_by(match_id=str(match['match_id'])).first()
+                    upsert_match(match)
+                    if existing:
+                        updated_count += 1
+                    else:
+                        saved_count += 1
+            
+            try:
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                app.logger.error(f"Error saving matches: {e}")
+            
             return jsonify({
                 'success': True,
                 'type': 'matches',
                 'matches': matches_data,
-                'count': len(matches_data)
+                'count': len(matches_data),
+                'saved': saved_count,
+                'updated': updated_count
             })
         
         else:
@@ -1327,9 +1496,23 @@ def scrape_match_json():
             match_data['batting'] = []
             match_data['bowling'] = []
         
+        # AUTO-SAVE: Dynamically save match to database
+        is_new = False
+        if match_data.get('match_id'):
+            existing = Match.query.filter_by(match_id=str(match_data['match_id'])).first()
+            is_new = existing is None
+            upsert_match(match_data)
+            try:
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                app.logger.error(f"Error saving match: {e}")
+        
         return jsonify({
             'success': True,
-            'data': match_data
+            'data': match_data,
+            'saved': is_new,
+            'updated': not is_new
         })
         
     except Exception as e:
@@ -1447,16 +1630,21 @@ def scrape_series(category_slug):
             return jsonify({'success': False, 'message': 'No series found'}), 404
         
         series_scraped = 0
+        series_updated = 0
         for series_data in series_list:
+            if not series_data.get('series_id'):
+                continue
+            
             existing = Series.query.filter_by(series_id=series_data['series_id']).first()
             if existing:
-                existing.name = series_data['name']
-                existing.series_url = series_data['series_url']
-                existing.start_date = series_data.get('start_date')
-                existing.end_date = series_data.get('end_date')
-                existing.date_range = series_data.get('date_range')
+                existing.name = series_data.get('name', existing.name)
+                existing.series_url = series_data.get('series_url', existing.series_url)
+                existing.start_date = series_data.get('start_date', existing.start_date)
+                existing.end_date = series_data.get('end_date', existing.end_date)
+                existing.date_range = series_data.get('date_range', existing.date_range)
                 existing.category_id = category.id
                 existing.updated_at = datetime.utcnow()
+                series_updated += 1
             else:
                 series = Series(
                     series_id=series_data['series_id'],
@@ -1468,15 +1656,16 @@ def scrape_series(category_slug):
                     category_id=category.id
                 )
                 db.session.add(series)
-            series_scraped += 1
+                series_scraped += 1
         
         db.session.commit()
         
+        total = series_scraped + series_updated
         log = ScrapeLog(
             category=f'series_{category_slug}',
             status='success',
-            message=f'Scraped {series_scraped} series',
-            teams_scraped=series_scraped
+            message=f'Saved {series_scraped} new, updated {series_updated} series',
+            teams_scraped=total
         )
         db.session.add(log)
         db.session.commit()
@@ -1488,8 +1677,9 @@ def scrape_series(category_slug):
         
         return jsonify({
             'success': True,
-            'message': f'Scraped {series_scraped} series successfully',
-            'series_scraped': series_scraped
+            'message': f'Saved {series_scraped} new series, updated {series_updated} existing',
+            'series_scraped': series_scraped,
+            'series_updated': series_updated
         })
     
     except Exception as e:
