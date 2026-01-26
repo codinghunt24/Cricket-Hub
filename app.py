@@ -920,22 +920,113 @@ def scrape_series_json():
         
         html = response.text.replace('\\"', '"')
         
-        series_data = []
-        seen = set()
+        is_matches_url = '/matches' in url
         
-        pattern = r'"matchInfo"\s*:\s*\{[^}]*"seriesId"\s*:\s*(\d+)[^}]*"seriesName"\s*:\s*"([^"]+)"'
-        for m in re.finditer(pattern, html):
-            sid = m.group(1)
-            name = m.group(2)
-            if sid not in seen:
-                seen.add(sid)
-                series_data.append({'id': sid, 'name': name})
+        if is_matches_url:
+            matches_data = []
+            seen_ids = set()
+            
+            match_positions = [(m.start(), m.group(1)) for m in re.finditer(r'"matchInfo"\s*:\s*\{[^}]*"matchId"\s*:\s*(\d+)', html)]
+            
+            for pos, mid in match_positions:
+                if mid in seen_ids:
+                    continue
+                seen_ids.add(mid)
+                
+                context = html[pos:pos+3000]
+                
+                series_name = re.search(r'"seriesName"\s*:\s*"([^"]*)"', context)
+                match_desc = re.search(r'"matchDesc"\s*:\s*"([^"]*)"', context)
+                match_format = re.search(r'"matchFormat"\s*:\s*"([^"]*)"', context)
+                status = re.search(r'"status"\s*:\s*"([^"]*)"', context)
+                start_date = re.search(r'"startDate"\s*:\s*(\d+)', context)
+                
+                team1_name = re.search(r'"team1"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', context)
+                team2_name = re.search(r'"team2"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', context)
+                
+                venue_ground = re.search(r'"venueInfo"\s*:\s*\{[^}]*"ground"\s*:\s*"([^"]*)"', context)
+                venue_city = re.search(r'"venueInfo"\s*:\s*\{[^}]*"city"\s*:\s*"([^"]*)"', context)
+                
+                t1_score_block = re.search(r'"team1Score"\s*:\s*\{.*?"inngs1"\s*:\s*\{([^}]+)\}', context, re.DOTALL)
+                t2_score_block = re.search(r'"team2Score"\s*:\s*\{.*?"inngs1"\s*:\s*\{([^}]+)\}', context, re.DOTALL)
+                
+                team1_score = ''
+                team2_score = ''
+                
+                if t1_score_block:
+                    sb = t1_score_block.group(1)
+                    runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
+                    wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
+                    overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
+                    if runs:
+                        team1_score = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'}"
+                        if overs:
+                            team1_score += f" ({overs.group(1)})"
+                
+                if t2_score_block:
+                    sb = t2_score_block.group(1)
+                    runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
+                    wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
+                    overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
+                    if runs:
+                        team2_score = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'}"
+                        if overs:
+                            team2_score += f" ({overs.group(1)})"
+                
+                match_date = ''
+                if start_date:
+                    try:
+                        from datetime import datetime as dt
+                        ts = int(start_date.group(1)) / 1000
+                        match_date = dt.fromtimestamp(ts).strftime('%a, %b %d, %Y')
+                    except:
+                        pass
+                
+                venue = ''
+                if venue_ground and venue_city:
+                    venue = f"{venue_ground.group(1)}, {venue_city.group(1)}"
+                elif venue_ground:
+                    venue = venue_ground.group(1)
+                
+                matches_data.append({
+                    'match_id': mid,
+                    'match_format': match_desc.group(1) if match_desc else '',
+                    'format_type': match_format.group(1) if match_format else '',
+                    'series_name': series_name.group(1) if series_name else '',
+                    'match_date': match_date,
+                    'team1': team1_name.group(1) if team1_name else '',
+                    'team2': team2_name.group(1) if team2_name else '',
+                    'team1_score': team1_score,
+                    'team2_score': team2_score,
+                    'venue': venue,
+                    'result': status.group(1) if status else ''
+                })
+            
+            return jsonify({
+                'success': True,
+                'type': 'matches',
+                'matches': matches_data,
+                'count': len(matches_data)
+            })
         
-        return jsonify({
-            'success': True,
-            'series': series_data,
-            'count': len(series_data)
-        })
+        else:
+            series_data = []
+            seen = set()
+            
+            pattern = r'"matchInfo"\s*:\s*\{[^}]*"seriesId"\s*:\s*(\d+)[^}]*"seriesName"\s*:\s*"([^"]+)"'
+            for m in re.finditer(pattern, html):
+                sid = m.group(1)
+                name = m.group(2)
+                if sid not in seen:
+                    seen.add(sid)
+                    series_data.append({'id': sid, 'name': name})
+            
+            return jsonify({
+                'success': True,
+                'type': 'series',
+                'series': series_data,
+                'count': len(series_data)
+            })
         
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
