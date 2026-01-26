@@ -265,8 +265,7 @@ def index():
     all_matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
     live = [m for m in all_matches if m.state == 'Live']
     innings = [m for m in all_matches if m.state == 'Innings Break']
-    complete = [m for m in all_matches if m.state == 'Complete']
-    matches = live + innings + complete
+    matches = live + innings
     
     teams = Team.query.all()
     
