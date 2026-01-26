@@ -183,6 +183,13 @@
     text-decoration: underline;
 }
 
+.series-table .month-col {
+    color: #fbbf24;
+    font-weight: 600;
+    font-size: 10px;
+    white-space: nowrap;
+}
+
 .loading {
     text-align: center;
     padding: 30px;
@@ -309,6 +316,7 @@ async function scrapeSeriesFromUrl() {
                 let html = '<table class="series-table"><thead><tr>';
                 html += '<th>ID</th>';
                 html += '<th>Series Name</th>';
+                html += '<th>Month</th>';
                 html += '<th>URL</th>';
                 html += '</tr></thead><tbody>';
                 
@@ -316,6 +324,7 @@ async function scrapeSeriesFromUrl() {
                     html += `<tr>
                         <td class="id-col">${s.id}</td>
                         <td class="name-col">${s.name}</td>
+                        <td class="month-col">${s.month_year || '-'}</td>
                         <td class="url-col"><a href="${s.url}" target="_blank">${s.url}</a></td>
                     </tr>`;
                 });

@@ -1013,15 +1013,33 @@ def scrape_series_json():
             series_data = []
             seen = set()
             
-            pattern = r'"matchInfo"\s*:\s*\{[^}]*"seriesId"\s*:\s*(\d+)[^}]*"seriesName"\s*:\s*"([^"]+)"'
-            for m in re.finditer(pattern, html):
-                sid = m.group(1)
-                name = m.group(2)
-                if sid not in seen:
+            match_positions = [(m.start(), m.group(1)) for m in re.finditer(r'"matchInfo"\s*:\s*\{[^}]*"seriesId"\s*:\s*(\d+)', html)]
+            
+            for pos, sid in match_positions:
+                if sid in seen:
+                    continue
+                
+                context = html[pos:pos+2000]
+                series_name_match = re.search(r'"seriesName"\s*:\s*"([^"]+)"', context)
+                start_date_match = re.search(r'"startDate"\s*:\s*(\d+)', context)
+                
+                if series_name_match:
+                    name = series_name_match.group(1)
                     seen.add(sid)
+                    
                     slug = name.lower().replace(' ', '-').replace(',', '').replace("'", '')
                     series_url = f"https://www.cricbuzz.com/cricket-series/{sid}/{slug}/matches"
-                    series_data.append({'id': sid, 'name': name, 'url': series_url})
+                    
+                    month_year = ''
+                    if start_date_match:
+                        try:
+                            from datetime import datetime as dt
+                            ts = int(start_date_match.group(1)) / 1000
+                            month_year = dt.fromtimestamp(ts).strftime('%B %Y')
+                        except:
+                            pass
+                    
+                    series_data.append({'id': sid, 'name': name, 'url': series_url, 'month_year': month_year})
             
             return jsonify({
                 'success': True,
