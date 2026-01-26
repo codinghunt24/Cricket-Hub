@@ -6,10 +6,6 @@
 <section class="matches-section">
     {% if live_matches %}
     <div class="match-category">
-        <div class="category-header">
-            <h3><span class="status-dot live"></span> Live Matches</h3>
-            <span class="match-count">{{ live_matches|length }}</span>
-        </div>
         <div class="matches-slider">
             <div class="slider-track">
                 {% for match in live_matches %}
@@ -33,10 +29,6 @@
     
     {% if innings_break %}
     <div class="match-category">
-        <div class="category-header">
-            <h3><span class="status-dot innings"></span> Innings Break</h3>
-            <span class="match-count">{{ innings_break|length }}</span>
-        </div>
         <div class="matches-slider">
             <div class="slider-track">
                 {% for match in innings_break %}
@@ -60,10 +52,6 @@
     
     {% if complete_matches %}
     <div class="match-category">
-        <div class="category-header">
-            <h3><span class="status-dot complete"></span> Completed</h3>
-            <span class="match-count">{{ complete_matches|length }}</span>
-        </div>
         <div class="matches-slider">
             <div class="slider-track">
                 {% for match in complete_matches %}
@@ -87,10 +75,6 @@
     
     {% if upcoming_matches %}
     <div class="match-category">
-        <div class="category-header">
-            <h3><span class="status-dot upcoming"></span> Upcoming</h3>
-            <span class="match-count">{{ upcoming_matches|length }}</span>
-        </div>
         <div class="matches-slider">
             <div class="slider-track">
                 {% for match in upcoming_matches %}
