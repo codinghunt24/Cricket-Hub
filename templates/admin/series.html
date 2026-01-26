@@ -161,10 +161,10 @@
 }
 
 .category-card {
-    background: white;
+    background: #1f2937;
     border-radius: 4px;
     padding: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    border: 1px solid #374151;
 }
 
 .category-header {
@@ -176,15 +176,14 @@
 
 .category-header h4 {
     margin: 0;
-    color: #046a38;
+    color: #e4e4e7;
     font-size: 11px;
     font-weight: 600;
-    text-shadow: 0 1px 1px rgba(0,0,0,0.05);
 }
 
 .badge {
-    background: #e8f5e9;
-    color: #046a38;
+    background: #374151;
+    color: #10b981;
     padding: 1px 3px;
     border-radius: 2px;
     font-size: 8px;
@@ -208,6 +207,10 @@
     font-size: 8px;
     width: 60px;
     height: 18px;
+    background: #374151;
+    color: #e4e4e7;
+    border: 1px solid #4b5563;
+    border-radius: 3px;
 }
 
 .auto-scrape-toggle input[type="checkbox"] {
@@ -222,14 +225,12 @@
     cursor: pointer;
     font-size: 9px;
     font-weight: 500;
-    color: #444;
-    text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+    color: #9ca3af;
 }
 
 .last-scrape {
-    color: #555;
+    color: #9ca3af;
     font-size: 8px;
-    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
 }
 
 .progress-container {
@@ -238,21 +239,21 @@
 
 .progress-bar {
     height: 5px;
-    background: #e0e0e0;
+    background: #374151;
     border-radius: 3px;
     overflow: hidden;
 }
 
 .progress-fill {
     height: 100%;
-    background: #046a38;
+    background: #10b981;
     width: 0%;
     transition: width 0.3s ease;
 }
 
 .progress-text {
     font-size: 10px;
-    color: #666;
+    color: #9ca3af;
 }
 
 .series-list-section {
@@ -262,12 +263,13 @@
 .series-list-section h3 {
     font-size: 13px;
     margin-bottom: 8px;
+    color: #e4e4e7;
 }
 
 .series-table-container {
-    background: white;
+    background: #1f2937;
     border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #374151;
     overflow: hidden;
     max-height: 400px;
     overflow-y: auto;
@@ -280,8 +282,8 @@
 }
 
 .series-table th {
-    background: #046a38;
-    color: white;
+    background: #111827;
+    color: #e4e4e7;
     padding: 6px 8px;
     text-align: left;
     font-weight: 600;
@@ -293,44 +295,46 @@
 
 .series-table td {
     padding: 5px 8px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #374151;
+    color: #e4e4e7;
 }
 
 .series-table tbody tr:hover {
-    background: #f5f5f5;
+    background: #374151;
 }
 
 .series-table .id-col {
-    color: #888;
+    color: #9ca3af;
     font-size: 9px;
     width: 60px;
 }
 
 .series-table .name-col a {
-    color: #046a38;
+    color: #e4e4e7;
     text-decoration: none;
     font-weight: 500;
 }
 
 .series-table .name-col a:hover {
+    color: #10b981;
     text-decoration: underline;
 }
 
 .series-table .date-col {
-    color: #666;
+    color: #9ca3af;
     font-size: 9px;
     white-space: nowrap;
 }
 
 .series-table .cat-col {
-    color: #888;
+    color: #9ca3af;
     font-size: 9px;
 }
 
 .series-table .match-col {
     text-align: center;
     font-weight: 600;
-    color: #046a38;
+    color: #e4e4e7;
 }
 
 .series-table .action-col {
@@ -338,7 +342,7 @@
 }
 
 .btn-scrape {
-    background: #046a38;
+    background: #10b981;
     color: white;
     border: none;
     padding: 3px 8px;
@@ -348,11 +352,11 @@
 }
 
 .btn-scrape:hover {
-    background: #035a30;
+    background: #059669;
 }
 
 .btn-scrape:disabled {
-    background: #ccc;
+    background: #374151;
     cursor: not-allowed;
 }
 
@@ -360,7 +364,7 @@
     cursor: pointer;
     margin-right: 5px;
     font-size: 8px;
-    color: #888;
+    color: #9ca3af;
     display: inline-block;
     transition: transform 0.2s;
 }
@@ -370,17 +374,18 @@
 }
 
 .matches-dropdown-row {
-    background: #f8f9fa;
+    background: #111827;
 }
 
 .matches-dropdown {
     padding: 8px 12px;
     max-height: 200px;
     overflow-y: auto;
+    background: #111827;
 }
 
 .matches-dropdown .no-matches {
-    color: #888;
+    color: #9ca3af;
     font-size: 10px;
     text-align: center;
     padding: 10px;
@@ -392,10 +397,10 @@
     align-items: center;
     padding: 4px 8px;
     margin: 2px 0;
-    background: white;
+    background: #1f2937;
     border-radius: 3px;
     font-size: 9px;
-    border-left: 3px solid #046a38;
+    border-left: 3px solid #10b981;
 }
 
 .match-item .match-info {
@@ -403,22 +408,22 @@
 }
 
 .match-item .match-date {
-    color: #046a38;
+    color: #e4e4e7;
     font-weight: 600;
     margin-right: 8px;
 }
 
 .match-item .match-teams {
-    color: #333;
+    color: #e4e4e7;
 }
 
 .match-item .match-format {
-    color: #666;
+    color: #9ca3af;
     margin-left: 5px;
 }
 
 .match-item .match-result {
-    color: #046a38;
+    color: #e4e4e7;
     font-weight: 500;
     font-size: 8px;
     max-width: 120px;
@@ -430,10 +435,10 @@
 }
 
 .category-series h4 {
-    color: #046a38;
+    color: #10b981;
     margin-bottom: 6px;
     padding-bottom: 4px;
-    border-bottom: 1px solid #e8f5e9;
+    border-bottom: 1px solid #374151;
     font-size: 12px;
 }
 
@@ -444,7 +449,7 @@
 }
 
 .series-item {
-    background: #f5f5f5;
+    background: #1f2937;
     padding: 6px 10px;
     border-radius: 4px;
     display: flex;
@@ -453,17 +458,17 @@
 }
 
 .series-item a {
-    color: #333;
+    color: #e4e4e7;
     text-decoration: none;
     font-size: 11px;
 }
 
 .series-item a:hover {
-    color: #046a38;
+    color: #10b981;
 }
 
 .series-item.more {
-    color: #666;
+    color: #9ca3af;
     font-style: italic;
     font-size: 11px;
 }
