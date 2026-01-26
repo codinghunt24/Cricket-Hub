@@ -10,6 +10,209 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://www.cricbuzz.com"
 
+def extract_json_from_page(html):
+    """Extract embedded JSON data from Cricbuzz page (Next.js __next_f data)"""
+    if not html:
+        return None
+    
+    matches_data = []
+    
+    # Pattern 1: Find __next_f.push data containing matchesData
+    next_f_pattern = r'self\.__next_f\.push\(\[1,"([^"]+)"\]\)'
+    for match in re.finditer(next_f_pattern, html):
+        try:
+            encoded = match.group(1)
+            # Unescape the string
+            decoded = encoded.encode().decode('unicode_escape')
+            
+            # Find matchInfo objects
+            match_info_pattern = r'"matchInfo"\s*:\s*\{[^}]+?"matchId"\s*:\s*(\d+)[^}]+?"seriesId"\s*:\s*(\d+)[^}]+?"seriesName"\s*:\s*"([^"]+)"[^}]+?"matchDesc"\s*:\s*"([^"]+)"[^}]+?"matchFormat"\s*:\s*"([^"]+)"'
+            
+            for info_match in re.finditer(match_info_pattern, decoded):
+                match_data = {
+                    'match_id': info_match.group(1),
+                    'series_id': info_match.group(2),
+                    'series_name': info_match.group(3),
+                    'match_desc': info_match.group(4),
+                    'match_format': info_match.group(5),
+                }
+                matches_data.append(match_data)
+        except Exception as e:
+            continue
+    
+    return matches_data
+
+
+def extract_full_json_matches(html):
+    """Extract complete match data from Cricbuzz JSON embedded in page"""
+    if not html:
+        return []
+    
+    all_matches = []
+    
+    # Find all JSON-like structures with matchInfo
+    try:
+        # Pattern for complete match object
+        pattern = r'\{"matchInfo":\{[^}]*"matchId":(\d+).*?"matchFormat":"([^"]+)".*?\}.*?"matchScore":\{.*?\}\}'
+        
+        # Alternative: Extract from script tags
+        soup = BeautifulSoup(html, 'html.parser')
+        scripts = soup.find_all('script')
+        
+        for script in scripts:
+            if script.string and 'matchInfo' in script.string:
+                text = script.string
+                
+                # Find matchDetailsMap entries
+                key_pattern = r'"key":"([^"]+)".*?"match":\[(.*?)\]'
+                for key_match in re.finditer(key_pattern, text, re.DOTALL):
+                    date_key = key_match.group(1)
+                    matches_json = key_match.group(2)
+                    
+                    # Extract individual matches
+                    match_pattern = r'"matchId":(\d+).*?"matchDesc":"([^"]+)".*?"matchFormat":"([^"]+)"'
+                    for m in re.finditer(match_pattern, matches_json):
+                        all_matches.append({
+                            'date': date_key,
+                            'match_id': m.group(1),
+                            'match_desc': m.group(2),
+                            'match_format': m.group(3)
+                        })
+    except Exception as e:
+        logger.error(f"JSON extraction error: {e}")
+    
+    return all_matches
+
+
+def scrape_matches_from_json(series_url):
+    """Scrape all matches from series page using JSON extraction - POWERFUL VERSION"""
+    logger.info(f"Scraping matches from JSON: {series_url}")
+    
+    try:
+        response = requests.get(series_url, headers=HEADERS, timeout=30)
+        if response.status_code != 200:
+            return []
+        
+        html = response.text
+        matches = []
+        seen_ids = set()
+        
+        # Unescape the JSON (Cricbuzz uses \\" format)
+        html_unescaped = html.replace('\\"', '"').replace('\\\\', '\\')
+        
+        # POWERFUL REGEX: Find all matchInfo positions and extract complete data
+        # Find all matchId occurrences in matchInfo context
+        match_positions = [(m.start(), m.group(1)) for m in re.finditer(r'"matchInfo"\s*:\s*\{[^}]*"matchId"\s*:\s*(\d+)', html_unescaped)]
+        
+        for pos, mid in match_positions:
+            try:
+                if mid in seen_ids:
+                    continue
+                seen_ids.add(mid)
+                
+                # Get large context around matchInfo block (includes team1, team2, scores, venue)
+                context = html_unescaped[pos:pos+3000]
+                
+                # Parse fields from context
+                series_id = re.search(r'"seriesId"\s*:\s*(\d+)', context)
+                series_name = re.search(r'"seriesName"\s*:\s*"([^"]*)"', context)
+                match_desc = re.search(r'"matchDesc"\s*:\s*"([^"]*)"', context)
+                match_format = re.search(r'"matchFormat"\s*:\s*"([^"]*)"', context)
+                state = re.search(r'"state"\s*:\s*"([^"]*)"', context)
+                status = re.search(r'"status"\s*:\s*"([^"]*)"', context)
+                start_date = re.search(r'"startDate"\s*:\s*(\d+)', context)
+                
+                # Team info - improved patterns
+                team1_name = re.search(r'"team1"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', context)
+                team1_short = re.search(r'"team1"\s*:\s*\{[^}]*"teamSName"\s*:\s*"([^"]*)"', context)
+                team2_name = re.search(r'"team2"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', context)
+                team2_short = re.search(r'"team2"\s*:\s*\{[^}]*"teamSName"\s*:\s*"([^"]*)"', context)
+                
+                # Venue info
+                venue_ground = re.search(r'"venueInfo"\s*:\s*\{[^}]*"ground"\s*:\s*"([^"]*)"', context)
+                venue_city = re.search(r'"venueInfo"\s*:\s*\{[^}]*"city"\s*:\s*"([^"]*)"', context)
+                
+                # Score info - improved patterns for nested JSON
+                t1_score_block = re.search(r'"team1Score"\s*:\s*\{.*?"inngs1"\s*:\s*\{([^}]+)\}', context, re.DOTALL)
+                t2_score_block = re.search(r'"team2Score"\s*:\s*\{.*?"inngs1"\s*:\s*\{([^}]+)\}', context, re.DOTALL)
+                
+                t1_runs = t1_wkts = t1_overs = None
+                t2_runs = t2_wkts = t2_overs = None
+                
+                if t1_score_block:
+                    sb = t1_score_block.group(1)
+                    t1_runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
+                    t1_wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
+                    t1_overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
+                
+                if t2_score_block:
+                    sb = t2_score_block.group(1)
+                    t2_runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
+                    t2_wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
+                    t2_overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
+                    
+                    # Build scores
+                    team1_score = ''
+                    team2_score = ''
+                    if t1_runs:
+                        team1_score = f"{t1_runs.group(1)}/{t1_wkts.group(1) if t1_wkts else '?'}"
+                        if t1_overs:
+                            team1_score += f" ({t1_overs.group(1)})"
+                    if t2_runs:
+                        team2_score = f"{t2_runs.group(1)}/{t2_wkts.group(1) if t2_wkts else '?'}"
+                        if t2_overs:
+                            team2_score += f" ({t2_overs.group(1)})"
+                    
+                    # Convert timestamp to date
+                    match_date = ''
+                    if start_date:
+                        try:
+                            from datetime import datetime
+                            ts = int(start_date.group(1)) / 1000
+                            dt = datetime.fromtimestamp(ts)
+                            match_date = dt.strftime('%a, %b %d, %Y')
+                        except:
+                            pass
+                    
+                    venue = ''
+                    if venue_ground and venue_city:
+                        venue = f"{venue_ground.group(1)}, {venue_city.group(1)}"
+                    elif venue_ground:
+                        venue = venue_ground.group(1)
+                    
+                    match_data = {
+                        'match_id': mid,
+                        'series_id': series_id.group(1) if series_id else '',
+                        'series_name': series_name.group(1) if series_name else '',
+                        'match_format': match_desc.group(1) if match_desc else '',
+                        'format_type': match_format.group(1) if match_format else '',
+                        'match_date': match_date,
+                        'team1_name': team1_name.group(1) if team1_name else '',
+                        'team1_short': team1_short.group(1) if team1_short else '',
+                        'team1_score': team1_score,
+                        'team2_name': team2_name.group(1) if team2_name else '',
+                        'team2_short': team2_short.group(1) if team2_short else '',
+                        'team2_score': team2_score,
+                        'venue': venue,
+                        'result': status.group(1) if status else '',
+                        'state': state.group(1) if state else '',
+                        'match_url': f"/live-cricket-scores/{mid}"
+                    }
+                    
+                    matches.append(match_data)
+                    logger.info(f"JSON: {match_data['match_format']} | {match_data['team1_name']} vs {match_data['team2_name']} | {match_data['result']}")
+            
+            except Exception as e:
+                continue
+        
+        logger.info(f"Total matches extracted from JSON: {len(matches)}")
+        return matches
+        
+    except Exception as e:
+        logger.error(f"Error scraping JSON matches: {e}")
+        return []
+
+
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
