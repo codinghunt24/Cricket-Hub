@@ -1129,6 +1129,7 @@ def scrape_match_json():
         match_data = {}
         
         header_match = re.search(r'"matchHeader"\s*:\s*\{([^{]*(?:\{[^}]*\}[^{]*)*)\}', html)
+        match_state = ''
         if header_match:
             header = header_match.group(1)
             
@@ -1136,6 +1137,7 @@ def scrape_match_json():
             match_desc = re.search(r'"matchDescription"\s*:\s*"([^"]*)"', header)
             match_format = re.search(r'"matchFormat"\s*:\s*"([^"]*)"', header)
             status = re.search(r'"status"\s*:\s*"([^"]*)"', header)
+            state = re.search(r'"state"\s*:\s*"([^"]*)"', header)
             toss_winner = re.search(r'"tossWinnerName"\s*:\s*"([^"]*)"', header)
             toss_decision = re.search(r'"decision"\s*:\s*"([^"]*)"', header)
             
@@ -1143,6 +1145,8 @@ def scrape_match_json():
             match_data['match'] = match_desc.group(1) if match_desc else ''
             match_data['format'] = match_format.group(1) if match_format else ''
             match_data['status'] = status.group(1) if status else ''
+            match_state = state.group(1) if state else ''
+            match_data['state'] = match_state
             match_data['toss'] = f"{toss_winner.group(1)} won toss, chose to {toss_decision.group(1)}" if toss_winner and toss_decision else ''
         
         series_match = re.search(r'"seriesDesc"\s*:\s*"([^"]*)"', html)
@@ -1152,10 +1156,29 @@ def scrape_match_json():
         venue_city = re.search(r'"city"\s*:\s*"([^"]*)"', html)
         match_data['venue'] = f"{venue_ground.group(1)}, {venue_city.group(1)}" if venue_ground and venue_city else ''
         
+        if match_state in ['Preview', 'Upcoming', 'Scheduled']:
+            match_data['team1'] = ''
+            match_data['team2'] = ''
+            match_data['team1_score'] = 'Match not started'
+            match_data['team2_score'] = 'Match not started'
+            match_data['batting'] = []
+            match_data['bowling'] = []
+            return jsonify({'success': True, 'data': match_data})
+        
         target_match_id = match_data.get('match_id', match_id)
         scorecard_pattern = rf'"scoreCard"\s*:\s*\[\s*\{{\s*"matchId"\s*:\s*{target_match_id}'
         scorecard_match = re.search(scorecard_pattern, html)
-        scorecard_start = scorecard_match.start() if scorecard_match else html.find('"scoreCard":[')
+        
+        if not scorecard_match:
+            match_data['team1'] = ''
+            match_data['team2'] = ''
+            match_data['team1_score'] = 'No scorecard available'
+            match_data['team2_score'] = 'No scorecard available'
+            match_data['batting'] = []
+            match_data['bowling'] = []
+            return jsonify({'success': True, 'data': match_data})
+        
+        scorecard_start = scorecard_match.start()
         if scorecard_start != -1:
             scorecard_section = html[scorecard_start:scorecard_start+80000]
             
