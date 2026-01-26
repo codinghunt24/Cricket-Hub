@@ -686,18 +686,23 @@ def scrape_teams_from_category(category_url):
                     if flag_url.startswith('//'):
                         flag_url = 'https:' + flag_url
         
+        # ID VERIFICATION: Only add teams with valid team_id
+        if not team_id:
+            continue
+        
         teams.append({
-            'team_id': team_id,
+            'team_id': team_id,  # PRIMARY ID - Required for verification
             'name': team_name,
             'team_url': team_url,
             'flag_url': flag_url
         })
     
-    seen = set()
+    # Use team_id for deduplication (more reliable than name)
+    seen_ids = set()
     unique_teams = []
     for team in teams:
-        if team['name'] not in seen:
-            seen.add(team['name'])
+        if team['team_id'] not in seen_ids:
+            seen_ids.add(team['team_id'])
             unique_teams.append(team)
     
     return unique_teams
@@ -763,19 +768,24 @@ def scrape_players_from_team(team_url):
                         role = text
                         break
         
+        # ID VERIFICATION: Only add players with valid player_id
+        if not player_id:
+            continue
+        
         players.append({
-            'player_id': player_id,
+            'player_id': player_id,  # PRIMARY ID - Required for verification
             'name': player_name,
             'player_url': player_url,
             'photo_url': photo_url,
             'role': role
         })
     
-    seen = set()
+    # Use player_id for deduplication (more reliable than name)
+    seen_ids = set()
     unique_players = []
     for player in players:
-        if player['name'] not in seen:
-            seen.add(player['name'])
+        if player['player_id'] not in seen_ids:
+            seen_ids.add(player['player_id'])
             unique_players.append(player)
     
     return unique_players
@@ -809,13 +819,22 @@ def scrape_player_profile(player_url):
     if not player_url:
         return None
     
+    # ID VERIFICATION: Extract player_id from URL
+    player_id_match = re.search(r'/profiles/(\d+)/', player_url)
+    player_id = player_id_match.group(1) if player_id_match else None
+    
+    if not player_id:
+        return None  # Reject if no valid ID
+    
     full_url = player_url if player_url.startswith('http') else BASE_URL + player_url
     html = fetch_page(full_url)
     if not html:
         return None
     
     soup = BeautifulSoup(html, 'html.parser')
-    profile = {}
+    profile = {
+        'player_id': player_id  # PRIMARY ID - Required for verification
+    }
     
     personal_labels = {
         'born': ['born', 'date of birth'],
@@ -1084,16 +1103,26 @@ def fetch_accurate_match_data(match_id, match_url_hint=None):
     """
     Fetch accurate match data from Cricbuzz match page.
     Uses multiple page sources for complete data extraction.
+    All IDs are extracted for verification.
     """
     match_data = {
+        # PRIMARY IDs - Required for verification
         'match_id': match_id,
+        'series_id': '',
+        'team1_id': '',
+        'team2_id': '',
+        'venue_id': '',
+        # Match info
         'match_format': '',
         'venue': '',
         'match_date': '',
+        'state': '',
+        # Team data
         'team1_name': '',
         'team1_score': '',
         'team2_name': '',
         'team2_score': '',
+        # Result
         'result': '',
         'match_url': match_url_hint or f"{BASE_URL}/live-cricket-scores/{match_id}",
     }
@@ -1134,6 +1163,37 @@ def fetch_accurate_match_data(match_id, match_url_hint=None):
     if not html or not soup:
         logger.warning(f"Could not fetch match {match_id}")
         return match_data
+    
+    # ID EXTRACTION from embedded JSON data
+    # Extract series_id
+    series_id_match = re.search(r'"seriesId"\s*:\s*(\d+)', html)
+    if series_id_match:
+        match_data['series_id'] = series_id_match.group(1)
+    
+    # Extract team IDs from matchHeader
+    team1_id_match = re.search(r'"team1"\s*:\s*\{[^}]*"id"\s*:\s*(\d+)', html)
+    team2_id_match = re.search(r'"team2"\s*:\s*\{[^}]*"id"\s*:\s*(\d+)', html)
+    if team1_id_match:
+        match_data['team1_id'] = team1_id_match.group(1)
+    if team2_id_match:
+        match_data['team2_id'] = team2_id_match.group(1)
+    
+    # Extract venue_id
+    venue_id_match = re.search(r'"venueInfo"\s*:\s*\{[^}]*"id"\s*:\s*(\d+)', html)
+    if venue_id_match:
+        match_data['venue_id'] = venue_id_match.group(1)
+    
+    # Extract match state
+    state_match = re.search(r'"state"\s*:\s*"([^"]*)"', html)
+    if state_match:
+        match_data['state'] = state_match.group(1)
+    
+    # ID VERIFICATION: Verify match_id matches page content
+    page_match_id = re.search(r'"matchId"\s*:\s*(\d+)', html)
+    if page_match_id and page_match_id.group(1) != str(match_id):
+        logger.warning(f"Match ID mismatch: requested {match_id}, page has {page_match_id.group(1)}")
+        # Update to correct match_id from page
+        match_data['match_id'] = page_match_id.group(1)
     
     page_text = soup.get_text(' ', strip=True)
     
@@ -1694,9 +1754,28 @@ def scrape_scorecard(match_id):
     if not html:
         return None
     
+    # ID VERIFICATION: Verify match_id from page content
+    page_match_id = re.search(r'"matchId"\s*:\s*(\d+)', html)
+    verified_match_id = page_match_id.group(1) if page_match_id else str(match_id)
+    
+    if page_match_id and page_match_id.group(1) != str(match_id):
+        logger.warning(f"Scorecard ID mismatch: requested {match_id}, page has {page_match_id.group(1)}")
+    
+    # Extract all IDs from page
+    series_id_match = re.search(r'"seriesId"\s*:\s*(\d+)', html)
+    team1_id_match = re.search(r'"team1"\s*:\s*\{[^}]*"id"\s*:\s*(\d+)', html)
+    team2_id_match = re.search(r'"team2"\s*:\s*\{[^}]*"id"\s*:\s*(\d+)', html)
+    venue_id_match = re.search(r'"venueInfo"\s*:\s*\{[^}]*"id"\s*:\s*(\d+)', html)
+    
     soup = BeautifulSoup(html, 'html.parser')
     scorecard = {
-        'match_id': match_id,
+        # PRIMARY IDs - Required for verification
+        'match_id': verified_match_id,
+        'series_id': series_id_match.group(1) if series_id_match else '',
+        'team1_id': team1_id_match.group(1) if team1_id_match else '',
+        'team2_id': team2_id_match.group(1) if team2_id_match else '',
+        'venue_id': venue_id_match.group(1) if venue_id_match else '',
+        # Scorecard data
         'innings': [],
         'venue': '',
         'match_date': ''
