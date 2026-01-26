@@ -1,7 +1,25 @@
-/* Admin Panel Styles */
+/* Admin Panel Styles - Dark Mode */
+:root {
+    --admin-bg: #1a1a2e;
+    --admin-sidebar: #16213e;
+    --admin-card: #1f2937;
+    --admin-header: #0f0f23;
+    --admin-text: #e4e4e7;
+    --admin-text-muted: #9ca3af;
+    --admin-border: #374151;
+    --admin-hover: #374151;
+    --admin-accent: #10b981;
+    --admin-accent-dark: #059669;
+    --admin-input-bg: #374151;
+    --admin-table-header: #111827;
+    --admin-table-row: #1f2937;
+    --admin-table-row-alt: #111827;
+}
+
 .admin-body {
-    background-color: var(--gray-light);
+    background-color: var(--admin-bg);
     overflow-x: hidden;
+    color: var(--admin-text);
 }
 
 .admin-wrapper {
@@ -12,8 +30,8 @@
 /* Sidebar */
 .sidebar {
     width: 260px;
-    background-color: var(--primary-dark);
-    color: var(--white);
+    background-color: var(--admin-sidebar);
+    color: var(--admin-text);
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -22,6 +40,7 @@
     bottom: 0;
     z-index: 1000;
     transition: transform 0.3s ease, width 0.3s ease;
+    border-right: 1px solid var(--admin-border);
 }
 
 .sidebar-header {
@@ -149,8 +168,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 15px 30px;
-    background-color: var(--white);
-    box-shadow: var(--shadow);
+    background-color: var(--admin-header);
+    border-bottom: 1px solid var(--admin-border);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -159,14 +178,14 @@
 .admin-page-title {
     font-size: 1.3rem;
     font-weight: 600;
-    color: var(--text-color);
+    color: var(--admin-text);
 }
 
 .admin-user {
     display: flex;
     align-items: center;
     gap: 10px;
-    color: var(--text-light);
+    color: var(--admin-text-muted);
     font-size: 0.9rem;
 }
 
@@ -179,12 +198,12 @@
 }
 
 .mobile-sidebar-toggle .hamburger {
-    background-color: var(--text-color);
+    background-color: var(--admin-text);
 }
 
 .mobile-sidebar-toggle .hamburger::before,
 .mobile-sidebar-toggle .hamburger::after {
-    background-color: var(--text-color);
+    background-color: var(--admin-text);
 }
 
 .admin-content {
@@ -204,24 +223,24 @@
 }
 
 .dashboard-card {
-    background-color: var(--white);
+    background-color: var(--admin-card);
     border-radius: 10px;
     padding: 25px;
     display: flex;
     align-items: center;
     gap: 20px;
-    box-shadow: var(--shadow);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--admin-border);
+    transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .dashboard-card:hover {
     transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
+    border-color: var(--admin-accent);
 }
 
 .card-icon {
     font-size: 2.5rem;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(135deg, var(--admin-accent), #3b82f6);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -230,21 +249,21 @@
 .card-info h3 {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-color);
+    color: var(--admin-text);
     margin-bottom: 5px;
 }
 
 .card-info p {
     font-size: 0.85rem;
-    color: var(--text-light);
+    color: var(--admin-text-muted);
 }
 
 /* Admin Pages */
 .admin-page {
-    background-color: var(--white);
+    background-color: var(--admin-card);
     border-radius: 10px;
     padding: 25px;
-    box-shadow: var(--shadow);
+    border: 1px solid var(--admin-border);
 }
 
 .page-header {
@@ -253,13 +272,13 @@
     justify-content: space-between;
     margin-bottom: 25px;
     padding-bottom: 15px;
-    border-bottom: 1px solid var(--gray);
+    border-bottom: 1px solid var(--admin-border);
 }
 
 .page-header h2 {
     font-size: 1.2rem;
     font-weight: 600;
-    color: var(--text-color);
+    color: var(--admin-text);
 }
 
 .btn {
@@ -273,21 +292,21 @@
 }
 
 .btn-primary {
-    background-color: var(--accent-color);
-    color: var(--white);
+    background-color: var(--admin-accent);
+    color: #fff;
 }
 
 .btn-primary:hover {
-    background-color: var(--secondary-color);
+    background-color: var(--admin-accent-dark);
 }
 
 .content-placeholder {
     padding: 40px;
     text-align: center;
-    color: var(--text-light);
-    background-color: var(--gray-light);
+    color: var(--admin-text-muted);
+    background-color: var(--admin-table-row-alt);
     border-radius: 8px;
-    border: 2px dashed var(--gray);
+    border: 2px dashed var(--admin-border);
 }
 
 /* Responsive - Tablet */
@@ -364,11 +383,11 @@
 
 /* Scrape Controls */
 .scrape-controls {
-    background: var(--white);
+    background: var(--admin-card);
     border-radius: 10px;
     padding: 25px;
     margin-bottom: 25px;
-    box-shadow: var(--shadow);
+    border: 1px solid var(--admin-border);
 }
 
 .control-header {
@@ -380,7 +399,7 @@
 
 .control-header h2 {
     font-size: 1.2rem;
-    color: var(--text-color);
+    color: var(--admin-text);
 }
 
 .control-buttons {
@@ -418,13 +437,14 @@
     flex: 1;
     min-width: 200px;
     padding: 12px 15px;
-    background: var(--gray-light);
+    background: var(--admin-table-row-alt);
     border-radius: 8px;
+    border: 1px solid var(--admin-border);
 }
 
 .scrape-section h3 {
     font-size: 0.9rem;
-    color: var(--primary-color);
+    color: var(--admin-accent);
     margin-bottom: 8px;
     font-weight: 600;
 }
@@ -438,15 +458,17 @@
 
 .time-input-sm {
     padding: 4px 8px;
-    border: 1px solid var(--gray);
+    border: 1px solid var(--admin-border);
     border-radius: 4px;
     font-size: 0.8rem;
     width: 90px;
+    background: var(--admin-input-bg);
+    color: var(--admin-text);
 }
 
 .last-scrape-sm {
     font-size: 0.75rem;
-    color: var(--text-light);
+    color: var(--admin-text-muted);
     display: block;
     margin-top: 6px;
 }
@@ -459,7 +481,7 @@
 
 .section-subtitle {
     font-size: 0.9rem;
-    color: var(--text-color);
+    color: var(--admin-text);
     margin: 15px 0 10px 0;
     font-weight: 600;
 }
@@ -469,10 +491,11 @@
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    background: var(--gray-light);
+    background: var(--admin-table-row-alt);
     border-radius: 6px;
     font-size: 0.85rem;
-    color: var(--text-color);
+    color: var(--admin-text);
+    border: 1px solid var(--admin-border);
 }
 
 .cat-icon {
@@ -513,15 +536,16 @@
     flex: 1;
     min-width: 140px;
     padding: 10px;
-    background: var(--gray-light);
+    background: var(--admin-table-row-alt);
     border-radius: 6px;
     text-align: center;
+    border: 1px solid var(--admin-border);
 }
 
 .cat-header {
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--primary-color);
+    color: var(--admin-accent);
     margin-bottom: 8px;
 }
 
@@ -548,9 +572,11 @@
 .time-xs {
     padding: 2px 4px;
     font-size: 0.7rem;
-    border: 1px solid var(--gray);
+    border: 1px solid var(--admin-border);
     border-radius: 3px;
     width: 70px;
+    background: var(--admin-input-bg);
+    color: var(--admin-text);
 }
 
 .scrape-status-bar {
@@ -569,10 +595,10 @@
 }
 
 .scrape-progress-bar {
-    background: white;
+    background: var(--admin-card);
     padding: 15px 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border: 1px solid var(--admin-border);
 }
 
 .progress-info {
@@ -580,19 +606,19 @@
     justify-content: space-between;
     margin-bottom: 8px;
     font-weight: 600;
-    color: var(--text-color);
+    color: var(--admin-text);
 }
 
 .progress-track {
     height: 20px;
-    background: #e9ecef;
+    background: var(--admin-input-bg);
     border-radius: 10px;
     overflow: hidden;
 }
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(90deg, var(--admin-accent), #3b82f6);
     border-radius: 10px;
     transition: width 0.3s ease;
 }
@@ -600,7 +626,7 @@
 .progress-detail {
     margin-top: 8px;
     font-size: 0.85rem;
-    color: #666;
+    color: var(--admin-text-muted);
 }
 
 .scrape-success {
@@ -657,19 +683,21 @@
 
 .toggle-text {
     font-size: 0.95rem;
-    color: var(--text-color);
+    color: var(--admin-text);
 }
 
 .time-input {
     padding: 8px 12px;
-    border: 1px solid var(--gray);
+    border: 1px solid var(--admin-border);
     border-radius: 6px;
     font-size: 0.9rem;
+    background: var(--admin-input-bg);
+    color: var(--admin-text);
 }
 
 .last-scrape {
     font-size: 0.85rem;
-    color: var(--text-light);
+    color: var(--admin-text-muted);
 }
 
 /* Categories Section */
@@ -679,7 +707,7 @@
 
 .categories-section h2 {
     font-size: 1.2rem;
-    color: var(--text-color);
+    color: var(--admin-text);
     margin-bottom: 20px;
 }
 
@@ -690,10 +718,10 @@
 }
 
 .category-admin-card {
-    background: var(--white);
+    background: var(--admin-card);
     border-radius: 10px;
     padding: 20px;
-    box-shadow: var(--shadow);
+    border: 1px solid var(--admin-border);
 }
 
 .category-header {
@@ -702,18 +730,18 @@
     align-items: center;
     margin-bottom: 15px;
     padding-bottom: 10px;
-    border-bottom: 1px solid var(--gray);
+    border-bottom: 1px solid var(--admin-border);
 }
 
 .category-header h3 {
     font-size: 1.1rem;
-    color: var(--primary-color);
+    color: var(--admin-accent);
 }
 
 .team-count {
     font-size: 0.85rem;
-    color: var(--text-light);
-    background: var(--gray-light);
+    color: var(--admin-text-muted);
+    background: var(--admin-table-row-alt);
     padding: 3px 10px;
     border-radius: 12px;
 }
@@ -723,13 +751,13 @@
 }
 
 .btn-secondary {
-    background-color: var(--gray-light);
-    color: var(--text-color);
-    border: 1px solid var(--gray);
+    background-color: var(--admin-input-bg);
+    color: var(--admin-text);
+    border: 1px solid var(--admin-border);
 }
 
 .btn-secondary:hover {
-    background-color: var(--gray);
+    background-color: var(--admin-hover);
 }
 
 .btn-small {
@@ -754,7 +782,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 10px 0;
-    border-bottom: 1px solid var(--gray-light);
+    border-bottom: 1px solid var(--admin-border);
 }
 
 .team-item:last-child {
@@ -775,15 +803,15 @@
 
 /* Scrape Logs */
 .scrape-logs {
-    background: var(--white);
+    background: var(--admin-card);
     border-radius: 10px;
     padding: 25px;
-    box-shadow: var(--shadow);
+    border: 1px solid var(--admin-border);
 }
 
 .scrape-logs h2 {
     font-size: 1.2rem;
-    color: var(--text-color);
+    color: var(--admin-text);
     margin-bottom: 20px;
 }
 
@@ -796,13 +824,18 @@
 .logs-table td {
     padding: 12px;
     text-align: left;
-    border-bottom: 1px solid var(--gray-light);
+    border-bottom: 1px solid var(--admin-border);
+    color: var(--admin-text);
 }
 
 .logs-table th {
     font-weight: 600;
-    color: var(--text-color);
-    background: var(--gray-light);
+    color: var(--admin-text);
+    background: var(--admin-table-header);
+}
+
+.logs-table tr:nth-child(even) {
+    background: var(--admin-table-row-alt);
 }
 
 .status-badge {
@@ -825,8 +858,37 @@
 
 .no-logs {
     text-align: center;
-    color: var(--text-light);
+    color: var(--admin-text-muted);
     padding: 20px;
+}
+
+/* Dark Mode Tables */
+.admin-body table {
+    background: var(--admin-card);
+    color: var(--admin-text);
+}
+
+.admin-body table th {
+    background: var(--admin-table-header);
+    color: var(--admin-text);
+    border-color: var(--admin-border);
+}
+
+.admin-body table td {
+    border-color: var(--admin-border);
+    color: var(--admin-text);
+}
+
+.admin-body table tr:hover {
+    background: var(--admin-hover);
+}
+
+.admin-body a {
+    color: var(--admin-accent);
+}
+
+.admin-body a:hover {
+    color: #34d399;
 }
 
 /* Loading Overlay */
