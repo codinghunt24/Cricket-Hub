@@ -1,4 +1,6 @@
 import os
+import re
+import requests
 import threading
 from datetime import datetime
 from flask import Flask, render_template, jsonify, request
@@ -899,6 +901,44 @@ def get_profile_scrape_settings():
     return jsonify({s.category_slug: {'enabled': s.auto_scrape_enabled, 'time': s.scrape_time} for s in settings})
 
 series_scrape_progress = {}
+
+@app.route('/api/scrape/series-json', methods=['POST'])
+def scrape_series_json():
+    try:
+        data = request.get_json()
+        url = data.get('url', '')
+        
+        if not url:
+            return jsonify({'success': False, 'message': 'URL required'}), 400
+        
+        response = requests.get(url, headers={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0'
+        }, timeout=30)
+        
+        if response.status_code != 200:
+            return jsonify({'success': False, 'message': 'Failed to fetch URL'}), 400
+        
+        html = response.text.replace('\\"', '"')
+        
+        series_data = []
+        seen = set()
+        
+        pattern = r'"matchInfo"\s*:\s*\{[^}]*"seriesId"\s*:\s*(\d+)[^}]*"seriesName"\s*:\s*"([^"]+)"'
+        for m in re.finditer(pattern, html):
+            sid = m.group(1)
+            name = m.group(2)
+            if sid not in seen:
+                seen.add(sid)
+                series_data.append({'id': sid, 'name': name})
+        
+        return jsonify({
+            'success': True,
+            'series': series_data,
+            'count': len(series_data)
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/api/scrape/series/<category_slug>', methods=['POST'])
 def scrape_series(category_slug):
