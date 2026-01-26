@@ -49,6 +49,7 @@
         <table class="matches-table">
             <thead>
                 <tr>
+                    <th>Match ID</th>
                     <th>Status</th>
                     <th>Date</th>
                     <th>Match</th>
@@ -61,6 +62,7 @@
             <tbody>
                 {% for match in matches %}
                 <tr data-state="{{ match.state or 'Unknown' }}" data-has-result="{{ 'yes' if match.result else 'no' }}">
+                    <td class="id-col">{{ match.match_id or '-' }}</td>
                     <td class="status-col">
                         <span class="status-badge {% if match.state == 'Live' %}live{% elif match.state == 'Innings Break' %}innings{% elif match.state == 'Complete' %}complete{% else %}upcoming{% endif %}">
                             {{ match.state or 'Unknown' }}
