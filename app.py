@@ -981,10 +981,12 @@ def scrape_series_json():
                             team2_score += f" ({overs.group(1)})"
                 
                 match_date = ''
+                date_timestamp = 0
                 if start_date:
                     try:
                         from datetime import datetime as dt
                         ts = int(start_date.group(1)) / 1000
+                        date_timestamp = ts
                         match_date = dt.fromtimestamp(ts).strftime('%a, %b %d, %Y')
                     except:
                         pass
@@ -1002,19 +1004,28 @@ def scrape_series_json():
                     if series_name_from_url not in match_series_lower and match_series_lower not in series_name_from_url:
                         continue
                 
+                team1_short = team1_name.group(1) if team1_name else ''
+                team2_short = team2_name.group(1) if team2_name else ''
+                match_slug = f"{team1_short.lower().replace(' ', '-')}-vs-{team2_short.lower().replace(' ', '-')}"
+                match_url = f"https://www.cricbuzz.com/live-cricket-scorecard/{mid}/{match_slug}"
+                
                 matches_data.append({
                     'match_id': mid,
                     'match_format': match_desc.group(1) if match_desc else '',
                     'format_type': match_format.group(1) if match_format else '',
                     'series_name': match_series_name,
                     'match_date': match_date,
-                    'team1': team1_name.group(1) if team1_name else '',
-                    'team2': team2_name.group(1) if team2_name else '',
+                    'date_timestamp': date_timestamp,
+                    'team1': team1_short,
+                    'team2': team2_short,
                     'team1_score': team1_score,
                     'team2_score': team2_score,
                     'venue': venue,
-                    'result': status.group(1) if status else ''
+                    'result': status.group(1) if status else '',
+                    'match_url': match_url
                 })
+            
+            matches_data.sort(key=lambda x: x.get('date_timestamp', 0), reverse=True)
             
             return jsonify({
                 'success': True,

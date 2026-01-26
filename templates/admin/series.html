@@ -309,6 +309,20 @@
     max-width: 120px;
 }
 
+.matches-list .match-url {
+    text-align: center;
+    width: 40px;
+}
+
+.matches-list .match-url a {
+    color: #60a5fa;
+    font-size: 11px;
+}
+
+.matches-list .match-url a:hover {
+    color: #93c5fd;
+}
+
 .no-matches {
     text-align: center;
     padding: 15px;
@@ -418,24 +432,24 @@ async function toggleMatches(index, url) {
         
         if (data.success && data.type === 'matches' && data.matches && data.matches.length > 0) {
             let html = '<table class="matches-list"><thead><tr>';
-            html += '<th>ID</th>';
-            html += '<th>Format</th>';
             html += '<th>Date</th>';
+            html += '<th>Format</th>';
             html += '<th>Teams</th>';
             html += '<th>Venue</th>';
             html += '<th>Score</th>';
             html += '<th>Result</th>';
+            html += '<th>URL</th>';
             html += '</tr></thead><tbody>';
             
             data.matches.forEach(m => {
                 html += `<tr>
-                    <td class="match-id">${m.match_id || '-'}</td>
-                    <td class="match-format">${m.match_format || '-'}</td>
                     <td class="match-date">${m.match_date || '-'}</td>
+                    <td class="match-format">${m.match_format || '-'}</td>
                     <td class="match-teams">${m.team1 || '?'} vs ${m.team2 || '?'}</td>
                     <td class="match-venue">${m.venue || '-'}</td>
                     <td class="match-score">${m.team1_score || '-'}<br>${m.team2_score || '-'}</td>
                     <td class="match-result">${m.result || '-'}</td>
+                    <td class="match-url"><a href="${m.match_url || '#'}" target="_blank"><i class="fas fa-external-link-alt"></i></a></td>
                 </tr>`;
             });
             
