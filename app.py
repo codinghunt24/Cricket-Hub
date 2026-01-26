@@ -219,7 +219,8 @@ def admin_dashboard():
 
 @app.route('/admin/matches')
 def admin_matches():
-    return render_template('admin/matches.html')
+    matches = Match.query.order_by(Match.id.desc()).all()
+    return render_template('admin/matches.html', matches=matches)
 
 @app.route('/admin/teams')
 def admin_teams():
@@ -1266,6 +1267,17 @@ def toggle_series_auto_scrape():
 def get_series_scrape_settings():
     settings = SeriesScrapeSetting.query.all()
     return jsonify({s.category_slug: {'enabled': s.auto_scrape_enabled, 'time': s.scrape_time, 'last_scrape': s.last_scrape.isoformat() if s.last_scrape else None} for s in settings})
+
+@app.route('/api/matches/clear', methods=['POST'])
+def clear_all_matches():
+    try:
+        count = Match.query.count()
+        Match.query.delete()
+        db.session.commit()
+        return jsonify({'success': True, 'message': f'{count} matches deleted'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 if __name__ == '__main__':
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
