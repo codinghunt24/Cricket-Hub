@@ -1036,7 +1036,7 @@ def scrape_series_json():
                     'match_url': match_url
                 })
             
-            matches_data.sort(key=lambda x: x.get('date_timestamp', 0), reverse=True)
+            matches_data.sort(key=lambda x: x.get('date_timestamp', 0))
             
             return jsonify({
                 'success': True,
