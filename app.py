@@ -981,11 +981,13 @@ def scrape_series_json():
                 match_state = state.group(1) if state else ''
                 
                 if match_state not in ['Preview', 'Upcoming', 'Scheduled', '']:
-                    t1_score_block = re.search(r'"team1Score"\s*:\s*\{[^{]*"inngs1"\s*:\s*\{([^}]+)\}', context)
-                    t2_score_block = re.search(r'"team2Score"\s*:\s*\{[^{]*"inngs1"\s*:\s*\{([^}]+)\}', context)
+                    # ACCURATE METHOD: Search for matchScoreMap with specific matchId
+                    # This ensures we get scores only for THIS match
+                    score_pattern = rf'"matchScoreMap"\s*:\s*\{{\s*"{mid}"\s*:\s*\{{[^}}]*"team1Score"\s*:\s*\{{[^}}]*"inngs1"\s*:\s*\{{([^}}]+)\}}'
+                    t1_verified = re.search(score_pattern, html)
                     
-                    if t1_score_block:
-                        sb = t1_score_block.group(1)
+                    if t1_verified:
+                        sb = t1_verified.group(1)
                         runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
                         wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
                         overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
@@ -993,9 +995,25 @@ def scrape_series_json():
                             team1_score = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'}"
                             if overs:
                                 team1_score += f" ({overs.group(1)})"
+                    else:
+                        # Fallback to context-based extraction for T1 only
+                        t1_score_block = re.search(r'"team1Score"\s*:\s*\{[^{]*"inngs1"\s*:\s*\{([^}]+)\}', context)
+                        if t1_score_block:
+                            sb = t1_score_block.group(1)
+                            runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
+                            wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
+                            overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
+                            if runs:
+                                team1_score = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'}"
+                                if overs:
+                                    team1_score += f" ({overs.group(1)})"
                     
-                    if t2_score_block:
-                        sb = t2_score_block.group(1)
+                    # T2 Score - search with matchId verification
+                    score_pattern2 = rf'"matchScoreMap"\s*:\s*\{{\s*"{mid}"\s*:\s*\{{[^}}]*"team2Score"\s*:\s*\{{[^}}]*"inngs1"\s*:\s*\{{([^}}]+)\}}'
+                    t2_verified = re.search(score_pattern2, html)
+                    
+                    if t2_verified:
+                        sb = t2_verified.group(1)
                         runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
                         wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
                         overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
@@ -1003,6 +1021,20 @@ def scrape_series_json():
                             team2_score = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'}"
                             if overs:
                                 team2_score += f" ({overs.group(1)})"
+                    else:
+                        # For T2, only use context if it appears BEFORE any other matchInfo
+                        # This prevents picking up scores from related matches
+                        if context.count('"team2Score"') == 1:
+                            t2_score_block = re.search(r'"team2Score"\s*:\s*\{[^{]*"inngs1"\s*:\s*\{([^}]+)\}', context)
+                            if t2_score_block:
+                                sb = t2_score_block.group(1)
+                                runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
+                                wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
+                                overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
+                                if runs:
+                                    team2_score = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'}"
+                                    if overs:
+                                        team2_score += f" ({overs.group(1)})"
                 
                 match_date = date_map.get(mid, '')
                 date_timestamp = 0
