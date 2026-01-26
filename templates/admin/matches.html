@@ -335,10 +335,6 @@ function scrapeLiveScores() {
                     </div>
                     <div style="color: #888; margin-top: 5px;">Saved: ${data.saved} new, Updated: ${data.updated} existing</div>
                 `;
-                document.getElementById('totalCount').textContent = data.counts.total;
-                document.getElementById('liveCount').textContent = data.counts.live;
-                document.getElementById('inningsCount').textContent = data.counts.innings_break;
-                document.getElementById('completeCount').textContent = data.counts.complete;
                 setTimeout(() => location.reload(), 2000);
             } else {
                 resultDiv.style.background = '#4d1a1a';
