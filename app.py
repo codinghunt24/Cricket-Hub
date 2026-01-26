@@ -971,6 +971,119 @@ def scrape_series(category_slug):
         db.session.commit()
         return jsonify({'success': False, 'message': str(e)}), 500
 
+match_update_progress = {}
+
+@app.route('/api/matches/update-accurate', methods=['POST'])
+def update_all_matches_accurate():
+    """Update all matches with accurate data from individual match pages"""
+    try:
+        data = request.get_json() or {}
+        series_id = data.get('series_id')
+        
+        if series_id:
+            matches = Match.query.filter_by(series_id=series_id).all()
+        else:
+            matches = Match.query.all()
+        
+        if not matches:
+            return jsonify({'success': False, 'message': 'No matches found'}), 404
+        
+        updated_count = 0
+        for match in matches:
+            try:
+                accurate_data = scraper.update_match_with_accurate_data(match.match_id)
+                
+                if accurate_data:
+                    if accurate_data.get('match_format'):
+                        match.match_format = accurate_data['match_format']
+                    if accurate_data.get('venue'):
+                        match.venue = accurate_data['venue']
+                    if accurate_data.get('match_date'):
+                        match.match_date = accurate_data['match_date']
+                    if accurate_data.get('team1_name'):
+                        match.team1_name = accurate_data['team1_name']
+                    if accurate_data.get('team1_score'):
+                        match.team1_score = accurate_data['team1_score']
+                    if accurate_data.get('team2_name'):
+                        match.team2_name = accurate_data['team2_name']
+                    if accurate_data.get('team2_score'):
+                        match.team2_score = accurate_data['team2_score']
+                    if accurate_data.get('result'):
+                        match.result = accurate_data['result']
+                    
+                    match.updated_at = datetime.utcnow()
+                    updated_count += 1
+                
+                import time
+                time.sleep(0.5)
+                
+            except Exception as e:
+                print(f"Error updating match {match.match_id}: {e}")
+                continue
+        
+        db.session.commit()
+        
+        log = ScrapeLog(
+            category='matches_update_accurate',
+            status='success',
+            message=f'Updated {updated_count} matches with accurate data',
+            teams_scraped=updated_count
+        )
+        db.session.add(log)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Updated {updated_count} matches with accurate data',
+            'updated': updated_count
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@app.route('/api/match/<match_id>/update-accurate', methods=['POST'])
+def update_single_match_accurate(match_id):
+    """Update a single match with accurate data"""
+    try:
+        match = Match.query.filter_by(match_id=match_id).first()
+        if not match:
+            return jsonify({'success': False, 'message': 'Match not found'}), 404
+        
+        accurate_data = scraper.update_match_with_accurate_data(match_id)
+        
+        if accurate_data:
+            if accurate_data.get('match_format'):
+                match.match_format = accurate_data['match_format']
+            if accurate_data.get('venue'):
+                match.venue = accurate_data['venue']
+            if accurate_data.get('match_date'):
+                match.match_date = accurate_data['match_date']
+            if accurate_data.get('team1_name'):
+                match.team1_name = accurate_data['team1_name']
+            if accurate_data.get('team1_score'):
+                match.team1_score = accurate_data['team1_score']
+            if accurate_data.get('team2_name'):
+                match.team2_name = accurate_data['team2_name']
+            if accurate_data.get('team2_score'):
+                match.team2_score = accurate_data['team2_score']
+            if accurate_data.get('result'):
+                match.result = accurate_data['result']
+            
+            match.updated_at = datetime.utcnow()
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Match updated with accurate data',
+                'data': accurate_data
+            })
+        
+        return jsonify({'success': False, 'message': 'Could not fetch accurate data'}), 500
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 match_scrape_progress = {}
 
 @app.route('/api/scrape/matches/<int:series_id>', methods=['POST'])

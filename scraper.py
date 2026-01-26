@@ -2,6 +2,11 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import time
+import json
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 BASE_URL = "https://www.cricbuzz.com"
 
@@ -9,7 +14,25 @@ HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
 }
+
+TEAM_FULL_NAMES = {
+    'ind': 'India', 'nz': 'New Zealand', 'aus': 'Australia',
+    'eng': 'England', 'pak': 'Pakistan', 'sa': 'South Africa',
+    'wi': 'West Indies', 'sl': 'Sri Lanka', 'ban': 'Bangladesh',
+    'zim': 'Zimbabwe', 'afg': 'Afghanistan', 'ire': 'Ireland',
+    'sco': 'Scotland', 'ned': 'Netherlands', 'uae': 'UAE',
+    'oman': 'Oman', 'usa': 'USA', 'nep': 'Nepal', 'ken': 'Kenya',
+    'hk': 'Hong Kong', 'nam': 'Namibia', 'can': 'Canada',
+    'india': 'India', 'new zealand': 'New Zealand', 'australia': 'Australia',
+    'england': 'England', 'pakistan': 'Pakistan', 'south africa': 'South Africa',
+    'west indies': 'West Indies', 'sri lanka': 'Sri Lanka', 'bangladesh': 'Bangladesh',
+}
+
+TEAM_ABBREVS = {v.lower(): k for k, v in TEAM_FULL_NAMES.items() if len(k) <= 3}
 
 CATEGORIES = {
     'international': {
@@ -53,14 +76,363 @@ SERIES_CATEGORIES = {
     }
 }
 
-def fetch_page(url):
-    try:
-        response = requests.get(url, headers=HEADERS, timeout=30)
-        response.raise_for_status()
-        return response.text
-    except Exception as e:
-        print(f"Error fetching {url}: {e}")
-        return None
+def fetch_page(url, retries=3):
+    for attempt in range(retries):
+        try:
+            response = requests.get(url, headers=HEADERS, timeout=30)
+            response.raise_for_status()
+            return response.text
+        except Exception as e:
+            logger.warning(f"Attempt {attempt + 1} failed for {url}: {e}")
+            if attempt < retries - 1:
+                time.sleep(1)
+    return None
+
+
+def fetch_match_detail_accurate(match_id):
+    """
+    Fetch accurate match details using multiple sources and techniques.
+    Returns complete match data with venue, date, scores, format, result.
+    """
+    match_data = {
+        'match_id': match_id,
+        'match_format': '',
+        'venue': '',
+        'match_date': '',
+        'team1_name': '',
+        'team1_score': '',
+        'team2_name': '',
+        'team2_score': '',
+        'result': '',
+        'match_url': f"{BASE_URL}/live-cricket-scores/{match_id}",
+        'status': ''
+    }
+    
+    urls_to_try = [
+        f"{BASE_URL}/live-cricket-scores/{match_id}",
+        f"{BASE_URL}/live-cricket-scorecard/{match_id}",
+        f"{BASE_URL}/cricket-match-live-commentary/{match_id}",
+    ]
+    
+    html = None
+    soup = None
+    
+    for url in urls_to_try:
+        html = fetch_page(url)
+        if html:
+            soup = BeautifulSoup(html, 'html.parser')
+            break
+    
+    if not html or not soup:
+        logger.error(f"Could not fetch any page for match {match_id}")
+        return match_data
+    
+    page_text = soup.get_text(' ', strip=True)
+    
+    title_tag = soup.find('title')
+    title = title_tag.get_text(strip=True) if title_tag else ''
+    
+    title_patterns = [
+        r'^([A-Za-z\s]+)\s+vs\s+([A-Za-z\s]+),\s*(\d+(?:st|nd|rd|th)\s+(?:ODI|T20I?|Test|Match))',
+        r'^([A-Z]+)\s+vs\s+([A-Z]+),?\s*(\d+(?:st|nd|rd|th)\s+\w+)?',
+        r'([A-Za-z\s]+)\s+vs\s+([A-Za-z\s]+)',
+    ]
+    
+    for pattern in title_patterns:
+        title_match = re.search(pattern, title, re.IGNORECASE)
+        if title_match:
+            t1 = title_match.group(1).strip()
+            t2 = title_match.group(2).strip()
+            match_data['team1_name'] = TEAM_FULL_NAMES.get(t1.lower(), t1)
+            match_data['team2_name'] = TEAM_FULL_NAMES.get(t2.lower(), t2)
+            if len(title_match.groups()) >= 3 and title_match.group(3):
+                match_data['match_format'] = title_match.group(3).strip()
+            break
+    
+    format_patterns = [
+        r'(\d+(?:st|nd|rd|th))\s+(ODI|T20I?|Test|T20|Match)',
+        r'(ODI|T20I|Test|T20)\s+Match',
+        r'\b(Test|ODI|T20I|T20)\b',
+    ]
+    
+    if not match_data['match_format']:
+        for pattern in format_patterns:
+            fmt_match = re.search(pattern, title + ' ' + page_text[:500], re.IGNORECASE)
+            if fmt_match:
+                if len(fmt_match.groups()) >= 2:
+                    ordinal = fmt_match.group(1)
+                    fmt_type = fmt_match.group(2).upper()
+                    if fmt_type == 'T20':
+                        fmt_type = 'T20I'
+                    match_data['match_format'] = f"{ordinal} {fmt_type}"
+                else:
+                    match_data['match_format'] = fmt_match.group(1).upper()
+                break
+    
+    venue_selectors = [
+        ('a', {'href': lambda h: h and '/cricket-stadium/' in h}),
+        ('a', {'href': lambda h: h and 'venue' in h.lower() if h else False}),
+        ('div', {'class_': lambda c: c and 'venue' in ' '.join(c).lower() if c else False}),
+        ('span', {'class_': lambda c: c and 'venue' in ' '.join(c).lower() if c else False}),
+    ]
+    
+    for tag, attrs in venue_selectors:
+        venue_elem = soup.find(tag, **attrs)
+        if venue_elem:
+            venue_text = venue_elem.get_text(strip=True)
+            venue_text = re.sub(r'^at\s+', '', venue_text, flags=re.IGNORECASE)
+            if venue_text and len(venue_text) > 3:
+                match_data['venue'] = venue_text
+                break
+    
+    if not match_data['venue']:
+        venue_patterns = [
+            r'(?:at|venue[:\s]+)\s*([A-Z][A-Za-z\s,]+(?:Stadium|Ground|Oval|Park|Arena)[A-Za-z\s,]*)',
+            r'([A-Z][A-Za-z\s]+(?:International|Cricket)\s+Stadium)',
+            r'([A-Z][A-Za-z\s]+,\s+[A-Z][A-Za-z]+(?:,\s+[A-Z][A-Za-z]+)?)',
+        ]
+        for pattern in venue_patterns:
+            venue_match = re.search(pattern, page_text[:2000])
+            if venue_match:
+                venue = venue_match.group(1).strip()
+                if len(venue) > 5 and len(venue) < 100:
+                    match_data['venue'] = venue
+                    break
+    
+    date_selectors = [
+        ('span', {'class_': lambda c: c and any('date' in x.lower() for x in c) if c else False}),
+        ('div', {'class_': lambda c: c and any('schedule' in x.lower() for x in c) if c else False}),
+        ('time', {}),
+    ]
+    
+    for tag, attrs in date_selectors:
+        date_elem = soup.find(tag, **attrs)
+        if date_elem:
+            date_text = date_elem.get_text(strip=True)
+            if date_text and re.search(r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)', date_text, re.IGNORECASE):
+                match_data['match_date'] = date_text
+                break
+    
+    if not match_data['match_date']:
+        date_patterns = [
+            r'((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*,?\s+)?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}(?:\s+\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?(?:\s+(?:IST|GMT|LOCAL))?)?',
+            r'\d{1,2}(?:st|nd|rd|th)?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*,?\s+\d{4}(?:\s+\d{1,2}:\d{2})?',
+            r'(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4}',
+        ]
+        for pattern in date_patterns:
+            date_match = re.search(pattern, page_text[:3000], re.IGNORECASE)
+            if date_match:
+                match_data['match_date'] = date_match.group(0).strip()
+                break
+    
+    score_divs = soup.find_all('div', class_=lambda c: c and any(x in ' '.join(c) for x in ['cb-col-scores', 'score', 'batting-team']) if c else False)
+    
+    team_scores = []
+    for div in score_divs:
+        text = div.get_text(' ', strip=True)
+        score_match = re.search(r'(\d{1,3})[-/](\d{1,2})\s*(?:\((\d+(?:\.\d+)?)\s*(?:Ov|ov)s?\))?', text)
+        if score_match:
+            runs = score_match.group(1)
+            wickets = score_match.group(2)
+            overs = score_match.group(3) or ''
+            if overs:
+                team_scores.append(f"{runs}/{wickets} ({overs})")
+            else:
+                team_scores.append(f"{runs}/{wickets}")
+    
+    if len(team_scores) >= 2:
+        match_data['team1_score'] = team_scores[0]
+        match_data['team2_score'] = team_scores[1]
+    elif len(team_scores) == 1:
+        match_data['team1_score'] = team_scores[0]
+    
+    if not match_data['team1_score']:
+        score_pattern = r'(India|New Zealand|Australia|England|Pakistan|South Africa|West Indies|Sri Lanka|Bangladesh|Afghanistan|Ireland|Zimbabwe)\s*(\d{1,3})[-/](\d{1,2})\s*\((\d+(?:\.\d+)?)\s*(?:Ov|ov)s?\)'
+        score_matches = re.findall(score_pattern, page_text, re.IGNORECASE)
+        
+        if score_matches:
+            for i, (team, runs, wickets, overs) in enumerate(score_matches[:2]):
+                score = f"{runs}/{wickets} ({overs})"
+                team_name = TEAM_FULL_NAMES.get(team.lower(), team)
+                if i == 0:
+                    if not match_data['team1_name']:
+                        match_data['team1_name'] = team_name
+                    match_data['team1_score'] = score
+                elif i == 1:
+                    if not match_data['team2_name']:
+                        match_data['team2_name'] = team_name
+                    match_data['team2_score'] = score
+    
+    result_selectors = [
+        ('div', {'class_': lambda c: c and any('complete' in x.lower() or 'result' in x.lower() for x in c) if c else False}),
+        ('span', {'class_': lambda c: c and 'status' in ' '.join(c).lower() if c else False}),
+    ]
+    
+    for tag, attrs in result_selectors:
+        result_elem = soup.find(tag, **attrs)
+        if result_elem:
+            result_text = result_elem.get_text(strip=True)
+            if result_text and ('won' in result_text.lower() or 'draw' in result_text.lower() or 'tie' in result_text.lower() or 'no result' in result_text.lower()):
+                match_data['result'] = result_text
+                break
+    
+    if not match_data['result']:
+        result_patterns = [
+            r'((?:India|New Zealand|Australia|England|Pakistan|South Africa|West Indies|Sri Lanka|Bangladesh|Afghanistan|Ireland|Zimbabwe)\s+won\s+by\s+\d+\s*(?:runs?|wkts?|wickets?))',
+            r'(Match\s+(?:tied|drawn|abandoned))',
+            r'(No\s+Result)',
+            r'(Match\s+yet\s+to\s+begin)',
+        ]
+        for pattern in result_patterns:
+            result_match = re.search(pattern, page_text, re.IGNORECASE)
+            if result_match:
+                match_data['result'] = result_match.group(1).strip()
+                break
+    
+    if 'yet to begin' in page_text.lower() or 'match starts' in page_text.lower():
+        match_data['status'] = 'Upcoming'
+        if not match_data['result']:
+            match_data['result'] = 'Upcoming'
+    elif 'live' in page_text.lower()[:500]:
+        match_data['status'] = 'Live'
+    elif match_data['result']:
+        match_data['status'] = 'Completed'
+    
+    logger.info(f"Match {match_id}: {match_data['team1_name']} vs {match_data['team2_name']} at {match_data['venue']}")
+    
+    return match_data
+
+
+def fetch_match_from_scorecard(match_id):
+    """
+    Fetch match details from scorecard page - most accurate for completed matches.
+    """
+    match_data = {
+        'match_id': match_id,
+        'match_format': '',
+        'venue': '',
+        'match_date': '',
+        'team1_name': '',
+        'team1_score': '',
+        'team2_name': '',
+        'team2_score': '',
+        'result': '',
+        'match_url': f"{BASE_URL}/live-cricket-scorecard/{match_id}",
+    }
+    
+    scorecard_url = f"{BASE_URL}/live-cricket-scorecard/{match_id}"
+    html = fetch_page(scorecard_url)
+    
+    if not html:
+        return fetch_match_detail_accurate(match_id)
+    
+    soup = BeautifulSoup(html, 'html.parser')
+    page_text = soup.get_text(' ', strip=True)
+    
+    title = soup.find('title')
+    if title:
+        title_text = title.get_text(strip=True)
+        match = re.search(r'([A-Za-z\s]+)\s+vs\s+([A-Za-z\s]+),\s*(\d+(?:st|nd|rd|th)\s+\w+)', title_text)
+        if match:
+            match_data['team1_name'] = match.group(1).strip()
+            match_data['team2_name'] = match.group(2).strip()
+            match_data['match_format'] = match.group(3).strip()
+    
+    venue_link = soup.find('a', href=lambda h: h and '/cricket-stadium/' in h if h else False)
+    if venue_link:
+        match_data['venue'] = venue_link.get_text(strip=True)
+    
+    if not match_data['venue']:
+        venue_pattern = r'at\s+([A-Za-z\s,]+(?:Stadium|Ground|Oval|Park|Arena))'
+        venue_match = re.search(venue_pattern, page_text[:2000])
+        if venue_match:
+            match_data['venue'] = venue_match.group(1).strip()
+    
+    date_patterns = [
+        r'((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*,?\s+)?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}',
+    ]
+    for pattern in date_patterns:
+        date_match = re.search(pattern, page_text[:2000], re.IGNORECASE)
+        if date_match:
+            match_data['match_date'] = date_match.group(0).strip()
+            break
+    
+    innings_headers = soup.find_all('div', id=lambda x: x and x.startswith('team-') and '-innings-' in x if x else False)
+    
+    innings_data = []
+    for header in innings_headers:
+        team_div = header.find('div', class_=lambda c: c and 'font-bold' in c if c else False)
+        if not team_div:
+            continue
+        
+        team_name_raw = team_div.get_text(strip=True)
+        team_name = TEAM_FULL_NAMES.get(team_name_raw.lower(), team_name_raw)
+        
+        score_span = header.find('span', class_=lambda c: c and 'font-bold' in c if c else False)
+        total_score = score_span.get_text(strip=True).replace('-', '/') if score_span else ''
+        
+        overs = ''
+        for span in header.find_all('span'):
+            text = span.get_text(strip=True)
+            if 'Ov' in text:
+                overs_match = re.search(r'(\d+(?:\.\d+)?)', text)
+                if overs_match:
+                    overs = overs_match.group(1)
+                break
+        
+        if team_name and team_name not in [d['team'] for d in innings_data]:
+            score = f"{total_score} ({overs})" if overs else total_score
+            innings_data.append({'team': team_name, 'score': score})
+    
+    if innings_data:
+        if len(innings_data) >= 1:
+            match_data['team1_name'] = innings_data[0]['team']
+            match_data['team1_score'] = innings_data[0]['score']
+        if len(innings_data) >= 2:
+            match_data['team2_name'] = innings_data[1]['team']
+            match_data['team2_score'] = innings_data[1]['score']
+    
+    result_patterns = [
+        r'((?:India|New Zealand|Australia|England|Pakistan|South Africa|West Indies|Sri Lanka|Bangladesh|Afghanistan|Ireland|Zimbabwe)\s+won\s+by\s+\d+\s*(?:runs?|wkts?|wickets?))',
+        r'(Match\s+(?:tied|drawn|abandoned))',
+    ]
+    for pattern in result_patterns:
+        result_match = re.search(pattern, page_text, re.IGNORECASE)
+        if result_match:
+            match_data['result'] = result_match.group(1).strip()
+            break
+    
+    return match_data
+
+
+def update_match_with_accurate_data(match_id, existing_data=None):
+    """
+    Update match data with accurate information from multiple sources.
+    Merges existing data with newly scraped data, preferring non-empty values.
+    """
+    scorecard_data = fetch_match_from_scorecard(match_id)
+    live_data = fetch_match_detail_accurate(match_id)
+    
+    merged = {
+        'match_id': match_id,
+        'match_format': '',
+        'venue': '',
+        'match_date': '',
+        'team1_name': '',
+        'team1_score': '',
+        'team2_name': '',
+        'team2_score': '',
+        'result': '',
+        'match_url': f"{BASE_URL}/live-cricket-scores/{match_id}",
+    }
+    
+    for key in merged.keys():
+        for source in [scorecard_data, live_data, existing_data or {}]:
+            if source and source.get(key):
+                merged[key] = source[key]
+                break
+    
+    return merged
 
 def extract_team_id(url):
     match = re.search(r'/(\d+)/', url)
