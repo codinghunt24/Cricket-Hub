@@ -643,7 +643,8 @@ def update_match_with_accurate_data(match_id, existing_data=None):
     return merged
 
 def extract_team_id(url):
-    match = re.search(r'/(\d+)/', url)
+    # Match number at end of URL (with or without trailing slash)
+    match = re.search(r'/(\d+)/?$', url)
     if match:
         return match.group(1)
     return None
