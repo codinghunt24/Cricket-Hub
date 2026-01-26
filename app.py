@@ -1048,6 +1048,45 @@ def scrape_matches(series_id):
         db.session.commit()
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/api/scrape/update-all-scores', methods=['POST'])
+def update_all_match_scores():
+    """Update scores for all matches in database from scorecards"""
+    try:
+        matches = Match.query.filter(
+            (Match.team1_score == None) | (Match.team1_score == '') |
+            (Match.team2_score == None) | (Match.team2_score == '')
+        ).all()
+        
+        updated_count = 0
+        for match in matches:
+            if not match.match_id:
+                continue
+            
+            scores = scraper.update_match_scores(match.match_id)
+            if scores:
+                if scores.get('team1_name'):
+                    match.team1_name = scores['team1_name']
+                if scores.get('team2_name'):
+                    match.team2_name = scores['team2_name']
+                if scores.get('team1_score'):
+                    match.team1_score = scores['team1_score']
+                if scores.get('team2_score'):
+                    match.team2_score = scores['team2_score']
+                if scores.get('result'):
+                    match.result = scores['result']
+                match.updated_at = datetime.utcnow()
+                updated_count += 1
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Updated {updated_count} matches with scores',
+            'updated_count': updated_count
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/settings/match-auto-scrape', methods=['POST'])
 def toggle_match_auto_scrape():
     try:

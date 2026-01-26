@@ -1009,3 +1009,82 @@ def scrape_scorecard(match_id):
             scorecard['innings'].append(innings_data)
     
     return scorecard
+
+
+def update_match_scores(match_id):
+    """Update a single match with scores from scorecard"""
+    scorecard = scrape_scorecard(match_id)
+    if not scorecard or not scorecard.get('innings'):
+        return None
+    
+    innings = scorecard.get('innings', [])
+    result = scorecard.get('result', '')
+    
+    match_data = {
+        'match_id': match_id,
+        'result': result
+    }
+    
+    if len(innings) >= 1:
+        inn1 = innings[0]
+        match_data['team1_name'] = inn1.get('team_name', '')
+        overs1 = inn1.get('overs', '')
+        score1 = inn1.get('total_score', '')
+        match_data['team1_score'] = f"{score1} ({overs1})" if overs1 else score1
+    
+    if len(innings) >= 2:
+        inn2 = innings[1]
+        match_data['team2_name'] = inn2.get('team_name', '')
+        overs2 = inn2.get('overs', '')
+        score2 = inn2.get('total_score', '')
+        match_data['team2_score'] = f"{score2} ({overs2})" if overs2 else score2
+    
+    return match_data
+
+
+def scrape_all_series_matches(series_list):
+    """
+    Scrape matches for all series with scores
+    series_list: list of dicts with 'id', 'series_id', 'series_url' keys
+    Returns: list of all matches with scores
+    """
+    all_matches = []
+    
+    for series in series_list:
+        series_url = series.get('series_url', '')
+        series_db_id = series.get('id')
+        
+        if not series_url:
+            continue
+        
+        print(f"Scraping matches for: {series_url}")
+        
+        # Get match IDs from series page
+        matches = scrape_matches_from_series(series_url)
+        
+        for match in matches:
+            match['series_db_id'] = series_db_id
+            match_id = match.get('match_id')
+            
+            # If no scores, try to get from scorecard
+            if match_id and (not match.get('team1_score') or not match.get('team2_score')):
+                scores = update_match_scores(match_id)
+                if scores:
+                    if scores.get('team1_name'):
+                        match['team1_name'] = scores['team1_name']
+                    if scores.get('team2_name'):
+                        match['team2_name'] = scores['team2_name']
+                    if scores.get('team1_score'):
+                        match['team1_score'] = scores['team1_score']
+                    if scores.get('team2_score'):
+                        match['team2_score'] = scores['team2_score']
+                    if scores.get('result'):
+                        match['result'] = scores['result']
+                
+                time.sleep(0.5)  # Rate limiting
+            
+            all_matches.append(match)
+        
+        time.sleep(1)  # Rate limiting between series
+    
+    return all_matches
