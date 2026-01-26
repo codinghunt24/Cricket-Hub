@@ -911,6 +911,13 @@ def scrape_series_json():
         if not url:
             return jsonify({'success': False, 'message': 'URL required'}), 400
         
+        series_id_from_url = None
+        series_name_from_url = None
+        url_match = re.search(r'/cricket-series/(\d+)/([^/]+)', url)
+        if url_match:
+            series_id_from_url = url_match.group(1)
+            series_name_from_url = url_match.group(2).replace('-', ' ').lower()
+        
         response = requests.get(url, headers={
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0'
         }, timeout=30)
@@ -988,11 +995,18 @@ def scrape_series_json():
                 elif venue_ground:
                     venue = venue_ground.group(1)
                 
+                match_series_name = series_name.group(1) if series_name else ''
+                
+                if series_name_from_url:
+                    match_series_lower = match_series_name.lower().replace(',', '').replace("'", '')
+                    if series_name_from_url not in match_series_lower and match_series_lower not in series_name_from_url:
+                        continue
+                
                 matches_data.append({
                     'match_id': mid,
                     'match_format': match_desc.group(1) if match_desc else '',
                     'format_type': match_format.group(1) if match_format else '',
-                    'series_name': series_name.group(1) if series_name else '',
+                    'series_name': match_series_name,
                     'match_date': match_date,
                     'team1': team1_name.group(1) if team1_name else '',
                     'team2': team2_name.group(1) if team2_name else '',
