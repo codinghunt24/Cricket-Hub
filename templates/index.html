@@ -13,23 +13,24 @@
                     <div class="match-status {% if match.state == 'Innings Break' %}innings{% elif match.state == 'Complete' %}complete{% elif match.state == 'Upcoming' %}upcoming{% endif %}">
                         {% if match.state == 'Live' %}LIVE{% elif match.state == 'Innings Break' %}INNINGS BREAK{% elif match.state == 'Complete' %}COMPLETE{% else %}UPCOMING{% endif %}
                     </div>
-                    <div class="match-teams-horizontal">
-                        <div class="team-item">
+                    <div class="match-teams-vertical">
+                        <div class="team-row">
                             {% if match_flags.get(match.match_id ~ '_1') %}
                             <img src="{{ match_flags.get(match.match_id ~ '_1') }}" alt="" class="team-flag">
                             {% else %}
                             <span class="team-flag-placeholder"></span>
                             {% endif %}
                             <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
+                            <span class="team-score">{{ match.team1_score or '-' }}</span>
                         </div>
-                        <span class="vs-text">vs</span>
-                        <div class="team-item">
+                        <div class="team-row">
                             {% if match_flags.get(match.match_id ~ '_2') %}
                             <img src="{{ match_flags.get(match.match_id ~ '_2') }}" alt="" class="team-flag">
                             {% else %}
                             <span class="team-flag-placeholder"></span>
                             {% endif %}
                             <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
+                            <span class="team-score">{{ match.team2_score or '-' }}</span>
                         </div>
                     </div>
                     <div class="match-format">{{ match.match_format or '-' }}</div>
@@ -158,46 +159,51 @@
 .match-status.complete { background: #00cc66; }
 .match-status.upcoming { background: #3498db; }
 
-.match-teams-horizontal {
+.match-teams-vertical {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 6px;
-    flex-wrap: wrap;
-}
-
-.team-item {
-    display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 4px;
+    margin-bottom: 6px;
 }
 
-.vs-text {
-    font-size: 0.65rem;
-    color: #888;
-    font-weight: 500;
+.team-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .team-flag {
-    width: 24px;
-    height: 16px;
+    width: 22px;
+    height: 15px;
     object-fit: cover;
     border-radius: 2px;
     border: 1px solid #ddd;
+    flex-shrink: 0;
 }
 
 .team-flag-placeholder {
-    width: 24px;
-    height: 16px;
+    width: 22px;
+    height: 15px;
     background: #e0e0e0;
     border-radius: 2px;
+    flex-shrink: 0;
 }
 
 .team-name {
     font-weight: 600;
     color: #222;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.team-score {
+    font-weight: 700;
+    color: #333;
+    font-size: 0.75rem;
+    margin-left: auto;
 }
 
 .match-format {
