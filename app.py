@@ -1266,6 +1266,101 @@ def scrape_match_json():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/api/save/series-matches', methods=['POST'])
+def save_series_matches():
+    """Save scraped series and matches to database"""
+    try:
+        data = request.get_json()
+        series_list = data.get('series', [])
+        matches_list = data.get('matches', [])
+        series_url = data.get('series_url', '')
+        
+        saved_series = 0
+        saved_matches = 0
+        
+        if series_list:
+            for s in series_list:
+                series_id = s.get('id', '')
+                if not series_id:
+                    continue
+                
+                category = SeriesCategory.query.filter_by(slug='international').first()
+                if not category:
+                    category = SeriesCategory.query.first()
+                
+                existing = Series.query.filter_by(series_id=series_id).first()
+                if existing:
+                    existing.name = s.get('name', '')
+                    existing.series_url = s.get('url', '')
+                    existing.date_range = s.get('month_year', '')
+                else:
+                    new_series = Series(
+                        series_id=series_id,
+                        name=s.get('name', ''),
+                        series_url=s.get('url', ''),
+                        date_range=s.get('month_year', ''),
+                        category_id=category.id if category else 1
+                    )
+                    db.session.add(new_series)
+                saved_series += 1
+            
+            db.session.commit()
+        
+        if matches_list:
+            series_id_from_url = None
+            if series_url:
+                m = re.search(r'/cricket-series/(\d+)/', series_url)
+                if m:
+                    series_id_from_url = m.group(1)
+            
+            series = None
+            if series_id_from_url:
+                series = Series.query.filter_by(series_id=series_id_from_url).first()
+            
+            for match in matches_list:
+                match_id = match.get('match_id', '')
+                if not match_id:
+                    continue
+                
+                existing = Match.query.filter_by(match_id=match_id).first()
+                if existing:
+                    existing.match_format = match.get('match_format', '')
+                    existing.venue = match.get('venue', '')
+                    existing.match_date = match.get('match_date', '')
+                    existing.team1_name = match.get('team1', '')
+                    existing.team1_score = match.get('team1_score', '')
+                    existing.team2_name = match.get('team2', '')
+                    existing.team2_score = match.get('team2_score', '')
+                    existing.result = match.get('result', '')
+                else:
+                    new_match = Match(
+                        match_id=match_id,
+                        match_format=match.get('match_format', ''),
+                        venue=match.get('venue', ''),
+                        match_date=match.get('match_date', ''),
+                        team1_name=match.get('team1', ''),
+                        team1_score=match.get('team1_score', ''),
+                        team2_name=match.get('team2', ''),
+                        team2_score=match.get('team2_score', ''),
+                        result=match.get('result', ''),
+                        match_url=match.get('match_url', ''),
+                        series_id=series.id if series else None
+                    )
+                    db.session.add(new_match)
+                saved_matches += 1
+            
+            db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'saved_series': saved_series,
+            'saved_matches': saved_matches
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/scrape/series/<category_slug>', methods=['POST'])
 def scrape_series(category_slug):
     try:

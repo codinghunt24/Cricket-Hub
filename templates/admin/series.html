@@ -20,6 +20,9 @@
         <div class="preview-header">
             <h3>JSON Data Preview</h3>
             <span class="badge" id="series-count">0 series</span>
+            <button class="btn-save" id="btn-save-all" onclick="saveAllToDb()" style="display:none;">
+                <i class="fas fa-database"></i> Save All to DB
+            </button>
         </div>
         <div class="preview-content" id="preview-content">
             <p class="hint-text">Click "Scrape" to fetch series data from URL</p>
@@ -79,6 +82,45 @@
 .btn-scrape:disabled {
     background: #374151;
     cursor: not-allowed;
+}
+
+.btn-save {
+    background: #8b5cf6;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+}
+
+.btn-save:hover {
+    background: #7c3aed;
+}
+
+.btn-save:disabled {
+    background: #374151;
+    cursor: not-allowed;
+}
+
+.btn-save-sm {
+    background: #8b5cf6;
+    color: white;
+    border: none;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 9px;
+    cursor: pointer;
+    font-weight: 500;
+    margin-left: 5px;
+}
+
+.btn-save-sm:hover {
+    background: #7c3aed;
 }
 
 .btn-match {
@@ -391,6 +433,76 @@
 
 <script>
 let seriesData = [];
+let matchesData = {};
+let currentSeriesUrl = '';
+
+async function saveAllToDb() {
+    const btn = document.getElementById('btn-save-all');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    
+    try {
+        const response = await fetch('/api/save/series-matches', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ series: seriesData })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            btn.innerHTML = '<i class="fas fa-check"></i> Saved ' + data.saved_series + ' series';
+            btn.style.background = '#10b981';
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-database"></i> Save All to DB';
+                btn.style.background = '#8b5cf6';
+                btn.disabled = false;
+            }, 2000);
+        } else {
+            alert('Error: ' + data.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-database"></i> Save All to DB';
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-database"></i> Save All to DB';
+    }
+}
+
+async function saveMatchesToDb(index, url) {
+    const btn = document.getElementById(`btn-save-matches-${index}`);
+    const matches = matchesData[index];
+    
+    if (!matches || matches.length === 0) {
+        alert('No matches to save. Scrape matches first.');
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    try {
+        const response = await fetch('/api/save/series-matches', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ matches: matches, series_url: url })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            btn.innerHTML = '<i class="fas fa-check"></i> ' + data.saved_matches;
+            btn.style.background = '#10b981';
+        } else {
+            alert('Error: ' + data.message);
+            btn.innerHTML = '<i class="fas fa-database"></i> Save';
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+        btn.innerHTML = '<i class="fas fa-database"></i> Save';
+    } finally {
+        btn.disabled = false;
+    }
+}
 
 async function scrapeSeriesFromUrl() {
     const urlInput = document.getElementById('series-url');
@@ -420,6 +532,7 @@ async function scrapeSeriesFromUrl() {
         if (data.success && data.series && data.series.length > 0) {
             seriesData = data.series;
             countBadge.textContent = data.series.length + ' series';
+            document.getElementById('btn-save-all').style.display = 'flex';
             
             let html = '<table class="series-table"><thead><tr>';
             html += '<th>ID</th>';
@@ -435,7 +548,10 @@ async function scrapeSeriesFromUrl() {
                     <td class="month-col">${s.month_year || '-'}</td>
                     <td class="action-col">
                         <button class="btn-match" id="btn-${index}" onclick="toggleMatches(${index}, '${s.url}')">
-                            <i class="fas fa-cricket-bat-ball"></i> Scrape Match
+                            <i class="fas fa-cricket-bat-ball"></i> Matches
+                        </button>
+                        <button class="btn-save-sm" id="btn-save-matches-${index}" onclick="saveMatchesToDb(${index}, '${s.url}')" title="Save matches to DB">
+                            <i class="fas fa-database"></i>
                         </button>
                     </td>
                 </tr>
@@ -489,6 +605,7 @@ async function toggleMatches(index, url) {
         const data = await response.json();
         
         if (data.success && data.type === 'matches' && data.matches && data.matches.length > 0) {
+            matchesData[index] = data.matches;
             let html = '<table class="matches-list"><thead><tr>';
             html += '<th>ID</th>';
             html += '<th>Date</th>';
