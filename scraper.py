@@ -138,13 +138,29 @@ def scrape_matches_from_json(series_url):
                 venue_ground = re.search(r'"venueInfo"\s*:\s*\{[^}]*"ground"\s*:\s*"([^"]*)"', context)
                 venue_city = re.search(r'"venueInfo"\s*:\s*\{[^}]*"city"\s*:\s*"([^"]*)"', context)
                 
-                # Check match state - only extract scores for completed/in-progress matches
-                match_state = state.group(1) if state else ''
+                # Check match state - normalize to our states
+                raw_state = state.group(1) if state else ''
+                # Normalize states: Cricbuzz uses Preview/Scheduled for upcoming
+                state_map = {
+                    'Live': 'Live',
+                    'In Progress': 'Live',
+                    'Innings Break': 'Innings Break',
+                    'Stumps': 'Innings Break',
+                    'Lunch': 'Innings Break',
+                    'Tea': 'Innings Break',
+                    'Drinks': 'Innings Break',
+                    'Complete': 'Complete',
+                    'Preview': 'Upcoming',
+                    'Scheduled': 'Upcoming',
+                    'Upcoming': 'Upcoming',
+                    '': 'Upcoming'
+                }
+                match_state = state_map.get(raw_state, raw_state)
                 team1_score = ''
                 team2_score = ''
                 
-                # Only extract scores if match has started
-                if match_state not in ['Preview', 'Upcoming', 'Scheduled', '']:
+                # Only extract scores if match has started (Live, Innings Break, Complete)
+                if match_state in ['Live', 'Innings Break', 'Complete']:
                     t1_score_block = re.search(r'"team1Score"\s*:\s*\{[^{]*"inngs1"\s*:\s*\{([^}]+)\}', context)
                     t2_score_block = re.search(r'"team2Score"\s*:\s*\{[^{]*"inngs1"\s*:\s*\{([^}]+)\}', context)
                     
