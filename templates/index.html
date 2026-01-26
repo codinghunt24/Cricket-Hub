@@ -169,12 +169,13 @@
 .team-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    justify-content: flex-start;
 }
 
 .team-flag {
-    width: 22px;
-    height: 15px;
+    width: 28px;
+    height: 18px;
     object-fit: cover;
     border-radius: 2px;
     border: 1px solid #ddd;
@@ -182,8 +183,8 @@
 }
 
 .team-flag-placeholder {
-    width: 22px;
-    height: 15px;
+    width: 28px;
+    height: 18px;
     background: #e0e0e0;
     border-radius: 2px;
     flex-shrink: 0;
@@ -192,8 +193,9 @@
 .team-name {
     font-weight: 600;
     color: #222;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     flex: 1;
+    text-align: left;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -202,7 +204,7 @@
 .team-score {
     font-weight: 700;
     color: #333;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     margin-left: auto;
 }
 
