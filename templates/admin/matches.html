@@ -39,6 +39,9 @@
         <button class="filter-tab" data-filter="Upcoming" onclick="filterMatches('Upcoming')" style="border-color: #3498db;">
             Upcoming <span class="tab-count" style="background: #3498db;">{{ upcoming_count }}</span>
         </button>
+        <button class="filter-tab" data-filter="has-result" onclick="filterMatches('has-result')" style="border-color: #9b59b6;">
+            With Result <span class="tab-count" style="background: #9b59b6;">{{ result_count }}</span>
+        </button>
     </div>
     
     {% if matches %}
@@ -57,7 +60,7 @@
             </thead>
             <tbody>
                 {% for match in matches %}
-                <tr data-state="{{ match.state or 'Unknown' }}">
+                <tr data-state="{{ match.state or 'Unknown' }}" data-has-result="{{ 'yes' if match.result else 'no' }}">
                     <td class="status-col">
                         <span class="status-badge {% if match.state == 'Live' %}live{% elif match.state == 'Innings Break' %}innings{% elif match.state == 'Complete' %}complete{% else %}upcoming{% endif %}">
                             {{ match.state or 'Unknown' }}
@@ -390,6 +393,8 @@ function filterMatches(status) {
     rows.forEach(row => {
         if (status === 'all') {
             row.style.display = '';
+        } else if (status === 'has-result') {
+            row.style.display = row.dataset.hasResult === 'yes' ? '' : 'none';
         } else {
             row.style.display = row.dataset.state === status ? '' : 'none';
         }
