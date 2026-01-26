@@ -52,6 +52,8 @@ TEAM_FLAGS = {
     'afg': 'https://flagcdn.com/48x36/af.png',
     'zim': 'https://flagcdn.com/48x36/zw.png',
     'ire': 'https://flagcdn.com/48x36/ie.png',
+    'italy': 'https://flagcdn.com/48x36/it.png',
+    'ita': 'https://flagcdn.com/48x36/it.png',
 }
 
 def get_team_flag(team_name):
