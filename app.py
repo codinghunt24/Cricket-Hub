@@ -1109,9 +1109,13 @@ def scrape_match_json():
     try:
         data = request.get_json()
         url = data.get('url', '')
+        match_id = data.get('match_id', '')
+        
+        if match_id:
+            url = f"https://www.cricbuzz.com/live-cricket-scorecard/{match_id}"
         
         if not url:
-            return jsonify({'success': False, 'message': 'URL required'}), 400
+            return jsonify({'success': False, 'message': 'URL or match_id required'}), 400
         
         response = requests.get(url, headers={
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0'
@@ -1124,7 +1128,7 @@ def scrape_match_json():
         
         match_data = {}
         
-        match_id = re.search(r'"matchId"\s*:\s*(\d+)', html)
+        mid = re.search(r'"matchId"\s*:\s*(\d+)', html)
         series_name = re.search(r'"seriesName"\s*:\s*"([^"]*)"', html)
         match_desc = re.search(r'"matchDesc"\s*:\s*"([^"]*)"', html)
         match_format = re.search(r'"matchFormat"\s*:\s*"([^"]*)"', html)
@@ -1137,7 +1141,7 @@ def scrape_match_json():
         venue_ground = re.search(r'"venueInfo"\s*:\s*\{[^}]*"ground"\s*:\s*"([^"]*)"', html)
         venue_city = re.search(r'"venueInfo"\s*:\s*\{[^}]*"city"\s*:\s*"([^"]*)"', html)
         
-        match_data['match_id'] = match_id.group(1) if match_id else ''
+        match_data['match_id'] = mid.group(1) if mid else ''
         match_data['series'] = series_name.group(1) if series_name else ''
         match_data['match'] = match_desc.group(1) if match_desc else ''
         match_data['format'] = match_format.group(1) if match_format else ''
@@ -1167,48 +1171,38 @@ def scrape_match_json():
                 match_data['team2_score'] = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'} ({overs.group(1) if overs else '?'})"
         
         batting = []
-        bat_blocks = re.finditer(r'"batId"\s*:\s*(\d+)[^}]*"batName"\s*:\s*"([^"]*)"[^}]*', html)
-        for bb in bat_blocks:
-            context = html[bb.start():bb.start()+500]
-            runs = re.search(r'"runs"\s*:\s*(\d+)', context)
-            balls = re.search(r'"balls"\s*:\s*(\d+)', context)
-            fours = re.search(r'"fours"\s*:\s*(\d+)', context)
-            sixes = re.search(r'"sixes"\s*:\s*(\d+)', context)
-            sr = re.search(r'"strikeRate"\s*:\s*([\d.]+)', context)
-            out_desc = re.search(r'"outDesc"\s*:\s*"([^"]*)"', context)
-            
+        bat_pattern = r'"batId":(\d+),"batName":"([^"]*)"[^}]*?"runs":(\d+),"balls":(\d+),"dots":(\d+),"fours":(\d+),"sixes":(\d+)[^}]*?"strikeRate":([\d.]+),"outDesc":"([^"]*)"'
+        bat_matches = re.finditer(bat_pattern, html)
+        for m in bat_matches:
             batting.append({
-                'name': bb.group(2),
-                'runs': runs.group(1) if runs else '0',
-                'balls': balls.group(1) if balls else '0',
-                'fours': fours.group(1) if fours else '0',
-                'sixes': sixes.group(1) if sixes else '0',
-                'sr': sr.group(1) if sr else '0',
-                'status': out_desc.group(1) if out_desc else 'not out'
+                'id': m.group(1),
+                'name': m.group(2),
+                'runs': m.group(3),
+                'balls': m.group(4),
+                'dots': m.group(5),
+                'fours': m.group(6),
+                'sixes': m.group(7),
+                'sr': m.group(8),
+                'status': m.group(9)
             })
         
-        match_data['batting'] = batting[:11]
+        match_data['batting'] = batting
         
         bowling = []
-        bowl_blocks = re.finditer(r'"bowlerId"\s*:\s*(\d+)[^}]*"bowlName"\s*:\s*"([^"]*)"[^}]*', html)
-        for bb in bowl_blocks:
-            context = html[bb.start():bb.start()+400]
-            overs = re.search(r'"overs"\s*:\s*([\d.]+)', context)
-            maidens = re.search(r'"maidens"\s*:\s*(\d+)', context)
-            runs = re.search(r'"runs"\s*:\s*(\d+)', context)
-            wickets = re.search(r'"wickets"\s*:\s*(\d+)', context)
-            economy = re.search(r'"economy"\s*:\s*([\d.]+)', context)
-            
+        bowl_pattern = r'"bowlerId":(\d+),"bowlName":"([^"]*)"[^}]*?"overs":([\d.]+),"maidens":(\d+),"runs":(\d+),"wickets":(\d+),"economy":([\d.]+)'
+        bowl_matches = re.finditer(bowl_pattern, html)
+        for m in bowl_matches:
             bowling.append({
-                'name': bb.group(2),
-                'overs': overs.group(1) if overs else '0',
-                'maidens': maidens.group(1) if maidens else '0',
-                'runs': runs.group(1) if runs else '0',
-                'wickets': wickets.group(1) if wickets else '0',
-                'economy': economy.group(1) if economy else '0'
+                'id': m.group(1),
+                'name': m.group(2),
+                'overs': m.group(3),
+                'maidens': m.group(4),
+                'runs': m.group(5),
+                'wickets': m.group(6),
+                'economy': m.group(7)
             })
         
-        match_data['bowling'] = bowling[:6]
+        match_data['bowling'] = bowling
         
         return jsonify({
             'success': True,

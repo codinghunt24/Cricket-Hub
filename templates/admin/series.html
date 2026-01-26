@@ -511,7 +511,7 @@ async function toggleMatches(index, url) {
                     <td class="match-score">${m.team1_score || '-'}<br>${m.team2_score || '-'}</td>
                     <td class="match-result">${m.result || '-'}</td>
                     <td class="match-action">
-                        <button class="btn-scrape-match" id="btn-match-${index}-${idx}" onclick="scrapeMatchDetails('${m.match_url}', '${matchRowId}', ${index}, ${idx})">
+                        <button class="btn-scrape-match" id="btn-match-${index}-${idx}" onclick="scrapeMatchDetails('${m.match_id}', '${matchRowId}', ${index}, ${idx})">
                             Scrape
                         </button>
                     </td>
@@ -538,7 +538,7 @@ async function toggleMatches(index, url) {
     }
 }
 
-async function scrapeMatchDetails(matchUrl, matchRowId, seriesIdx, matchIdx) {
+async function scrapeMatchDetails(matchId, matchRowId, seriesIdx, matchIdx) {
     const detailsRow = document.getElementById(`details-${matchRowId}`);
     const container = document.getElementById(`details-container-${matchRowId}`);
     const btn = document.getElementById(`btn-match-${seriesIdx}-${matchIdx}`);
@@ -553,42 +553,53 @@ async function scrapeMatchDetails(matchUrl, matchRowId, seriesIdx, matchIdx) {
     detailsRow.style.display = 'table-row';
     btn.disabled = true;
     btn.textContent = 'Loading...';
-    container.innerHTML = '<div style="color:#9ca3af;text-align:center;padding:10px;">Fetching match data...</div>';
+    container.innerHTML = '<div style="color:#9ca3af;text-align:center;padding:10px;">Fetching scorecard from cricbuzz.com/live-cricket-scorecard/' + matchId + '...</div>';
     
     try {
         const response = await fetch('/api/scrape/match-json', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: matchUrl })
+            body: JSON.stringify({ match_id: matchId })
         });
         
         const data = await response.json();
         
         if (data.success && data.data) {
             let html = '<div class="match-json-data">';
-            html += '<table>';
             
-            for (const [key, value] of Object.entries(data.data)) {
-                if (value !== null && value !== '' && typeof value !== 'object') {
-                    html += `<tr><th>${key}</th><td>${value}</td></tr>`;
-                }
-            }
+            html += '<div class="scorecard-header" style="margin-bottom:10px;padding:8px;background:#1e3a5f;border-radius:4px;">';
+            html += `<div style="font-size:11px;color:#10b981;font-weight:600;">${data.data.series || ''}</div>`;
+            html += `<div style="font-size:10px;color:#e2e8f0;">${data.data.match || ''} - ${data.data.format || ''}</div>`;
+            html += `<div style="font-size:10px;color:#94a3b8;">${data.data.venue || ''}</div>`;
+            html += `<div style="font-size:9px;color:#60a5fa;margin-top:4px;">${data.data.toss || ''}</div>`;
+            html += `<div style="font-size:10px;color:#fbbf24;font-weight:500;margin-top:4px;">${data.data.status || ''}</div>`;
+            html += '</div>';
+            
+            html += '<div style="display:flex;gap:10px;margin-bottom:10px;">';
+            html += `<div style="flex:1;background:#1e293b;padding:6px;border-radius:4px;text-align:center;">`;
+            html += `<div style="color:#94a3b8;font-size:9px;">${data.data.team1 || 'Team 1'}</div>`;
+            html += `<div style="color:#10b981;font-size:12px;font-weight:600;">${data.data.team1_score || '-'}</div>`;
+            html += `</div>`;
+            html += `<div style="flex:1;background:#1e293b;padding:6px;border-radius:4px;text-align:center;">`;
+            html += `<div style="color:#94a3b8;font-size:9px;">${data.data.team2 || 'Team 2'}</div>`;
+            html += `<div style="color:#10b981;font-size:12px;font-weight:600;">${data.data.team2_score || '-'}</div>`;
+            html += `</div>`;
+            html += '</div>';
             
             if (data.data.batting && data.data.batting.length > 0) {
-                html += '</table>';
                 html += '<h4 style="color:#10b981;margin:10px 0 5px;font-size:10px;">Batting</h4>';
-                html += '<table><tr><th>Player</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th><th>Status</th></tr>';
+                html += '<table><tr><th>Batter</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th><th>Dismissal</th></tr>';
                 data.data.batting.forEach(b => {
-                    html += `<tr><td>${b.name}</td><td>${b.runs}</td><td>${b.balls}</td><td>${b.fours}</td><td>${b.sixes}</td><td>${b.sr}</td><td>${b.status}</td></tr>`;
+                    html += `<tr><td>${b.name}</td><td style="color:#fbbf24;font-weight:500;">${b.runs}</td><td>${b.balls}</td><td>${b.fours}</td><td>${b.sixes}</td><td>${b.sr}</td><td style="color:#94a3b8;font-size:8px;">${b.status}</td></tr>`;
                 });
                 html += '</table>';
             }
             
             if (data.data.bowling && data.data.bowling.length > 0) {
                 html += '<h4 style="color:#10b981;margin:10px 0 5px;font-size:10px;">Bowling</h4>';
-                html += '<table><tr><th>Player</th><th>O</th><th>M</th><th>R</th><th>W</th><th>Eco</th></tr>';
+                html += '<table><tr><th>Bowler</th><th>O</th><th>M</th><th>R</th><th>W</th><th>Eco</th></tr>';
                 data.data.bowling.forEach(b => {
-                    html += `<tr><td>${b.name}</td><td>${b.overs}</td><td>${b.maidens}</td><td>${b.runs}</td><td>${b.wickets}</td><td>${b.economy}</td></tr>`;
+                    html += `<tr><td>${b.name}</td><td>${b.overs}</td><td>${b.maidens}</td><td>${b.runs}</td><td style="color:#ef4444;font-weight:500;">${b.wickets}</td><td>${b.economy}</td></tr>`;
                 });
                 html += '</table>';
             }
