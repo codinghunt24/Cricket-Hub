@@ -244,11 +244,31 @@ def upsert_player(player_data, db_team_id):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
+    live_matches = [m for m in matches if m.state == 'Live']
+    innings_break = [m for m in matches if m.state == 'Innings Break']
+    complete_matches = [m for m in matches if m.state == 'Complete']
+    upcoming_matches = [m for m in matches if m.state == 'Upcoming']
+    return render_template('index.html', 
+                           matches=matches,
+                           live_matches=live_matches,
+                           innings_break=innings_break,
+                           complete_matches=complete_matches,
+                           upcoming_matches=upcoming_matches)
 
 @app.route('/live-scores')
 def live_scores():
-    return render_template('index.html')
+    matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
+    live_matches = [m for m in matches if m.state == 'Live']
+    innings_break = [m for m in matches if m.state == 'Innings Break']
+    complete_matches = [m for m in matches if m.state == 'Complete']
+    upcoming_matches = [m for m in matches if m.state == 'Upcoming']
+    return render_template('index.html', 
+                           matches=matches,
+                           live_matches=live_matches,
+                           innings_break=innings_break,
+                           complete_matches=complete_matches,
+                           upcoming_matches=upcoming_matches)
 
 @app.route('/teams')
 def teams_page():
@@ -353,7 +373,14 @@ def admin_dashboard():
 @app.route('/admin/matches')
 def admin_matches():
     matches = Match.query.order_by(Match.id.desc()).all()
-    return render_template('admin/matches.html', matches=matches)
+    live_count = len([m for m in matches if m.state == 'Live'])
+    innings_count = len([m for m in matches if m.state == 'Innings Break'])
+    complete_count = len([m for m in matches if m.state == 'Complete'])
+    return render_template('admin/matches.html', 
+                           matches=matches,
+                           live_count=live_count,
+                           innings_count=innings_count,
+                           complete_count=complete_count)
 
 @app.route('/admin/teams')
 def admin_teams():
@@ -2032,6 +2059,59 @@ def toggle_series_auto_scrape():
 def get_series_scrape_settings():
     settings = SeriesScrapeSetting.query.all()
     return jsonify({s.category_slug: {'enabled': s.auto_scrape_enabled, 'time': s.scrape_time, 'last_scrape': s.last_scrape.isoformat() if s.last_scrape else None} for s in settings})
+
+@app.route('/api/scrape/live-scores', methods=['POST'])
+def scrape_live_scores_api():
+    """Scrape all matches from Cricbuzz live-scores page and save to database"""
+    try:
+        result = scraper.scrape_live_scores()
+        if not result.get('success'):
+            return jsonify(result), 500
+        
+        saved = 0
+        updated = 0
+        
+        for match_data in result.get('matches', []):
+            if not match_data.get('match_id'):
+                continue
+            
+            existing = Match.query.filter_by(match_id=match_data['match_id']).first()
+            
+            if existing:
+                existing.team1_name = match_data.get('team1', existing.team1_name)
+                existing.team2_name = match_data.get('team2', existing.team2_name)
+                existing.match_format = match_data.get('match_format', existing.match_format)
+                existing.state = match_data.get('status', existing.state)
+                existing.match_url = match_data.get('match_url', existing.match_url)
+                existing.cricbuzz_series_id = match_data.get('series_id', existing.cricbuzz_series_id)
+                existing.updated_at = datetime.utcnow()
+                updated += 1
+            else:
+                new_match = Match(
+                    match_id=match_data['match_id'],
+                    team1_name=match_data.get('team1', ''),
+                    team2_name=match_data.get('team2', ''),
+                    match_format=match_data.get('match_format', ''),
+                    state=match_data.get('status', 'Upcoming'),
+                    match_url=match_data.get('match_url', ''),
+                    cricbuzz_series_id=match_data.get('series_id')
+                )
+                db.session.add(new_match)
+                saved += 1
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'saved': saved,
+            'updated': updated,
+            'counts': result.get('counts', {}),
+            'matches': result.get('matches', [])
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 
 @app.route('/api/matches/clear', methods=['POST'])
 def clear_all_matches():

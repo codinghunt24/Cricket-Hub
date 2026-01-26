@@ -8,14 +8,33 @@
     <div class="page-header">
         <h2>Manage Matches</h2>
         <div class="header-buttons">
+            <button class="btn btn-primary" id="scrapeLiveBtn" onclick="scrapeLiveScores()">Scrape Live Scores</button>
             <button class="btn btn-danger" id="clearMatchesBtn" onclick="clearAllMatches()">Clear All</button>
         </div>
     </div>
     
+    <div class="scrape-card" style="margin-bottom: 20px; padding: 15px; background: #1e1e1e; border-radius: 8px;">
+        <h3 style="color: #00deaa; margin-bottom: 15px;">Live Scores Scraper</h3>
+        <p style="color: #888; margin-bottom: 15px;">Scrape all current matches from Cricbuzz (Live, Innings Break, Complete, Upcoming)</p>
+        <div id="liveScrapingResult" style="display: none; padding: 10px; border-radius: 5px; margin-top: 10px;"></div>
+    </div>
+    
     <div class="stats-row">
         <div class="stat-box">
-            <span class="stat-num">{{ matches|length }}</span>
-            <span class="stat-label">Total Matches</span>
+            <span class="stat-num" id="totalCount">{{ matches|length }}</span>
+            <span class="stat-label">Total</span>
+        </div>
+        <div class="stat-box" style="border-left: 3px solid #ff4444;">
+            <span class="stat-num" id="liveCount">{{ live_count }}</span>
+            <span class="stat-label">Live</span>
+        </div>
+        <div class="stat-box" style="border-left: 3px solid #ffaa00;">
+            <span class="stat-num" id="inningsCount">{{ innings_count }}</span>
+            <span class="stat-label">Innings Break</span>
+        </div>
+        <div class="stat-box" style="border-left: 3px solid #00cc66;">
+            <span class="stat-num" id="completeCount">{{ complete_count }}</span>
+            <span class="stat-label">Complete</span>
         </div>
     </div>
     
@@ -209,6 +228,51 @@
 </style>
 
 <script>
+function scrapeLiveScores() {
+    const btn = document.getElementById('scrapeLiveBtn');
+    const resultDiv = document.getElementById('liveScrapingResult');
+    
+    btn.disabled = true;
+    btn.textContent = 'Scraping...';
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = '#333';
+    resultDiv.innerHTML = '<span style="color: #00deaa;">Scraping live scores from Cricbuzz...</span>';
+    
+    fetch('/api/scrape/live-scores', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                resultDiv.style.background = '#1a4d1a';
+                resultDiv.innerHTML = `
+                    <div style="color: #00ff00; font-weight: bold;">Scraping Complete!</div>
+                    <div style="color: #ccc; margin-top: 8px;">
+                        <span style="margin-right: 15px;">Total: ${data.counts.total}</span>
+                        <span style="margin-right: 15px; color: #ff4444;">Live: ${data.counts.live}</span>
+                        <span style="margin-right: 15px; color: #ffaa00;">Innings Break: ${data.counts.innings_break}</span>
+                        <span style="color: #00cc66;">Complete: ${data.counts.complete}</span>
+                    </div>
+                    <div style="color: #888; margin-top: 5px;">Saved: ${data.saved} new, Updated: ${data.updated} existing</div>
+                `;
+                document.getElementById('totalCount').textContent = data.counts.total;
+                document.getElementById('liveCount').textContent = data.counts.live;
+                document.getElementById('inningsCount').textContent = data.counts.innings_break;
+                document.getElementById('completeCount').textContent = data.counts.complete;
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                resultDiv.style.background = '#4d1a1a';
+                resultDiv.innerHTML = `<span style="color: #ff4444;">Error: ${data.message}</span>`;
+            }
+            btn.disabled = false;
+            btn.textContent = 'Scrape Live Scores';
+        })
+        .catch(e => {
+            resultDiv.style.background = '#4d1a1a';
+            resultDiv.innerHTML = `<span style="color: #ff4444;">Error: ${e}</span>`;
+            btn.disabled = false;
+            btn.textContent = 'Scrape Live Scores';
+        });
+}
+
 function clearAllMatches() {
     if (confirm('Are you sure you want to delete all matches?')) {
         const btn = document.getElementById('clearMatchesBtn');

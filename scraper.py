@@ -297,6 +297,125 @@ def fetch_page(url, retries=3):
     return None
 
 
+def scrape_live_scores():
+    """
+    Scrape all matches from Cricbuzz live-scores page with ID verification.
+    Returns matches categorized by status: Live, Innings Break, Complete, Upcoming
+    """
+    url = "https://www.cricbuzz.com/cricket-match/live-scores"
+    html = fetch_page(url)
+    if not html:
+        return {'success': False, 'matches': [], 'message': 'Failed to fetch page'}
+    
+    soup = BeautifulSoup(html, 'html.parser')
+    all_matches = []
+    
+    # Find all match links
+    match_links = soup.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+    
+    seen_ids = set()
+    for link in match_links:
+        href = link.get('href', '')
+        title = link.get('title', '')
+        
+        # Extract match_id from URL - ID VERIFICATION
+        match_id_match = re.search(r'/live-cricket-scores/(\d+)/', href)
+        if not match_id_match:
+            continue
+        match_id = match_id_match.group(1)
+        
+        # Skip duplicates
+        if match_id in seen_ids:
+            continue
+        seen_ids.add(match_id)
+        
+        # Extract series_id from URL if present
+        series_id = None
+        series_match = re.search(r'/cricket-series/(\d+)/', href)
+        if series_match:
+            series_id = series_match.group(1)
+        
+        # Determine match status
+        status = 'Upcoming'
+        has_live_tag = link.find('span', class_=re.compile(r'cbPlusLiveTag')) is not None
+        
+        if has_live_tag:
+            status = 'Live'
+        elif 'Innings Break' in title or 'Ings Break' in title:
+            status = 'Innings Break'
+        elif 'Complete' in title or 'Won' in title:
+            status = 'Complete'
+        elif 'Preview' in title:
+            status = 'Upcoming'
+        elif 'Live' in title:
+            status = 'Live'
+        
+        # Extract team names and match format from title
+        teams = ''
+        match_format = ''
+        if ' - ' in title:
+            parts = title.split(' - ')
+            teams = parts[0].strip()
+            if len(parts) > 1:
+                # Status might be in the second part
+                pass
+        else:
+            teams = title.strip()
+        
+        # Try to get teams from div text
+        team_div = link.find('div', class_='text-white')
+        if team_div:
+            teams = team_div.get_text(strip=True)
+        
+        # Try to get match format from format div
+        format_div = link.find('div', class_=re.compile(r'text-xs'))
+        if format_div:
+            match_format = format_div.get_text(strip=True)
+        
+        # Split teams
+        team1 = ''
+        team2 = ''
+        if ' vs ' in teams:
+            team_parts = teams.split(' vs ')
+            team1 = team_parts[0].strip()
+            team2 = team_parts[1].strip() if len(team_parts) > 1 else ''
+        
+        match_data = {
+            'match_id': match_id,
+            'team1': team1,
+            'team2': team2,
+            'teams': teams,
+            'match_format': match_format,
+            'status': status,
+            'match_url': BASE_URL + href,
+            'series_id': series_id
+        }
+        
+        all_matches.append(match_data)
+    
+    # Categorize matches
+    live_matches = [m for m in all_matches if m['status'] == 'Live']
+    innings_break = [m for m in all_matches if m['status'] == 'Innings Break']
+    complete_matches = [m for m in all_matches if m['status'] == 'Complete']
+    upcoming_matches = [m for m in all_matches if m['status'] == 'Upcoming']
+    
+    return {
+        'success': True,
+        'matches': all_matches,
+        'live': live_matches,
+        'innings_break': innings_break,
+        'complete': complete_matches,
+        'upcoming': upcoming_matches,
+        'counts': {
+            'total': len(all_matches),
+            'live': len(live_matches),
+            'innings_break': len(innings_break),
+            'complete': len(complete_matches),
+            'upcoming': len(upcoming_matches)
+        }
+    }
+
+
 def fetch_match_detail_accurate(match_id):
     """
     Fetch accurate match details using multiple sources and techniques.
