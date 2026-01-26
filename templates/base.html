@@ -20,14 +20,8 @@
                 </button>
                 
                 <ul class="nav-menu" id="navMenu">
-                    <li class="nav-item has-submenu">
-                        <a href="/live-scores" class="nav-link">Live Score <span class="arrow">&#9662;</span></a>
-                        <ul class="submenu">
-                            <li><a href="/live-scores">All Matches</a></li>
-                            <li><a href="/live-scores">International</a></li>
-                            <li><a href="/live-scores">Domestic</a></li>
-                            <li><a href="/live-scores">T20 Leagues</a></li>
-                        </ul>
+                    <li class="nav-item">
+                        <a href="/live-scores" class="nav-link">Live Score</a>
                     </li>
                     <li class="nav-item">
                         <a href="/teams" class="nav-link">Teams</a>
@@ -38,6 +32,17 @@
                     <li class="nav-item">
                         <a href="/news" class="nav-link">News</a>
                     </li>
+                </ul>
+            </div>
+        </nav>
+        <nav class="sub-navbar">
+            <div class="nav-container">
+                <ul class="sub-nav-menu">
+                    <li><a href="/live-scores">All Matches</a></li>
+                    <li><a href="/live-scores?type=international">International</a></li>
+                    <li><a href="/live-scores?type=domestic">Domestic</a></li>
+                    <li><a href="/live-scores?type=league">T20 Leagues</a></li>
+                    <li><a href="/live-scores?type=women">Women</a></li>
                 </ul>
             </div>
         </nav>

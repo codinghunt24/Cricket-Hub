@@ -49,6 +49,37 @@ body {
     background-color: var(--primary-color);
 }
 
+.sub-navbar {
+    background-color: #000000;
+}
+
+.sub-navbar .nav-container {
+    height: 40px;
+    justify-content: center;
+}
+
+.sub-nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+    margin: 0;
+    padding: 0;
+}
+
+.sub-nav-menu li a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 10px 15px;
+    transition: all 0.2s ease;
+    display: block;
+}
+
+.sub-nav-menu li a:hover {
+    color: var(--accent-color);
+    background-color: #222222;
+}
+
 .nav-container {
     max-width: var(--container-width);
     margin: 0 auto;
