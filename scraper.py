@@ -606,9 +606,13 @@ def scrape_matches_from_series(series_url):
         match_date = current_date
         
         # Extract format from URL (most reliable)
-        url_format = re.search(r'/(\d+(?:st|nd|rd|th)-(?:odi|t20i|test|t20|match|final))', href, re.IGNORECASE)
+        url_format = re.search(r'/(\d+(?:st|nd|rd|th))-(\w+)', href, re.IGNORECASE)
         if url_format:
-            match_format = url_format.group(1).replace('-', ' ').title()
+            ordinal = url_format.group(1).lower()  # 1st, 2nd, 3rd, etc.
+            format_type = url_format.group(2).upper()  # ODI, T20I, etc.
+            if format_type == 'T20':
+                format_type = 'T20I'
+            match_format = f"{ordinal} {format_type}"
         
         # Extract team names from URL (e.g., sl-vs-eng or eng-vs-sl)
         team_abbrevs = {
