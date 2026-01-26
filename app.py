@@ -1087,6 +1087,27 @@ def update_single_match_accurate(match_id):
 
 match_scrape_progress = {}
 
+@app.route('/api/series/<int:series_id>/matches')
+def get_series_matches(series_id):
+    try:
+        matches = Match.query.filter_by(series_id=series_id).order_by(Match.id).all()
+        return jsonify({
+            'matches': [{
+                'id': m.id,
+                'match_id': m.match_id,
+                'match_format': m.match_format,
+                'match_date': m.match_date,
+                'team1_name': m.team1_name,
+                'team2_name': m.team2_name,
+                'team1_score': m.team1_score,
+                'team2_score': m.team2_score,
+                'venue': m.venue,
+                'result': m.result
+            } for m in matches]
+        })
+    except Exception as e:
+        return jsonify({'matches': [], 'error': str(e)})
+
 @app.route('/api/scrape/matches/<int:series_id>', methods=['POST'])
 def scrape_matches(series_id):
     try:

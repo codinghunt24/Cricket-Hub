@@ -96,16 +96,24 @@
                 <tbody>
                     {% for data in category_data %}
                     {% for series in data.series %}
-                    <tr id="series-row-{{ series.id }}">
+                    <tr id="series-row-{{ series.id }}" class="series-row">
                         <td class="id-col">{{ series.series_id }}</td>
                         <td class="name-col">
-                            <a href="{{ url_for('series_detail', series_id=series.id) }}">{{ series.name[:40] }}{% if series.name|length > 40 %}...{% endif %}</a>
+                            <span class="expand-icon" id="expand-{{ series.id }}" onclick="toggleMatchesDropdown({{ series.id }})">▶</span>
+                            <a href="{{ url_for('series_detail', series_id=series.id) }}">{{ series.name[:35] }}{% if series.name|length > 35 %}...{% endif %}</a>
                         </td>
                         <td class="date-col">{{ series.date_range or '-' }}</td>
                         <td class="cat-col">{{ data.category.name[:8] }}</td>
                         <td class="match-col" id="match-count-{{ series.id }}">-</td>
                         <td class="action-col">
-                            <button class="btn-scrape" onclick="scrapeSeriesMatches({{ series.id }}, '{{ series.name[:20] }}')" id="scrape-btn-{{ series.id }}">Scrape</button>
+                            <button class="btn-scrape" onclick="scrapeAndShowMatches({{ series.id }})" id="scrape-btn-{{ series.id }}">Scrape</button>
+                        </td>
+                    </tr>
+                    <tr id="matches-row-{{ series.id }}" class="matches-dropdown-row" style="display: none;">
+                        <td colspan="6">
+                            <div class="matches-dropdown" id="matches-list-{{ series.id }}">
+                                <div class="no-matches">No matches scraped yet</div>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -348,6 +356,75 @@
     cursor: not-allowed;
 }
 
+.expand-icon {
+    cursor: pointer;
+    margin-right: 5px;
+    font-size: 8px;
+    color: #888;
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+.expand-icon.expanded {
+    transform: rotate(90deg);
+}
+
+.matches-dropdown-row {
+    background: #f8f9fa;
+}
+
+.matches-dropdown {
+    padding: 8px 12px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.matches-dropdown .no-matches {
+    color: #888;
+    font-size: 10px;
+    text-align: center;
+    padding: 10px;
+}
+
+.match-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    margin: 2px 0;
+    background: white;
+    border-radius: 3px;
+    font-size: 9px;
+    border-left: 3px solid #046a38;
+}
+
+.match-item .match-info {
+    flex: 1;
+}
+
+.match-item .match-date {
+    color: #046a38;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.match-item .match-teams {
+    color: #333;
+}
+
+.match-item .match-format {
+    color: #666;
+    margin-left: 5px;
+}
+
+.match-item .match-result {
+    color: #046a38;
+    font-weight: 500;
+    font-size: 8px;
+    max-width: 120px;
+    text-align: right;
+}
+
 .category-series {
     margin-bottom: 15px;
 }
@@ -509,6 +586,81 @@
 </style>
 
 <script>
+function toggleMatchesDropdown(seriesId) {
+    const matchesRow = document.getElementById(`matches-row-${seriesId}`);
+    const expandIcon = document.getElementById(`expand-${seriesId}`);
+    
+    if (matchesRow.style.display === 'none') {
+        matchesRow.style.display = 'table-row';
+        expandIcon.classList.add('expanded');
+        loadSeriesMatches(seriesId);
+    } else {
+        matchesRow.style.display = 'none';
+        expandIcon.classList.remove('expanded');
+    }
+}
+
+async function loadSeriesMatches(seriesId) {
+    const matchesList = document.getElementById(`matches-list-${seriesId}`);
+    
+    try {
+        const response = await fetch(`/api/series/${seriesId}/matches`);
+        const data = await response.json();
+        
+        if (data.matches && data.matches.length > 0) {
+            let html = '';
+            data.matches.forEach(match => {
+                html += `<div class="match-item">
+                    <div class="match-info">
+                        <span class="match-date">${match.match_date || 'TBD'}</span>
+                        <span class="match-teams">${match.team1_name || 'Team1'} vs ${match.team2_name || 'Team2'}</span>
+                        <span class="match-format">${match.match_format || ''}</span>
+                    </div>
+                    <div class="match-result">${match.result || ''}</div>
+                </div>`;
+            });
+            matchesList.innerHTML = html;
+            document.getElementById(`match-count-${seriesId}`).textContent = data.matches.length;
+        } else {
+            matchesList.innerHTML = '<div class="no-matches">No matches found</div>';
+        }
+    } catch (error) {
+        matchesList.innerHTML = '<div class="no-matches">Error loading matches</div>';
+    }
+}
+
+async function scrapeAndShowMatches(seriesId) {
+    const btn = document.getElementById(`scrape-btn-${seriesId}`);
+    const matchesRow = document.getElementById(`matches-row-${seriesId}`);
+    const expandIcon = document.getElementById(`expand-${seriesId}`);
+    const matchesList = document.getElementById(`matches-list-${seriesId}`);
+    
+    btn.disabled = true;
+    btn.textContent = '...';
+    matchesList.innerHTML = '<div class="no-matches">Scraping matches...</div>';
+    matchesRow.style.display = 'table-row';
+    expandIcon.classList.add('expanded');
+    
+    try {
+        const response = await fetch(`/api/scrape/matches/${seriesId}`, { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.success) {
+            await loadSeriesMatches(seriesId);
+            btn.textContent = '✓';
+            setTimeout(() => { btn.textContent = 'Scrape'; btn.disabled = false; }, 2000);
+        } else {
+            matchesList.innerHTML = `<div class="no-matches">Error: ${data.message}</div>`;
+            btn.textContent = 'Scrape';
+            btn.disabled = false;
+        }
+    } catch (error) {
+        matchesList.innerHTML = '<div class="no-matches">Error scraping</div>';
+        btn.textContent = 'Scrape';
+        btn.disabled = false;
+    }
+}
+
 async function scrapeSeries(slug) {
     const card = document.getElementById(`series-card-${slug}`);
     const btn = card.querySelector('.btn-primary');
