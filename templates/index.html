@@ -231,6 +231,7 @@
     gap: 8px;
     width: 100%;
     padding: 6px 0;
+    line-height: 1;
 }
 
 .team-row:first-child {
@@ -244,7 +245,8 @@
     border-radius: 3px;
     border: 1px solid #ddd;
     flex-shrink: 0;
-    display: inline-block;
+    display: block;
+    vertical-align: middle;
 }
 
 .team-flag-placeholder {
@@ -253,7 +255,8 @@
     background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%);
     border-radius: 3px;
     flex-shrink: 0;
-    display: inline-block;
+    display: block;
+    vertical-align: middle;
 }
 
 .team-name {
@@ -261,8 +264,7 @@
     color: #333;
     font-size: 0.9rem;
     flex: 1;
-    text-align: left;
-    line-height: 1.2;
+    line-height: 20px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
