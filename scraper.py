@@ -326,6 +326,18 @@ def scrape_live_scores():
     soup = BeautifulSoup(html, 'html.parser')
     all_matches = []
     
+    # First, build a map of series_id to series_name from series links
+    series_map = {}
+    series_links = soup.find_all('a', href=re.compile(r'/cricket-series/(\d+)/'))
+    for s_link in series_links:
+        s_href = s_link.get('href', '')
+        s_match = re.search(r'/cricket-series/(\d+)/', s_href)
+        if s_match:
+            s_id = s_match.group(1)
+            s_name = s_link.get_text(strip=True)
+            if s_name and s_id not in series_map:
+                series_map[s_id] = s_name
+    
     # Find all match links
     match_links = soup.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
     
@@ -345,11 +357,22 @@ def scrape_live_scores():
             continue
         seen_ids.add(match_id)
         
-        # Extract series_id from URL if present
+        # Find series_id by looking at parent/sibling series link
         series_id = None
-        series_match = re.search(r'/cricket-series/(\d+)/', href)
-        if series_match:
-            series_id = series_match.group(1)
+        series_name = None
+        
+        # Look for nearest series link in parent elements
+        parent = link.find_parent(['div', 'section'])
+        while parent:
+            series_link = parent.find('a', href=re.compile(r'/cricket-series/(\d+)/'))
+            if series_link:
+                s_href = series_link.get('href', '')
+                s_match = re.search(r'/cricket-series/(\d+)/', s_href)
+                if s_match:
+                    series_id = s_match.group(1)
+                    series_name = series_link.get_text(strip=True) or series_map.get(series_id)
+                    break
+            parent = parent.find_parent(['div', 'section'])
         
         # Determine match status from title attribute
         status = 'Upcoming'
@@ -424,7 +447,8 @@ def scrape_live_scores():
             'match_format': match_format,
             'status': status,
             'match_url': BASE_URL + href,
-            'series_id': series_id
+            'series_id': series_id,
+            'series_name': series_name or series_map.get(series_id, '')
         }
         
         all_matches.append(match_data)
