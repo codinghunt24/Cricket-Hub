@@ -242,6 +242,24 @@ def upsert_player(player_data, db_team_id):
         db.session.add(new_player)
         return new_player
 
+def get_team_flag(team_name, teams_list):
+    """Find team flag by partial name matching"""
+    if not team_name:
+        return None
+    team_name_lower = team_name.lower().strip()
+    
+    for team in teams_list:
+        if not team.flag_url:
+            continue
+        db_name = team.name.lower() if team.name else ''
+        if db_name == team_name_lower:
+            return team.flag_url
+        if db_name and db_name in team_name_lower:
+            return team.flag_url
+        if team_name_lower.startswith(db_name.split()[0] if db_name else ''):
+            return team.flag_url
+    return None
+
 @app.route('/')
 def index():
     all_matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
@@ -252,9 +270,13 @@ def index():
     matches = live + innings + complete + upcoming
     
     teams = Team.query.all()
-    team_flags = {t.team_id: t.flag_url for t in teams if t.team_id}
     
-    return render_template('index.html', matches=matches, team_flags=team_flags)
+    match_flags = {}
+    for m in matches:
+        match_flags[f"{m.match_id}_1"] = get_team_flag(m.team1_name, teams)
+        match_flags[f"{m.match_id}_2"] = get_team_flag(m.team2_name, teams)
+    
+    return render_template('index.html', matches=matches, match_flags=match_flags)
 
 @app.route('/live-scores')
 def live_scores():
@@ -266,9 +288,13 @@ def live_scores():
     matches = live + innings + complete + upcoming
     
     teams = Team.query.all()
-    team_flags = {t.team_id: t.flag_url for t in teams if t.team_id}
     
-    return render_template('index.html', matches=matches, team_flags=team_flags)
+    match_flags = {}
+    for m in matches:
+        match_flags[f"{m.match_id}_1"] = get_team_flag(m.team1_name, teams)
+        match_flags[f"{m.match_id}_2"] = get_team_flag(m.team2_name, teams)
+    
+    return render_template('index.html', matches=matches, match_flags=match_flags)
 
 @app.route('/teams')
 def teams_page():

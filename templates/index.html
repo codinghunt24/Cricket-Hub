@@ -15,8 +15,8 @@
                     </div>
                     <div class="match-teams-vertical">
                         <div class="team-row">
-                            {% if match.team1_id and team_flags.get(match.team1_id) %}
-                            <img src="{{ team_flags.get(match.team1_id) }}" alt="" class="team-flag">
+                            {% if match_flags.get(match.match_id ~ '_1') %}
+                            <img src="{{ match_flags.get(match.match_id ~ '_1') }}" alt="" class="team-flag">
                             {% else %}
                             <span class="team-flag-placeholder"></span>
                             {% endif %}
@@ -24,8 +24,8 @@
                             {% if match.team1_score %}<span class="team-score">{{ match.team1_score }}</span>{% endif %}
                         </div>
                         <div class="team-row">
-                            {% if match.team2_id and team_flags.get(match.team2_id) %}
-                            <img src="{{ team_flags.get(match.team2_id) }}" alt="" class="team-flag">
+                            {% if match_flags.get(match.match_id ~ '_2') %}
+                            <img src="{{ match_flags.get(match.match_id ~ '_2') }}" alt="" class="team-flag">
                             {% else %}
                             <span class="team-flag-placeholder"></span>
                             {% endif %}
