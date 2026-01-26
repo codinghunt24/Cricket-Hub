@@ -244,31 +244,23 @@ def upsert_player(player_data, db_team_id):
 
 @app.route('/')
 def index():
-    matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
-    live_matches = [m for m in matches if m.state == 'Live']
-    innings_break = [m for m in matches if m.state == 'Innings Break']
-    complete_matches = [m for m in matches if m.state == 'Complete']
-    upcoming_matches = [m for m in matches if m.state == 'Upcoming']
-    return render_template('index.html', 
-                           matches=matches,
-                           live_matches=live_matches,
-                           innings_break=innings_break,
-                           complete_matches=complete_matches,
-                           upcoming_matches=upcoming_matches)
+    all_matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
+    live = [m for m in all_matches if m.state == 'Live']
+    innings = [m for m in all_matches if m.state == 'Innings Break']
+    complete = [m for m in all_matches if m.state == 'Complete']
+    upcoming = [m for m in all_matches if m.state == 'Upcoming']
+    matches = live + innings + complete + upcoming
+    return render_template('index.html', matches=matches)
 
 @app.route('/live-scores')
 def live_scores():
-    matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
-    live_matches = [m for m in matches if m.state == 'Live']
-    innings_break = [m for m in matches if m.state == 'Innings Break']
-    complete_matches = [m for m in matches if m.state == 'Complete']
-    upcoming_matches = [m for m in matches if m.state == 'Upcoming']
-    return render_template('index.html', 
-                           matches=matches,
-                           live_matches=live_matches,
-                           innings_break=innings_break,
-                           complete_matches=complete_matches,
-                           upcoming_matches=upcoming_matches)
+    all_matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
+    live = [m for m in all_matches if m.state == 'Live']
+    innings = [m for m in all_matches if m.state == 'Innings Break']
+    complete = [m for m in all_matches if m.state == 'Complete']
+    upcoming = [m for m in all_matches if m.state == 'Upcoming']
+    matches = live + innings + complete + upcoming
+    return render_template('index.html', matches=matches)
 
 @app.route('/teams')
 def teams_page():
