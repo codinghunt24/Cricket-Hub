@@ -309,18 +309,70 @@
     max-width: 120px;
 }
 
-.matches-list .match-url {
+.matches-list .match-action {
     text-align: center;
-    width: 40px;
+    width: 70px;
 }
 
-.matches-list .match-url a {
-    color: #60a5fa;
-    font-size: 11px;
+.btn-scrape-match {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 9px;
+    cursor: pointer;
+    font-weight: 500;
 }
 
-.matches-list .match-url a:hover {
-    color: #93c5fd;
+.btn-scrape-match:hover {
+    background: #2563eb;
+}
+
+.btn-scrape-match:disabled {
+    background: #374151;
+    cursor: not-allowed;
+}
+
+.btn-scrape-match.active {
+    background: #ef4444;
+}
+
+.match-details-row {
+    background: #0f172a;
+}
+
+.match-details-container {
+    padding: 10px;
+    font-size: 10px;
+}
+
+.match-json-data {
+    background: #1e293b;
+    padding: 10px;
+    border-radius: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.match-json-data table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.match-json-data th {
+    background: #334155;
+    padding: 5px 8px;
+    text-align: left;
+    font-size: 9px;
+    color: #94a3b8;
+}
+
+.match-json-data td {
+    padding: 4px 8px;
+    border-bottom: 1px solid #334155;
+    color: #e2e8f0;
+    font-size: 9px;
 }
 
 .no-matches {
@@ -438,18 +490,28 @@ async function toggleMatches(index, url) {
             html += '<th>Venue</th>';
             html += '<th>Score</th>';
             html += '<th>Result</th>';
-            html += '<th>URL</th>';
+            html += '<th>Action</th>';
             html += '</tr></thead><tbody>';
             
-            data.matches.forEach(m => {
-                html += `<tr>
+            data.matches.forEach((m, idx) => {
+                const matchRowId = `match-${index}-${idx}`;
+                html += `<tr id="${matchRowId}">
                     <td class="match-date">${m.match_date || '-'}</td>
                     <td class="match-format">${m.match_format || '-'}</td>
                     <td class="match-teams">${m.team1 || '?'} vs ${m.team2 || '?'}</td>
                     <td class="match-venue">${m.venue || '-'}</td>
                     <td class="match-score">${m.team1_score || '-'}<br>${m.team2_score || '-'}</td>
                     <td class="match-result">${m.result || '-'}</td>
-                    <td class="match-url"><a href="${m.match_url || '#'}" target="_blank">🔗 Open</a></td>
+                    <td class="match-action">
+                        <button class="btn-scrape-match" id="btn-match-${index}-${idx}" onclick="scrapeMatchDetails('${m.match_url}', '${matchRowId}', ${index}, ${idx})">
+                            Scrape
+                        </button>
+                    </td>
+                </tr>
+                <tr class="match-details-row" id="details-${matchRowId}" style="display:none;">
+                    <td colspan="7">
+                        <div class="match-details-container" id="details-container-${matchRowId}"></div>
+                    </td>
                 </tr>`;
             });
             
@@ -463,6 +525,79 @@ async function toggleMatches(index, url) {
     } catch (error) {
         container.innerHTML = '<div class="no-matches">Error: ' + error.message + '</div>';
         btn.innerHTML = '<i class="fas fa-times"></i> Close';
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function scrapeMatchDetails(matchUrl, matchRowId, seriesIdx, matchIdx) {
+    const detailsRow = document.getElementById(`details-${matchRowId}`);
+    const container = document.getElementById(`details-container-${matchRowId}`);
+    const btn = document.getElementById(`btn-match-${seriesIdx}-${matchIdx}`);
+    
+    if (detailsRow.style.display !== 'none') {
+        detailsRow.style.display = 'none';
+        btn.textContent = 'Scrape';
+        btn.classList.remove('active');
+        return;
+    }
+    
+    detailsRow.style.display = 'table-row';
+    btn.disabled = true;
+    btn.textContent = 'Loading...';
+    container.innerHTML = '<div style="color:#9ca3af;text-align:center;padding:10px;">Fetching match data...</div>';
+    
+    try {
+        const response = await fetch('/api/scrape/match-json', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: matchUrl })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+            let html = '<div class="match-json-data">';
+            html += '<table>';
+            
+            for (const [key, value] of Object.entries(data.data)) {
+                if (value !== null && value !== '' && typeof value !== 'object') {
+                    html += `<tr><th>${key}</th><td>${value}</td></tr>`;
+                }
+            }
+            
+            if (data.data.batting && data.data.batting.length > 0) {
+                html += '</table>';
+                html += '<h4 style="color:#10b981;margin:10px 0 5px;font-size:10px;">Batting</h4>';
+                html += '<table><tr><th>Player</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th><th>Status</th></tr>';
+                data.data.batting.forEach(b => {
+                    html += `<tr><td>${b.name}</td><td>${b.runs}</td><td>${b.balls}</td><td>${b.fours}</td><td>${b.sixes}</td><td>${b.sr}</td><td>${b.status}</td></tr>`;
+                });
+                html += '</table>';
+            }
+            
+            if (data.data.bowling && data.data.bowling.length > 0) {
+                html += '<h4 style="color:#10b981;margin:10px 0 5px;font-size:10px;">Bowling</h4>';
+                html += '<table><tr><th>Player</th><th>O</th><th>M</th><th>R</th><th>W</th><th>Eco</th></tr>';
+                data.data.bowling.forEach(b => {
+                    html += `<tr><td>${b.name}</td><td>${b.overs}</td><td>${b.maidens}</td><td>${b.runs}</td><td>${b.wickets}</td><td>${b.economy}</td></tr>`;
+                });
+                html += '</table>';
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+            btn.textContent = 'Close';
+            btn.classList.add('active');
+        } else {
+            container.innerHTML = '<div style="color:#ef4444;text-align:center;padding:10px;">No data found</div>';
+            btn.textContent = 'Close';
+            btn.classList.add('active');
+        }
+    } catch (error) {
+        container.innerHTML = `<div style="color:#ef4444;text-align:center;padding:10px;">Error: ${error.message}</div>`;
+        btn.textContent = 'Close';
+        btn.classList.add('active');
     } finally {
         btn.disabled = false;
     }

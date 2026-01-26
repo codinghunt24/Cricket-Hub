@@ -1104,6 +1104,120 @@ def scrape_series_json():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/api/scrape/match-json', methods=['POST'])
+def scrape_match_json():
+    try:
+        data = request.get_json()
+        url = data.get('url', '')
+        
+        if not url:
+            return jsonify({'success': False, 'message': 'URL required'}), 400
+        
+        response = requests.get(url, headers={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0'
+        }, timeout=30)
+        
+        if response.status_code != 200:
+            return jsonify({'success': False, 'message': 'Failed to fetch URL'}), 400
+        
+        html = response.text.replace('\\"', '"')
+        
+        match_data = {}
+        
+        match_id = re.search(r'"matchId"\s*:\s*(\d+)', html)
+        series_name = re.search(r'"seriesName"\s*:\s*"([^"]*)"', html)
+        match_desc = re.search(r'"matchDesc"\s*:\s*"([^"]*)"', html)
+        match_format = re.search(r'"matchFormat"\s*:\s*"([^"]*)"', html)
+        status = re.search(r'"status"\s*:\s*"([^"]*)"', html)
+        toss = re.search(r'"tossResults"\s*:\s*\{[^}]*"tossWinnerName"\s*:\s*"([^"]*)"[^}]*"decision"\s*:\s*"([^"]*)"', html)
+        
+        team1_name = re.search(r'"team1"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', html)
+        team2_name = re.search(r'"team2"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', html)
+        
+        venue_ground = re.search(r'"venueInfo"\s*:\s*\{[^}]*"ground"\s*:\s*"([^"]*)"', html)
+        venue_city = re.search(r'"venueInfo"\s*:\s*\{[^}]*"city"\s*:\s*"([^"]*)"', html)
+        
+        match_data['match_id'] = match_id.group(1) if match_id else ''
+        match_data['series'] = series_name.group(1) if series_name else ''
+        match_data['match'] = match_desc.group(1) if match_desc else ''
+        match_data['format'] = match_format.group(1) if match_format else ''
+        match_data['status'] = status.group(1) if status else ''
+        match_data['toss'] = f"{toss.group(1)} won toss, chose to {toss.group(2)}" if toss else ''
+        match_data['team1'] = team1_name.group(1) if team1_name else ''
+        match_data['team2'] = team2_name.group(1) if team2_name else ''
+        match_data['venue'] = f"{venue_ground.group(1)}, {venue_city.group(1)}" if venue_ground and venue_city else ''
+        
+        t1_score = re.search(r'"team1Score"\s*:\s*\{.*?"inngs1"\s*:\s*\{([^}]+)\}', html, re.DOTALL)
+        t2_score = re.search(r'"team2Score"\s*:\s*\{.*?"inngs1"\s*:\s*\{([^}]+)\}', html, re.DOTALL)
+        
+        if t1_score:
+            sb = t1_score.group(1)
+            runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
+            wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
+            overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
+            if runs:
+                match_data['team1_score'] = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'} ({overs.group(1) if overs else '?'})"
+        
+        if t2_score:
+            sb = t2_score.group(1)
+            runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
+            wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
+            overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
+            if runs:
+                match_data['team2_score'] = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'} ({overs.group(1) if overs else '?'})"
+        
+        batting = []
+        bat_blocks = re.finditer(r'"batId"\s*:\s*(\d+)[^}]*"batName"\s*:\s*"([^"]*)"[^}]*', html)
+        for bb in bat_blocks:
+            context = html[bb.start():bb.start()+500]
+            runs = re.search(r'"runs"\s*:\s*(\d+)', context)
+            balls = re.search(r'"balls"\s*:\s*(\d+)', context)
+            fours = re.search(r'"fours"\s*:\s*(\d+)', context)
+            sixes = re.search(r'"sixes"\s*:\s*(\d+)', context)
+            sr = re.search(r'"strikeRate"\s*:\s*([\d.]+)', context)
+            out_desc = re.search(r'"outDesc"\s*:\s*"([^"]*)"', context)
+            
+            batting.append({
+                'name': bb.group(2),
+                'runs': runs.group(1) if runs else '0',
+                'balls': balls.group(1) if balls else '0',
+                'fours': fours.group(1) if fours else '0',
+                'sixes': sixes.group(1) if sixes else '0',
+                'sr': sr.group(1) if sr else '0',
+                'status': out_desc.group(1) if out_desc else 'not out'
+            })
+        
+        match_data['batting'] = batting[:11]
+        
+        bowling = []
+        bowl_blocks = re.finditer(r'"bowlerId"\s*:\s*(\d+)[^}]*"bowlName"\s*:\s*"([^"]*)"[^}]*', html)
+        for bb in bowl_blocks:
+            context = html[bb.start():bb.start()+400]
+            overs = re.search(r'"overs"\s*:\s*([\d.]+)', context)
+            maidens = re.search(r'"maidens"\s*:\s*(\d+)', context)
+            runs = re.search(r'"runs"\s*:\s*(\d+)', context)
+            wickets = re.search(r'"wickets"\s*:\s*(\d+)', context)
+            economy = re.search(r'"economy"\s*:\s*([\d.]+)', context)
+            
+            bowling.append({
+                'name': bb.group(2),
+                'overs': overs.group(1) if overs else '0',
+                'maidens': maidens.group(1) if maidens else '0',
+                'runs': runs.group(1) if runs else '0',
+                'wickets': wickets.group(1) if wickets else '0',
+                'economy': economy.group(1) if economy else '0'
+            })
+        
+        match_data['bowling'] = bowling[:6]
+        
+        return jsonify({
+            'success': True,
+            'data': match_data
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/scrape/series/<category_slug>', methods=['POST'])
 def scrape_series(category_slug):
     try:
