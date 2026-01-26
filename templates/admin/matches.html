@@ -8,42 +8,207 @@
     <div class="page-header">
         <h2>Manage Matches</h2>
         <div class="header-buttons">
-            <button class="btn btn-danger" id="clearMatchesBtn" onclick="clearAllMatches()">Clear All Matches</button>
-            <button class="btn btn-primary">Add Match</button>
+            <button class="btn btn-danger" id="clearMatchesBtn" onclick="clearAllMatches()">Clear All</button>
         </div>
     </div>
     
-    <div class="matches-stats" style="margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
-        <p><strong>Total Matches:</strong> {{ matches|length }}</p>
+    <div class="stats-row">
+        <div class="stat-box">
+            <span class="stat-num">{{ matches|length }}</span>
+            <span class="stat-label">Total Matches</span>
+        </div>
     </div>
     
     {% if matches %}
-    <div class="matches-list">
-        {% for match in matches %}
-        <div class="match-card" style="background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <strong>{{ match.team1_name }} vs {{ match.team2_name }}</strong>
-                    <p style="margin: 5px 0; color: #666;">{{ match.match_format }} • {{ match.venue or 'TBD' }}</p>
-                    <p style="margin: 0; font-size: 14px;">{{ match.team1_score }} - {{ match.team2_score }}</p>
-                </div>
-                <div style="text-align: right;">
-                    <span style="color: green; font-size: 14px;">{{ match.result or 'TBD' }}</span>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
+    <div class="matches-table-container">
+        <table class="matches-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Match</th>
+                    <th>Teams</th>
+                    <th>Score</th>
+                    <th>Venue</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in matches %}
+                <tr>
+                    <td class="date-col">{{ match.match_date or 'TBD' }}</td>
+                    <td class="format-col">{{ match.match_format or '-' }}</td>
+                    <td class="teams-col">
+                        <strong>{{ match.team1_name or 'Team 1' }}</strong> vs <strong>{{ match.team2_name or 'Team 2' }}</strong>
+                    </td>
+                    <td class="score-col">
+                        <span>{{ match.team1_score or '-' }}</span> / <span>{{ match.team2_score or '-' }}</span>
+                    </td>
+                    <td class="venue-col">{{ match.venue[:30] + '...' if match.venue and match.venue|length > 30 else (match.venue or '-') }}</td>
+                    <td class="result-col {% if match.result %}has-result{% endif %}">{{ match.result or 'TBD' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     {% else %}
-    <div class="content-placeholder">
-        <p>No matches available</p>
+    <div class="no-data">
+        <p>No matches scraped yet</p>
+        <p class="hint">Go to Series page and scrape matches from a series</p>
     </div>
     {% endif %}
 </div>
 
+<style>
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.page-header h2 {
+    font-size: 16px;
+    margin: 0;
+    color: #333;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.stats-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.stat-box {
+    background: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stat-num {
+    font-size: 20px;
+    font-weight: 700;
+    color: #046a38;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #666;
+}
+
+.matches-table-container {
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.matches-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.matches-table th {
+    background: #046a38;
+    color: white;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+.matches-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+
+.matches-table tbody tr:hover {
+    background: #f9f9f9;
+}
+
+.date-col {
+    color: #046a38;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.format-col {
+    color: #666;
+    font-size: 10px;
+}
+
+.teams-col strong {
+    color: #333;
+}
+
+.score-col {
+    font-family: monospace;
+    font-size: 10px;
+}
+
+.venue-col {
+    color: #666;
+    font-size: 10px;
+    max-width: 150px;
+}
+
+.result-col {
+    color: #888;
+    font-size: 10px;
+}
+
+.result-col.has-result {
+    color: #046a38;
+    font-weight: 600;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border-radius: 8px;
+    color: #666;
+}
+
+.no-data .hint {
+    font-size: 12px;
+    color: #888;
+    margin-top: 10px;
+}
+</style>
+
 <script>
 function clearAllMatches() {
-    if (confirm('Are you sure you want to delete all matches? This cannot be undone.')) {
+    if (confirm('Are you sure you want to delete all matches?')) {
         const btn = document.getElementById('clearMatchesBtn');
         btn.disabled = true;
         btn.textContent = 'Clearing...';
@@ -57,13 +222,13 @@ function clearAllMatches() {
                 } else {
                     alert('Error: ' + data.message);
                     btn.disabled = false;
-                    btn.textContent = 'Clear All Matches';
+                    btn.textContent = 'Clear All';
                 }
             })
             .catch(e => {
                 alert('Error: ' + e);
                 btn.disabled = false;
-                btn.textContent = 'Clear All Matches';
+                btn.textContent = 'Clear All';
             });
     }
 }
