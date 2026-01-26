@@ -439,6 +439,10 @@ def scrape_live_scores():
             for pattern in format_patterns:
                 team2 = re.sub(pattern, '', team2, flags=re.IGNORECASE).strip()
         
+        # Initialize scores - will be fetched from match page
+        team1_score = ''
+        team2_score = ''
+        
         match_data = {
             'match_id': match_id,
             'team1': team1,
@@ -448,10 +452,43 @@ def scrape_live_scores():
             'status': status,
             'match_url': BASE_URL + href,
             'series_id': series_id,
-            'series_name': series_name or series_map.get(series_id, '')
+            'series_name': series_name or series_map.get(series_id, ''),
+            'team1_score': team1_score,
+            'team2_score': team2_score
         }
         
         all_matches.append(match_data)
+    
+    # Fetch scores for Live and Innings Break matches from their detail pages
+    for match in all_matches:
+        if match['status'] in ['Live', 'Innings Break', 'Complete']:
+            try:
+                score_url = f"{BASE_URL}/live-cricket-scores/{match['match_id']}"
+                score_resp = requests.get(score_url, headers=HEADERS, timeout=5)
+                if score_resp.status_code == 200:
+                    html_text = score_resp.text
+                    
+                    # Find all unique score patterns in order of appearance
+                    all_scores = re.findall(r'(\d+/\d+)', html_text)
+                    
+                    # Get unique scores preserving order
+                    seen = set()
+                    unique_scores = []
+                    for s in all_scores:
+                        if s not in seen:
+                            seen.add(s)
+                            unique_scores.append(s)
+                        if len(unique_scores) >= 2:
+                            break
+                    
+                    if len(unique_scores) >= 2:
+                        match['team1_score'] = unique_scores[0]
+                        match['team2_score'] = unique_scores[1]
+                    elif len(unique_scores) == 1:
+                        match['team1_score'] = unique_scores[0]
+                        
+            except Exception as e:
+                logger.debug(f"Score fetch failed for {match['match_id']}: {e}")
     
     # Categorize matches
     live_matches = [m for m in all_matches if m['status'] == 'Live']

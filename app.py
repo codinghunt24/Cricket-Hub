@@ -2112,6 +2112,8 @@ def scrape_live_scores_api():
                 existing.state = match_data.get('status', existing.state)
                 existing.match_url = match_data.get('match_url', existing.match_url)
                 existing.cricbuzz_series_id = match_data.get('series_id', existing.cricbuzz_series_id)
+                existing.team1_score = match_data.get('team1_score') or existing.team1_score
+                existing.team2_score = match_data.get('team2_score') or existing.team2_score
                 existing.updated_at = datetime.utcnow()
                 updated += 1
             else:
@@ -2122,7 +2124,9 @@ def scrape_live_scores_api():
                     match_format=match_data.get('match_format', ''),
                     state=match_data.get('status', 'Upcoming'),
                     match_url=match_data.get('match_url', ''),
-                    cricbuzz_series_id=match_data.get('series_id')
+                    cricbuzz_series_id=match_data.get('series_id'),
+                    team1_score=match_data.get('team1_score', ''),
+                    team2_score=match_data.get('team2_score', '')
                 )
                 db.session.add(new_match)
                 saved += 1
