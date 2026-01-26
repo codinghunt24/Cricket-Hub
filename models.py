@@ -197,4 +197,48 @@ def init_models(db):
         last_scrape = db.Column(db.DateTime, nullable=True)
         updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting
+    class PostCategory(db.Model):
+        __tablename__ = 'post_categories'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String(100), unique=True, nullable=False)
+        slug = db.Column(db.String(100), unique=True, nullable=False)
+        description = db.Column(db.Text, nullable=True)
+        show_in_navbar = db.Column(db.Boolean, default=True)
+        navbar_order = db.Column(db.Integer, default=0)
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+        updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+        
+        posts = db.relationship('Post', backref='category', lazy=True)
+    
+    class Post(db.Model):
+        __tablename__ = 'posts'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        title = db.Column(db.String(300), nullable=False)
+        slug = db.Column(db.String(300), unique=True, nullable=False)
+        content = db.Column(db.Text, nullable=True)
+        excerpt = db.Column(db.Text, nullable=True)
+        thumbnail = db.Column(db.String(500), nullable=True)
+        
+        meta_title = db.Column(db.String(200), nullable=True)
+        meta_description = db.Column(db.Text, nullable=True)
+        meta_keywords = db.Column(db.Text, nullable=True)
+        canonical_url = db.Column(db.String(500), nullable=True)
+        og_title = db.Column(db.String(200), nullable=True)
+        og_description = db.Column(db.Text, nullable=True)
+        og_image = db.Column(db.String(500), nullable=True)
+        schema_markup = db.Column(db.Text, nullable=True)
+        
+        is_published = db.Column(db.Boolean, default=False)
+        is_featured = db.Column(db.Boolean, default=False)
+        views = db.Column(db.Integer, default=0)
+        
+        category_id = db.Column(db.Integer, db.ForeignKey('post_categories.id'), nullable=True)
+        author = db.Column(db.String(100), default='Admin')
+        
+        published_at = db.Column(db.DateTime, nullable=True)
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+        updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, PostCategory, Post

@@ -6,6 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>{% block title %}CricLive - Live Cricket Scores{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
 </head>
 <body>
     <header class="header">
@@ -38,6 +39,10 @@
         <nav class="sub-navbar">
             <div class="nav-container">
                 <ul class="sub-nav-menu">
+                    <li><a href="/">Home</a></li>
+                    {% for cat in nav_categories %}
+                    <li><a href="/category/{{ cat.slug }}">{{ cat.name }}</a></li>
+                    {% endfor %}
                     <li><a href="/live-scores">All Matches</a></li>
                     <li><a href="/live-scores?type=international">International</a></li>
                     <li><a href="/live-scores?type=domestic">Domestic</a></li>

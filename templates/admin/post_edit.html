@@ -1,0 +1,269 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ 'Edit Post' if post else 'New Post' }} - Admin{% endblock %}
+{% block page_title %}{{ 'Edit Post' if post else 'New Post' }}{% endblock %}
+
+{% block content %}
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
+<div class="post-editor">
+    <form id="postForm" enctype="multipart/form-data">
+        <div class="editor-main">
+            <div class="form-group">
+                <label for="title">Post Title *</label>
+                <input type="text" id="title" name="title" required placeholder="Enter post title" value="{{ post.title if post else '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="slug">URL Slug *</label>
+                <div class="slug-preview">
+                    <span class="slug-prefix">/post/</span>
+                    <input type="text" id="slug" name="slug" required placeholder="post-url-slug" value="{{ post.slug if post else '' }}">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Content</label>
+                <div id="editor">{{ post.content|safe if post and post.content else '' }}</div>
+                <input type="hidden" id="content" name="content">
+            </div>
+            
+            <div class="form-group">
+                <label for="excerpt">Excerpt (Short Description)</label>
+                <textarea id="excerpt" name="excerpt" rows="3" placeholder="Brief description for listings">{{ post.excerpt if post else '' }}</textarea>
+            </div>
+        </div>
+        
+        <div class="editor-sidebar">
+            <div class="sidebar-card">
+                <h4>Publish</h4>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="is_published" name="is_published" {{ 'checked' if post and post.is_published else '' }}>
+                        Published
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="is_featured" name="is_featured" {{ 'checked' if post and post.is_featured else '' }}>
+                        Featured Post
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-block">{{ 'Update Post' if post else 'Publish Post' }}</button>
+                </div>
+            </div>
+            
+            <div class="sidebar-card">
+                <h4>Category</h4>
+                <div class="form-group">
+                    <select id="category_id" name="category_id">
+                        <option value="">Uncategorized</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {{ 'selected' if post and post.category_id == cat.id else '' }}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="sidebar-card">
+                <h4>Thumbnail Image</h4>
+                <div class="thumbnail-preview" id="thumbPreview">
+                    {% if post and post.thumbnail %}
+                    <img src="{{ post.thumbnail }}" alt="">
+                    {% else %}
+                    <span>No image selected</span>
+                    {% endif %}
+                </div>
+                <input type="file" id="thumbnailFile" accept="image/*" style="display:none">
+                <input type="hidden" id="thumbnail" name="thumbnail" value="{{ post.thumbnail if post else '' }}">
+                <button type="button" class="btn btn-secondary btn-block" onclick="document.getElementById('thumbnailFile').click()">Upload Image</button>
+            </div>
+            
+            <div class="sidebar-card">
+                <h4>SEO Settings</h4>
+                <div class="form-group">
+                    <label for="meta_title">Meta Title</label>
+                    <input type="text" id="meta_title" name="meta_title" placeholder="SEO title (max 60 chars)" maxlength="60" value="{{ post.meta_title if post else '' }}">
+                    <small class="char-count"><span id="metaTitleCount">0</span>/60</small>
+                </div>
+                <div class="form-group">
+                    <label for="meta_description">Meta Description</label>
+                    <textarea id="meta_description" name="meta_description" rows="3" placeholder="SEO description (max 160 chars)" maxlength="160">{{ post.meta_description if post else '' }}</textarea>
+                    <small class="char-count"><span id="metaDescCount">0</span>/160</small>
+                </div>
+                <div class="form-group">
+                    <label for="meta_keywords">Meta Keywords</label>
+                    <input type="text" id="meta_keywords" name="meta_keywords" placeholder="keyword1, keyword2, keyword3" value="{{ post.meta_keywords if post else '' }}">
+                    <small>Comma separated keywords</small>
+                </div>
+                <div class="form-group">
+                    <label for="canonical_url">Canonical URL</label>
+                    <input type="text" id="canonical_url" name="canonical_url" placeholder="https://..." value="{{ post.canonical_url if post else '' }}">
+                </div>
+            </div>
+            
+            <div class="sidebar-card">
+                <h4>Open Graph (Social Media)</h4>
+                <div class="form-group">
+                    <label for="og_title">OG Title</label>
+                    <input type="text" id="og_title" name="og_title" placeholder="Title for social sharing" value="{{ post.og_title if post else '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="og_description">OG Description</label>
+                    <textarea id="og_description" name="og_description" rows="2" placeholder="Description for social sharing">{{ post.og_description if post else '' }}</textarea>
+                </div>
+            </div>
+            
+            <div class="sidebar-card">
+                <h4>Author</h4>
+                <div class="form-group">
+                    <input type="text" id="author" name="author" placeholder="Author name" value="{{ post.author if post else 'Admin' }}">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+.post-editor { display: flex; gap: 20px; padding: 20px; }
+.editor-main { flex: 1; min-width: 0; }
+.editor-sidebar { width: 300px; flex-shrink: 0; }
+.sidebar-card { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 15px; margin-bottom: 15px; }
+.sidebar-card h4 { margin: 0 0 15px 0; color: #333; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #333; font-size: 14px; }
+.form-group input[type="text"], .form-group input[type="url"], .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+.form-group input[type="checkbox"] { margin-right: 8px; }
+.form-group small { display: block; margin-top: 4px; color: #888; font-size: 12px; }
+.char-count { text-align: right; }
+.slug-preview { display: flex; align-items: center; }
+.slug-prefix { background: #f8f9fa; padding: 10px; border: 1px solid #ddd; border-right: none; border-radius: 4px 0 0 4px; color: #666; font-size: 14px; }
+.slug-preview input { border-radius: 0 4px 4px 0; }
+.thumbnail-preview { width: 100%; height: 150px; background: #f8f9fa; border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; overflow: hidden; }
+.thumbnail-preview img { width: 100%; height: 100%; object-fit: cover; }
+.thumbnail-preview span { color: #999; font-size: 14px; }
+.btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+.btn-primary { background: #1a472a; color: #fff; }
+.btn-secondary { background: #6c757d; color: #fff; }
+.btn-block { width: 100%; }
+.form-actions { margin-top: 15px; }
+#editor { height: 400px; background: #fff; border-radius: 0 0 4px 4px; }
+.ql-toolbar { border-radius: 4px 4px 0 0; background: #f8f9fa; }
+.ql-container { border-radius: 0 0 4px 4px; font-size: 16px; }
+
+@media (max-width: 992px) {
+    .post-editor { flex-direction: column; }
+    .editor-sidebar { width: 100%; }
+}
+</style>
+
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script>
+var quill = new Quill('#editor', {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            [{ 'align': [] }],
+            ['link', 'image', 'video'],
+            ['blockquote', 'code-block'],
+            ['clean']
+        ]
+    }
+});
+
+document.getElementById('title').addEventListener('input', function() {
+    if (!{{ 'true' if post else 'false' }}) {
+        const slug = this.value.toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+        document.getElementById('slug').value = slug;
+    }
+});
+
+document.getElementById('meta_title').addEventListener('input', function() {
+    document.getElementById('metaTitleCount').textContent = this.value.length;
+});
+document.getElementById('meta_description').addEventListener('input', function() {
+    document.getElementById('metaDescCount').textContent = this.value.length;
+});
+
+document.getElementById('metaTitleCount').textContent = document.getElementById('meta_title').value.length;
+document.getElementById('metaDescCount').textContent = document.getElementById('meta_description').value.length;
+
+document.getElementById('thumbnailFile').addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await res.json();
+        if (result.success) {
+            document.getElementById('thumbnail').value = result.url;
+            document.getElementById('thumbPreview').innerHTML = `<img src="${result.url}" alt="">`;
+        } else {
+            alert(result.message || 'Upload failed');
+        }
+    } catch (err) {
+        alert('Upload error: ' + err.message);
+    }
+});
+
+document.getElementById('postForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    document.getElementById('content').value = quill.root.innerHTML;
+    
+    const formData = {
+        title: document.getElementById('title').value,
+        slug: document.getElementById('slug').value,
+        content: document.getElementById('content').value,
+        excerpt: document.getElementById('excerpt').value,
+        thumbnail: document.getElementById('thumbnail').value,
+        category_id: document.getElementById('category_id').value || null,
+        is_published: document.getElementById('is_published').checked,
+        is_featured: document.getElementById('is_featured').checked,
+        meta_title: document.getElementById('meta_title').value,
+        meta_description: document.getElementById('meta_description').value,
+        meta_keywords: document.getElementById('meta_keywords').value,
+        canonical_url: document.getElementById('canonical_url').value,
+        og_title: document.getElementById('og_title').value,
+        og_description: document.getElementById('og_description').value,
+        author: document.getElementById('author').value
+    };
+    
+    const postId = {{ post.id if post else 'null' }};
+    const url = postId ? `/api/posts/${postId}` : '/api/posts';
+    const method = postId ? 'PUT' : 'POST';
+    
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        const result = await res.json();
+        if (result.success) {
+            window.location.href = '/admin/posts';
+        } else {
+            alert(result.message || 'Error saving post');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+});
+</script>
+{% endblock %}

@@ -50,6 +50,18 @@
                             <span class="sidebar-text">News</span>
                         </a>
                     </li>
+                    <li class="sidebar-item {% if '/admin/posts' in request.path %}active{% endif %}">
+                        <a href="/admin/posts" class="sidebar-link">
+                            <span class="sidebar-icon">&#128221;</span>
+                            <span class="sidebar-text">Posts</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% if '/admin/categories' in request.path %}active{% endif %}">
+                        <a href="/admin/categories" class="sidebar-link">
+                            <span class="sidebar-icon">&#128193;</span>
+                            <span class="sidebar-text">Categories</span>
+                        </a>
+                    </li>
                     <li class="sidebar-item {% if request.path == '/admin/settings' %}active{% endif %}">
                         <a href="/admin/settings" class="sidebar-link">
                             <span class="sidebar-icon">&#9881;</span>

@@ -61,7 +61,25 @@
         <div class="main-content">
             <div class="content-card">
                 <h3>Recent News</h3>
-                <p class="placeholder-text">Cricket news and updates will appear here</p>
+                {% if recent_posts %}
+                <div class="news-list">
+                    {% for post in recent_posts %}
+                    <a href="/post/{{ post.slug }}" class="news-item">
+                        {% if post.thumbnail %}
+                        <img src="{{ post.thumbnail }}" alt="{{ post.title }}" class="news-thumb">
+                        {% else %}
+                        <div class="news-thumb no-thumb"></div>
+                        {% endif %}
+                        <div class="news-info">
+                            <h4>{{ post.title }}</h4>
+                            <span class="news-date">{{ post.created_at.strftime('%b %d, %Y') }}</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="placeholder-text">No news available yet</p>
+                {% endif %}
             </div>
             <div class="content-card">
                 <h3>Upcoming Matches</h3>
@@ -72,9 +90,15 @@
             <div class="sidebar-card">
                 <h4>Top Stories</h4>
                 <ul class="sidebar-list">
+                    {% if recent_posts %}
+                    {% for post in recent_posts[:3] %}
+                    <li><a href="/post/{{ post.slug }}">{{ post.title[:40] }}{% if post.title|length > 40 %}...{% endif %}</a></li>
+                    {% endfor %}
+                    {% else %}
                     <li>Latest cricket updates</li>
                     <li>Player rankings</li>
                     <li>Team standings</li>
+                    {% endif %}
                 </ul>
             </div>
             <div class="sidebar-card">
@@ -446,6 +470,54 @@
 .placeholder-text {
     color: #888;
     font-size: 0.9rem;
+}
+
+.news-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.news-item {
+    display: flex;
+    gap: 12px;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.news-item:hover {
+    background: #f8f9fa;
+}
+
+.news-thumb {
+    width: 80px;
+    height: 55px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.news-thumb.no-thumb {
+    background: #eee;
+}
+
+.news-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.news-info h4 {
+    margin: 0 0 6px 0;
+    font-size: 0.95rem;
+    color: #222;
+    line-height: 1.3;
+}
+
+.news-date {
+    font-size: 0.75rem;
+    color: #888;
 }
 
 .sidebar {

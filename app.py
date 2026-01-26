@@ -69,7 +69,7 @@ def utility_processor():
     return dict(get_team_flag=get_team_flag)
 
 from models import init_models
-TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting = init_models(db)
+TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, PostCategory, Post = init_models(db)
 
 import scraper
 from scheduler import init_scheduler, update_schedule, update_player_schedule
@@ -274,7 +274,9 @@ def index():
         match_flags[f"{m.match_id}_1"] = get_team_flag(m.team1_name, teams)
         match_flags[f"{m.match_id}_2"] = get_team_flag(m.team2_name, teams)
     
-    return render_template('index.html', matches=matches, match_flags=match_flags)
+    recent_posts = Post.query.filter_by(is_published=True).order_by(Post.created_at.desc()).limit(5).all()
+    
+    return render_template('index.html', matches=matches, match_flags=match_flags, recent_posts=recent_posts)
 
 @app.route('/live-scores')
 def live_scores():
@@ -2155,6 +2157,226 @@ def clear_all_matches():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@app.route('/admin/categories')
+def admin_categories():
+    categories = PostCategory.query.order_by(PostCategory.navbar_order).all()
+    return render_template('admin/categories.html', categories=categories)
+
+@app.route('/admin/posts')
+def admin_posts():
+    posts = Post.query.order_by(Post.created_at.desc()).all()
+    categories = PostCategory.query.order_by(PostCategory.name).all()
+    return render_template('admin/posts.html', posts=posts, categories=categories)
+
+@app.route('/admin/posts/new')
+def admin_post_new():
+    categories = PostCategory.query.order_by(PostCategory.name).all()
+    return render_template('admin/post_edit.html', post=None, categories=categories)
+
+@app.route('/admin/posts/<int:post_id>')
+def admin_post_edit(post_id):
+    post = Post.query.get_or_404(post_id)
+    categories = PostCategory.query.order_by(PostCategory.name).all()
+    return render_template('admin/post_edit.html', post=post, categories=categories)
+
+@app.route('/api/categories', methods=['POST'])
+def api_create_category():
+    try:
+        data = request.json
+        if not data.get('name') or not data.get('slug'):
+            return jsonify({'success': False, 'message': 'Name and slug are required'}), 400
+        
+        existing = PostCategory.query.filter_by(slug=data['slug']).first()
+        if existing:
+            return jsonify({'success': False, 'message': 'Category with this slug already exists'}), 400
+        
+        category = PostCategory(
+            name=data['name'],
+            slug=data['slug'],
+            description=data.get('description', ''),
+            show_in_navbar=data.get('show_in_navbar', True),
+            navbar_order=data.get('navbar_order', 0)
+        )
+        db.session.add(category)
+        db.session.commit()
+        return jsonify({'success': True, 'id': category.id})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/categories/<int:cat_id>', methods=['PUT'])
+def api_update_category(cat_id):
+    try:
+        category = PostCategory.query.get_or_404(cat_id)
+        data = request.json
+        
+        if data.get('slug') and data['slug'] != category.slug:
+            existing = PostCategory.query.filter_by(slug=data['slug']).first()
+            if existing:
+                return jsonify({'success': False, 'message': 'Slug already exists'}), 400
+        
+        category.name = data.get('name', category.name)
+        category.slug = data.get('slug', category.slug)
+        category.description = data.get('description', category.description)
+        category.show_in_navbar = data.get('show_in_navbar', category.show_in_navbar)
+        category.navbar_order = data.get('navbar_order', category.navbar_order)
+        
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/categories/<int:cat_id>', methods=['DELETE'])
+def api_delete_category(cat_id):
+    try:
+        category = PostCategory.query.get_or_404(cat_id)
+        db.session.delete(category)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/posts', methods=['POST'])
+def api_create_post():
+    try:
+        data = request.json
+        if not data.get('title') or not data.get('slug'):
+            return jsonify({'success': False, 'message': 'Title and slug are required'}), 400
+        
+        existing = Post.query.filter_by(slug=data['slug']).first()
+        if existing:
+            return jsonify({'success': False, 'message': 'Post with this slug already exists'}), 400
+        
+        post = Post(
+            title=data['title'],
+            slug=data['slug'],
+            content=data.get('content', ''),
+            excerpt=data.get('excerpt', ''),
+            thumbnail=data.get('thumbnail', ''),
+            category_id=data.get('category_id') if data.get('category_id') else None,
+            is_published=data.get('is_published', False),
+            is_featured=data.get('is_featured', False),
+            meta_title=data.get('meta_title', ''),
+            meta_description=data.get('meta_description', ''),
+            meta_keywords=data.get('meta_keywords', ''),
+            canonical_url=data.get('canonical_url', ''),
+            og_title=data.get('og_title', ''),
+            og_description=data.get('og_description', ''),
+            author=data.get('author', 'Admin'),
+            published_at=datetime.utcnow() if data.get('is_published') else None
+        )
+        db.session.add(post)
+        db.session.commit()
+        return jsonify({'success': True, 'id': post.id})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/posts/<int:post_id>', methods=['PUT'])
+def api_update_post(post_id):
+    try:
+        post = Post.query.get_or_404(post_id)
+        data = request.json
+        
+        if data.get('slug') and data['slug'] != post.slug:
+            existing = Post.query.filter_by(slug=data['slug']).first()
+            if existing:
+                return jsonify({'success': False, 'message': 'Slug already exists'}), 400
+        
+        post.title = data.get('title', post.title)
+        post.slug = data.get('slug', post.slug)
+        post.content = data.get('content', post.content)
+        post.excerpt = data.get('excerpt', post.excerpt)
+        post.thumbnail = data.get('thumbnail', post.thumbnail)
+        post.category_id = data.get('category_id') if data.get('category_id') else None
+        post.is_published = data.get('is_published', post.is_published)
+        post.is_featured = data.get('is_featured', post.is_featured)
+        post.meta_title = data.get('meta_title', post.meta_title)
+        post.meta_description = data.get('meta_description', post.meta_description)
+        post.meta_keywords = data.get('meta_keywords', post.meta_keywords)
+        post.canonical_url = data.get('canonical_url', post.canonical_url)
+        post.og_title = data.get('og_title', post.og_title)
+        post.og_description = data.get('og_description', post.og_description)
+        post.author = data.get('author', post.author)
+        
+        if data.get('is_published') and not post.published_at:
+            post.published_at = datetime.utcnow()
+        
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/posts/<int:post_id>', methods=['DELETE'])
+def api_delete_post(post_id):
+    try:
+        post = Post.query.get_or_404(post_id)
+        db.session.delete(post)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/upload', methods=['POST'])
+def api_upload_file():
+    import uuid
+    try:
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'message': 'No file provided'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'success': False, 'message': 'No file selected'}), 400
+        
+        allowed = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+        ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
+        if ext not in allowed:
+            return jsonify({'success': False, 'message': 'Invalid file type'}), 400
+        
+        upload_dir = os.path.join(app.static_folder, 'uploads')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        filename = f"{uuid.uuid4().hex}.{ext}"
+        filepath = os.path.join(upload_dir, filename)
+        file.save(filepath)
+        
+        url = f"/static/uploads/{filename}"
+        return jsonify({'success': True, 'url': url})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/post/<slug>')
+def view_post(slug):
+    post = Post.query.filter_by(slug=slug, is_published=True).first_or_404()
+    post.views += 1
+    db.session.commit()
+    
+    recent_posts = Post.query.filter(Post.is_published==True, Post.id!=post.id).order_by(Post.created_at.desc()).limit(5).all()
+    categories = PostCategory.query.filter_by(show_in_navbar=True).order_by(PostCategory.navbar_order).all()
+    
+    return render_template('post.html', post=post, recent_posts=recent_posts, categories=categories)
+
+@app.route('/category/<slug>')
+def view_category(slug):
+    category = PostCategory.query.filter_by(slug=slug).first_or_404()
+    posts = Post.query.filter_by(category_id=category.id, is_published=True).order_by(Post.created_at.desc()).all()
+    categories = PostCategory.query.filter_by(show_in_navbar=True).order_by(PostCategory.navbar_order).all()
+    
+    return render_template('category.html', category=category, posts=posts, categories=categories)
+
+@app.context_processor
+def inject_navbar_categories():
+    try:
+        nav_categories = PostCategory.query.filter_by(show_in_navbar=True).order_by(PostCategory.navbar_order).all()
+        return dict(nav_categories=nav_categories)
+    except:
+        return dict(nav_categories=[])
 
 if __name__ == '__main__':
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
