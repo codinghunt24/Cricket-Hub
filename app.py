@@ -933,6 +933,16 @@ def scrape_series_json():
             matches_data = []
             seen_ids = set()
             
+            match_blocks = re.finditer(r'"matchDetailsMap"\s*:\s*\{\s*"key"\s*:\s*"([^"]+)"[^}]*"match"\s*:\s*\[', html)
+            date_map = {}
+            for mb in match_blocks:
+                date_key = mb.group(1)
+                block_start = mb.start()
+                block_context = html[block_start:block_start+5000]
+                match_ids = re.findall(r'"matchId"\s*:\s*(\d+)', block_context)
+                for mid in match_ids:
+                    date_map[mid] = date_key
+            
             match_positions = [(m.start(), m.group(1)) for m in re.finditer(r'"matchInfo"\s*:\s*\{[^}]*"matchId"\s*:\s*(\d+)', html)]
             
             for pos, mid in match_positions:
@@ -946,7 +956,7 @@ def scrape_series_json():
                 match_desc = re.search(r'"matchDesc"\s*:\s*"([^"]*)"', context)
                 match_format = re.search(r'"matchFormat"\s*:\s*"([^"]*)"', context)
                 status = re.search(r'"status"\s*:\s*"([^"]*)"', context)
-                start_date = re.search(r'"startDate"\s*:\s*(\d+)', context)
+                start_date = re.search(r'"startDate"\s*:\s*"?(\d+)"?', context)
                 
                 team1_name = re.search(r'"team1"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', context)
                 team2_name = re.search(r'"team2"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', context)
@@ -980,14 +990,15 @@ def scrape_series_json():
                         if overs:
                             team2_score += f" ({overs.group(1)})"
                 
-                match_date = ''
+                match_date = date_map.get(mid, '')
                 date_timestamp = 0
                 if start_date:
                     try:
                         from datetime import datetime as dt
                         ts = int(start_date.group(1)) / 1000
                         date_timestamp = ts
-                        match_date = dt.fromtimestamp(ts).strftime('%a, %b %d, %Y')
+                        if not match_date:
+                            match_date = dt.fromtimestamp(ts).strftime('%a, %d %b %Y')
                     except:
                         pass
                 
