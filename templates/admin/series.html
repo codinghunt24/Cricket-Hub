@@ -309,6 +309,12 @@
     max-width: 120px;
 }
 
+.matches-list .match-id {
+    color: #60a5fa;
+    font-weight: 500;
+    width: 60px;
+}
+
 .matches-list .match-action {
     text-align: center;
     width: 70px;
@@ -484,6 +490,7 @@ async function toggleMatches(index, url) {
         
         if (data.success && data.type === 'matches' && data.matches && data.matches.length > 0) {
             let html = '<table class="matches-list"><thead><tr>';
+            html += '<th>ID</th>';
             html += '<th>Date</th>';
             html += '<th>Format</th>';
             html += '<th>Teams</th>';
@@ -496,6 +503,7 @@ async function toggleMatches(index, url) {
             data.matches.forEach((m, idx) => {
                 const matchRowId = `match-${index}-${idx}`;
                 html += `<tr id="${matchRowId}">
+                    <td class="match-id">${m.match_id || '-'}</td>
                     <td class="match-date">${m.match_date || '-'}</td>
                     <td class="match-format">${m.match_format || '-'}</td>
                     <td class="match-teams">${m.team1 || '?'} vs ${m.team2 || '?'}</td>
@@ -509,7 +517,7 @@ async function toggleMatches(index, url) {
                     </td>
                 </tr>
                 <tr class="match-details-row" id="details-${matchRowId}" style="display:none;">
-                    <td colspan="7">
+                    <td colspan="8">
                         <div class="match-details-container" id="details-container-${matchRowId}"></div>
                     </td>
                 </tr>`;
