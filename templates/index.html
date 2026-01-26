@@ -56,6 +56,39 @@
     {% endif %}
 </section>
 
+<section class="main-container">
+    <div class="content-wrapper">
+        <div class="main-content">
+            <div class="content-card">
+                <h3>Recent News</h3>
+                <p class="placeholder-text">Cricket news and updates will appear here</p>
+            </div>
+            <div class="content-card">
+                <h3>Upcoming Matches</h3>
+                <p class="placeholder-text">Scheduled matches will appear here</p>
+            </div>
+        </div>
+        <div class="sidebar">
+            <div class="sidebar-card">
+                <h4>Top Stories</h4>
+                <ul class="sidebar-list">
+                    <li>Latest cricket updates</li>
+                    <li>Player rankings</li>
+                    <li>Team standings</li>
+                </ul>
+            </div>
+            <div class="sidebar-card">
+                <h4>Quick Links</h4>
+                <ul class="sidebar-list">
+                    <li><a href="/teams">All Teams</a></li>
+                    <li><a href="/series">Series</a></li>
+                    <li><a href="/live-scores">Live Scores</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
 <style>
 .matches-section {
     padding: 20px 0;
@@ -363,6 +396,102 @@
         width: 24px;
         height: 16px;
     }
+    
+    .content-wrapper {
+        flex-direction: column;
+    }
+    
+    .main-content {
+        width: 100%;
+    }
+    
+    .sidebar {
+        width: 100%;
+    }
+}
+
+.main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.content-wrapper {
+    display: flex;
+    gap: 20px;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.content-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.content-card h3 {
+    margin: 0 0 15px 0;
+    color: #1a472a;
+    font-size: 1.1rem;
+    border-bottom: 2px solid #1a472a;
+    padding-bottom: 10px;
+}
+
+.placeholder-text {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.sidebar {
+    width: 300px;
+    flex-shrink: 0;
+}
+
+.sidebar-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.sidebar-card h4 {
+    margin: 0 0 12px 0;
+    color: #1a472a;
+    font-size: 1rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+}
+
+.sidebar-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.sidebar-list li:last-child {
+    border-bottom: none;
+}
+
+.sidebar-list a {
+    color: #1a472a;
+    text-decoration: none;
+}
+
+.sidebar-list a:hover {
+    text-decoration: underline;
 }
 </style>
 
