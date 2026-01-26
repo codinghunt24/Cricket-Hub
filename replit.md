@@ -9,6 +9,14 @@ A Cricbuzz-inspired cricket website built with Python Flask featuring web scrapi
 - **Note**: All scraping functions now include mandatory ID verification to prevent data contamination
 
 ## Recent Improvements
+- **Blog/CMS System**: Complete content management with categories and posts
+  - PostCategory model with navbar visibility and ordering
+  - Post model with full SEO fields (meta_title, meta_description, meta_keywords, Open Graph)
+  - Rich text editor (Quill.js) for content creation
+  - Image upload functionality for thumbnails
+  - Frontend post page with JSON-LD schema markup
+  - Dynamic navbar showing categories from database
+  - Recent News section on homepage with published posts
 - **Complete ID Extraction**: All entities now have primary IDs for verification
   - match_id, series_id, team1_id, team2_id, venue_id in match data
   - player_id in batting/bowling stats
