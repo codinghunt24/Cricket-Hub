@@ -1128,81 +1128,104 @@ def scrape_match_json():
         
         match_data = {}
         
-        mid = re.search(r'"matchId"\s*:\s*(\d+)', html)
-        series_name = re.search(r'"seriesName"\s*:\s*"([^"]*)"', html)
-        match_desc = re.search(r'"matchDesc"\s*:\s*"([^"]*)"', html)
-        match_format = re.search(r'"matchFormat"\s*:\s*"([^"]*)"', html)
-        status = re.search(r'"status"\s*:\s*"([^"]*)"', html)
-        toss = re.search(r'"tossResults"\s*:\s*\{[^}]*"tossWinnerName"\s*:\s*"([^"]*)"[^}]*"decision"\s*:\s*"([^"]*)"', html)
+        header_match = re.search(r'"matchHeader"\s*:\s*\{([^{]*(?:\{[^}]*\}[^{]*)*)\}', html)
+        if header_match:
+            header = header_match.group(1)
+            
+            mid = re.search(r'"matchId"\s*:\s*(\d+)', header)
+            match_desc = re.search(r'"matchDescription"\s*:\s*"([^"]*)"', header)
+            match_format = re.search(r'"matchFormat"\s*:\s*"([^"]*)"', header)
+            status = re.search(r'"status"\s*:\s*"([^"]*)"', header)
+            toss_winner = re.search(r'"tossWinnerName"\s*:\s*"([^"]*)"', header)
+            toss_decision = re.search(r'"decision"\s*:\s*"([^"]*)"', header)
+            
+            match_data['match_id'] = mid.group(1) if mid else match_id
+            match_data['match'] = match_desc.group(1) if match_desc else ''
+            match_data['format'] = match_format.group(1) if match_format else ''
+            match_data['status'] = status.group(1) if status else ''
+            match_data['toss'] = f"{toss_winner.group(1)} won toss, chose to {toss_decision.group(1)}" if toss_winner and toss_decision else ''
         
-        team1_name = re.search(r'"team1"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', html)
-        team2_name = re.search(r'"team2"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', html)
+        series_match = re.search(r'"seriesDesc"\s*:\s*"([^"]*)"', html)
+        match_data['series'] = series_match.group(1) if series_match else ''
         
-        venue_ground = re.search(r'"venueInfo"\s*:\s*\{[^}]*"ground"\s*:\s*"([^"]*)"', html)
-        venue_city = re.search(r'"venueInfo"\s*:\s*\{[^}]*"city"\s*:\s*"([^"]*)"', html)
-        
-        match_data['match_id'] = mid.group(1) if mid else ''
-        match_data['series'] = series_name.group(1) if series_name else ''
-        match_data['match'] = match_desc.group(1) if match_desc else ''
-        match_data['format'] = match_format.group(1) if match_format else ''
-        match_data['status'] = status.group(1) if status else ''
-        match_data['toss'] = f"{toss.group(1)} won toss, chose to {toss.group(2)}" if toss else ''
-        match_data['team1'] = team1_name.group(1) if team1_name else ''
-        match_data['team2'] = team2_name.group(1) if team2_name else ''
+        venue_ground = re.search(r'"ground"\s*:\s*"([^"]*)"', html)
+        venue_city = re.search(r'"city"\s*:\s*"([^"]*)"', html)
         match_data['venue'] = f"{venue_ground.group(1)}, {venue_city.group(1)}" if venue_ground and venue_city else ''
         
-        t1_score = re.search(r'"team1Score"\s*:\s*\{.*?"inngs1"\s*:\s*\{([^}]+)\}', html, re.DOTALL)
-        t2_score = re.search(r'"team2Score"\s*:\s*\{.*?"inngs1"\s*:\s*\{([^}]+)\}', html, re.DOTALL)
-        
-        if t1_score:
-            sb = t1_score.group(1)
-            runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
-            wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
-            overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
-            if runs:
-                match_data['team1_score'] = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'} ({overs.group(1) if overs else '?'})"
-        
-        if t2_score:
-            sb = t2_score.group(1)
-            runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
-            wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
-            overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
-            if runs:
-                match_data['team2_score'] = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'} ({overs.group(1) if overs else '?'})"
-        
-        batting = []
-        bat_pattern = r'"batId":(\d+),"batName":"([^"]*)"[^}]*?"runs":(\d+),"balls":(\d+),"dots":(\d+),"fours":(\d+),"sixes":(\d+)[^}]*?"strikeRate":([\d.]+),"outDesc":"([^"]*)"'
-        bat_matches = re.finditer(bat_pattern, html)
-        for m in bat_matches:
-            batting.append({
-                'id': m.group(1),
-                'name': m.group(2),
-                'runs': m.group(3),
-                'balls': m.group(4),
-                'dots': m.group(5),
-                'fours': m.group(6),
-                'sixes': m.group(7),
-                'sr': m.group(8),
-                'status': m.group(9)
-            })
-        
-        match_data['batting'] = batting
-        
-        bowling = []
-        bowl_pattern = r'"bowlerId":(\d+),"bowlName":"([^"]*)"[^}]*?"overs":([\d.]+),"maidens":(\d+),"runs":(\d+),"wickets":(\d+),"economy":([\d.]+)'
-        bowl_matches = re.finditer(bowl_pattern, html)
-        for m in bowl_matches:
-            bowling.append({
-                'id': m.group(1),
-                'name': m.group(2),
-                'overs': m.group(3),
-                'maidens': m.group(4),
-                'runs': m.group(5),
-                'wickets': m.group(6),
-                'economy': m.group(7)
-            })
-        
-        match_data['bowling'] = bowling
+        target_match_id = match_data.get('match_id', match_id)
+        scorecard_pattern = rf'"scoreCard"\s*:\s*\[\s*\{{\s*"matchId"\s*:\s*{target_match_id}'
+        scorecard_match = re.search(scorecard_pattern, html)
+        scorecard_start = scorecard_match.start() if scorecard_match else html.find('"scoreCard":[')
+        if scorecard_start != -1:
+            scorecard_section = html[scorecard_start:scorecard_start+80000]
+            
+            innings_data = []
+            innings_pattern = r'"inningsId"\s*:\s*(\d+)[^{]*"batTeamDetails"\s*:\s*\{[^}]*"batTeamName"\s*:\s*"([^"]*)"'
+            for m in re.finditer(innings_pattern, scorecard_section):
+                innings_data.append({'id': m.group(1), 'team': m.group(2), 'pos': m.start()})
+            
+            if len(innings_data) >= 1:
+                match_data['team1'] = innings_data[0]['team']
+                inn1_start = innings_data[0]['pos']
+                inn1_end = innings_data[1]['pos'] if len(innings_data) > 1 else inn1_start + 20000
+                inn1_section = scorecard_section[inn1_start:inn1_end]
+                
+                score_match = re.search(r'"scoreDetails"\s*:\s*\{[^}]*"overs"\s*:\s*([\d.]+)[^}]*"runs"\s*:\s*(\d+)[^}]*"wickets"\s*:\s*(\d+)', inn1_section)
+                if score_match:
+                    match_data['team1_score'] = f"{score_match.group(2)}/{score_match.group(3)} ({score_match.group(1)})"
+            
+            if len(innings_data) >= 2:
+                match_data['team2'] = innings_data[1]['team']
+                inn2_start = innings_data[1]['pos']
+                inn2_end = innings_data[2]['pos'] if len(innings_data) > 2 else inn2_start + 20000
+                inn2_section = scorecard_section[inn2_start:inn2_end]
+                
+                score_match = re.search(r'"scoreDetails"\s*:\s*\{[^}]*"overs"\s*:\s*([\d.]+)[^}]*"runs"\s*:\s*(\d+)[^}]*"wickets"\s*:\s*(\d+)', inn2_section)
+                if score_match:
+                    match_data['team2_score'] = f"{score_match.group(2)}/{score_match.group(3)} ({score_match.group(1)})"
+            
+            batting = []
+            bat_pattern = r'"batId":(\d+),"batName":"([^"]*)"[^}]*?"runs":(\d+),"balls":(\d+),"dots":(\d+),"fours":(\d+),"sixes":(\d+)[^}]*?"strikeRate":([\d.]+),"outDesc":"([^"]*)"'
+            bat_matches = re.finditer(bat_pattern, scorecard_section)
+            seen_batters = set()
+            for m in bat_matches:
+                bat_id = m.group(1)
+                if bat_id not in seen_batters:
+                    seen_batters.add(bat_id)
+                    batting.append({
+                        'id': bat_id,
+                        'name': m.group(2),
+                        'runs': m.group(3),
+                        'balls': m.group(4),
+                        'dots': m.group(5),
+                        'fours': m.group(6),
+                        'sixes': m.group(7),
+                        'sr': m.group(8),
+                        'status': m.group(9)
+                    })
+            match_data['batting'] = batting
+            
+            bowling = []
+            bowl_pattern = r'"bowlerId":(\d+),"bowlName":"([^"]*)"[^}]*?"overs":([\d.]+),"maidens":(\d+),"runs":(\d+),"wickets":(\d+),"economy":([\d.]+)'
+            bowl_matches = re.finditer(bowl_pattern, scorecard_section)
+            seen_bowlers = set()
+            for m in bowl_matches:
+                bowl_id = m.group(1)
+                if bowl_id not in seen_bowlers:
+                    seen_bowlers.add(bowl_id)
+                    bowling.append({
+                        'id': bowl_id,
+                        'name': m.group(2),
+                        'overs': m.group(3),
+                        'maidens': m.group(4),
+                        'runs': m.group(5),
+                        'wickets': m.group(6),
+                        'economy': m.group(7)
+                    })
+            match_data['bowling'] = bowling
+        else:
+            match_data['batting'] = []
+            match_data['bowling'] = []
         
         return jsonify({
             'success': True,
