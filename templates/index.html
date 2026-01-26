@@ -62,9 +62,9 @@
             <div class="content-card">
                 <h3>Recent News</h3>
                 {% if recent_posts %}
-                <div class="news-list">
+                <div class="news-grid">
                     {% for post in recent_posts %}
-                    <a href="/post/{{ post.slug }}" class="news-item">
+                    <a href="/post/{{ post.slug }}" class="news-card">
                         {% if post.thumbnail %}
                         <img src="{{ post.thumbnail }}" alt="{{ post.title }}" class="news-thumb">
                         {% else %}
@@ -472,31 +472,32 @@
     font-size: 0.9rem;
 }
 
-.news-list {
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.news-card {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-}
-
-.news-item {
-    display: flex;
-    gap: 12px;
     text-decoration: none;
-    padding: 10px;
-    border-radius: 6px;
-    transition: background 0.2s;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.news-item:hover {
-    background: #f8f9fa;
+.news-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .news-thumb {
-    width: 140px;
-    height: 90px;
+    width: 100%;
+    height: 140px;
     object-fit: cover;
-    border-radius: 6px;
-    flex-shrink: 0;
 }
 
 .news-thumb.no-thumb {
@@ -504,15 +505,18 @@
 }
 
 .news-info {
-    flex: 1;
-    min-width: 0;
+    padding: 12px;
 }
 
 .news-info h4 {
-    margin: 0 0 6px 0;
-    font-size: 0.95rem;
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
     color: #222;
-    line-height: 1.3;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .news-date {
