@@ -336,6 +336,38 @@ body {
     .hero-section h1 {
         font-size: 2rem;
     }
+    
+    .sub-navbar {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .sub-navbar .nav-container {
+        justify-content: flex-start;
+        padding: 0 10px;
+    }
+    
+    .sub-nav-menu {
+        gap: 5px;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+    }
+    
+    .sub-nav-menu li a {
+        padding: 10px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .sub-nav-menu {
+        gap: 0;
+    }
+    
+    .sub-nav-menu li a {
+        padding: 10px 10px;
+        font-size: 0.75rem;
+    }
 }
 
 /* Responsive - Mobile */
