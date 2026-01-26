@@ -140,69 +140,77 @@
 <style>
 .category-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
 .category-card {
     background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 6px;
+    padding: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .category-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
 }
 
 .category-header h4 {
     margin: 0;
     color: #046a38;
+    font-size: 13px;
 }
 
 .badge {
     background: #e8f5e9;
     color: #046a38;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
 }
 
 .category-actions {
-    margin-bottom: 15px;
+    margin-bottom: 8px;
 }
 
 .auto-scrape-toggle {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: 6px;
+    margin-bottom: 6px;
+    font-size: 11px;
+}
+
+.auto-scrape-toggle input[type="time"] {
+    padding: 2px 4px;
+    font-size: 11px;
 }
 
 .toggle-label {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
     cursor: pointer;
+    font-size: 11px;
 }
 
 .last-scrape {
     color: #666;
-    font-size: 12px;
+    font-size: 10px;
 }
 
 .progress-container {
-    margin-top: 10px;
+    margin-top: 6px;
 }
 
 .progress-bar {
-    height: 8px;
+    height: 5px;
     background: #e0e0e0;
-    border-radius: 4px;
+    border-radius: 3px;
     overflow: hidden;
 }
 
@@ -214,40 +222,50 @@
 }
 
 .progress-text {
-    font-size: 12px;
+    font-size: 10px;
     color: #666;
 }
 
 .series-list-section {
-    margin-top: 30px;
+    margin-top: 20px;
+}
+
+.series-list-section h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
 }
 
 .category-series {
-    margin-bottom: 25px;
+    margin-bottom: 15px;
 }
 
 .category-series h4 {
     color: #046a38;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
-    border-bottom: 2px solid #e8f5e9;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e8f5e9;
+    font-size: 12px;
 }
 
 .series-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 6px;
 }
 
 .series-item {
     background: #f5f5f5;
-    padding: 10px 15px;
+    padding: 6px 10px;
     border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .series-item a {
     color: #333;
     text-decoration: none;
+    font-size: 11px;
 }
 
 .series-item a:hover {
@@ -257,12 +275,7 @@
 .series-item.more {
     color: #666;
     font-style: italic;
-}
-
-.series-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    font-size: 11px;
 }
 
 .series-info {
@@ -270,44 +283,55 @@
 }
 
 .match-count {
-    font-size: 11px;
+    font-size: 9px;
     color: #888;
-    margin-left: 8px;
+    margin-left: 5px;
 }
 
 .btn-xs {
-    padding: 4px 8px;
-    font-size: 11px;
+    padding: 2px 6px;
+    font-size: 10px;
 }
 
 .match-scrape-section {
-    margin-top: 30px;
-    margin-bottom: 30px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.match-scrape-section h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
 }
 
 .match-settings-card {
     background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 12px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .logs-section {
-    margin-top: 30px;
+    margin-top: 20px;
+}
+
+.logs-section h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
 }
 
 .admin-table {
     width: 100%;
     border-collapse: collapse;
     background: white;
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    font-size: 11px;
 }
 
 .admin-table th,
 .admin-table td {
-    padding: 12px 15px;
+    padding: 6px 10px;
     text-align: left;
     border-bottom: 1px solid #eee;
 }
@@ -315,12 +339,14 @@
 .admin-table th {
     background: #046a38;
     color: white;
+    font-size: 11px;
+    font-weight: 600;
 }
 
 .status-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 10px;
 }
 
 .status-success {
@@ -338,11 +364,11 @@
 }
 
 .btn {
-    padding: 8px 16px;
+    padding: 5px 10px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 11px;
 }
 
 .btn-primary {
@@ -355,8 +381,17 @@
 }
 
 .btn-sm {
-    padding: 6px 12px;
-    font-size: 12px;
+    padding: 4px 8px;
+    font-size: 10px;
+}
+
+.scrape-section h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.page-header h2 {
+    font-size: 16px;
 }
 </style>
 
