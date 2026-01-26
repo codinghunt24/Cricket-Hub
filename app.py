@@ -970,11 +970,15 @@ def scrape_series_json():
                 state = re.search(r'"state"\s*:\s*"([^"]*)"', context)
                 start_date = re.search(r'"startDate"\s*:\s*"?(\d+)"?', context)
                 
+                # Extract team info with IDs - ID verification is important
                 team1_name = re.search(r'"team1"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', context)
                 team2_name = re.search(r'"team2"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', context)
+                team1_id = re.search(r'"team1"\s*:\s*\{[^}]*"teamId"\s*:\s*(\d+)', context)
+                team2_id = re.search(r'"team2"\s*:\s*\{[^}]*"teamId"\s*:\s*(\d+)', context)
                 
                 venue_ground = re.search(r'"venueInfo"\s*:\s*\{[^}]*"ground"\s*:\s*"([^"]*)"', context)
                 venue_city = re.search(r'"venueInfo"\s*:\s*\{[^}]*"city"\s*:\s*"([^"]*)"', context)
+                venue_id = re.search(r'"venueInfo"\s*:\s*\{[^}]*"id"\s*:\s*(\d+)', context)
                 
                 team1_score = ''
                 team2_score = ''
@@ -1066,17 +1070,30 @@ def scrape_series_json():
                 match_slug = f"{team1_short.lower().replace(' ', '-')}-vs-{team2_short.lower().replace(' ', '-')}"
                 match_url = f"https://www.cricbuzz.com/live-cricket-scorecard/{mid}/{match_slug}"
                 
+                # Get series_id from context for verification
+                match_series_id = match_sid.group(1) if match_sid else series_id_from_url or ''
+                
                 matches_data.append({
+                    # PRIMARY IDs - Most important for verification
                     'match_id': mid,
+                    'series_id': match_series_id,
+                    'team1_id': team1_id.group(1) if team1_id else '',
+                    'team2_id': team2_id.group(1) if team2_id else '',
+                    'venue_id': venue_id.group(1) if venue_id else '',
+                    # Match info
                     'match_format': match_desc.group(1) if match_desc else '',
                     'format_type': match_format.group(1) if match_format else '',
                     'series_name': match_series_name,
                     'match_date': match_date,
                     'date_timestamp': date_timestamp,
+                    'state': match_state,
+                    # Team names
                     'team1': team1_short,
                     'team2': team2_short,
+                    # Scores
                     'team1_score': team1_score,
                     'team2_score': team2_score,
+                    # Other info
                     'venue': venue,
                     'result': status.group(1) if status else '',
                     'match_url': match_url
@@ -1179,7 +1196,9 @@ def scrape_match_json():
         if header_match:
             header = header_match.group(1)
             
+            # Extract all IDs from matchHeader
             mid = re.search(r'"matchId"\s*:\s*(\d+)', header)
+            series_id = re.search(r'"seriesId"\s*:\s*(\d+)', header)
             match_desc = re.search(r'"matchDescription"\s*:\s*"([^"]*)"', header)
             match_format = re.search(r'"matchFormat"\s*:\s*"([^"]*)"', header)
             status = re.search(r'"status"\s*:\s*"([^"]*)"', header)
@@ -1187,7 +1206,17 @@ def scrape_match_json():
             toss_winner = re.search(r'"tossWinnerName"\s*:\s*"([^"]*)"', header)
             toss_decision = re.search(r'"decision"\s*:\s*"([^"]*)"', header)
             
+            # Team IDs from header
+            team1_id = re.search(r'"team1"\s*:\s*\{[^}]*"id"\s*:\s*(\d+)', header)
+            team2_id = re.search(r'"team2"\s*:\s*\{[^}]*"id"\s*:\s*(\d+)', header)
+            
+            # PRIMARY IDs - Most important
             match_data['match_id'] = mid.group(1) if mid else match_id
+            match_data['series_id'] = series_id.group(1) if series_id else ''
+            match_data['team1_id'] = team1_id.group(1) if team1_id else ''
+            match_data['team2_id'] = team2_id.group(1) if team2_id else ''
+            
+            # Match info
             match_data['match'] = match_desc.group(1) if match_desc else ''
             match_data['format'] = match_format.group(1) if match_format else ''
             match_data['status'] = status.group(1) if status else ''
@@ -1200,7 +1229,9 @@ def scrape_match_json():
         
         venue_ground = re.search(r'"ground"\s*:\s*"([^"]*)"', html)
         venue_city = re.search(r'"city"\s*:\s*"([^"]*)"', html)
+        venue_id = re.search(r'"venueInfo"\s*:\s*\{[^}]*"id"\s*:\s*(\d+)', html)
         match_data['venue'] = f"{venue_ground.group(1)}, {venue_city.group(1)}" if venue_ground and venue_city else ''
+        match_data['venue_id'] = venue_id.group(1) if venue_id else ''
         
         if match_state in ['Preview', 'Upcoming', 'Scheduled']:
             match_data['team1'] = ''
@@ -1262,7 +1293,7 @@ def scrape_match_json():
                 if bat_id not in seen_batters:
                     seen_batters.add(bat_id)
                     batting.append({
-                        'id': bat_id,
+                        'player_id': bat_id,  # Primary ID for verification
                         'name': m.group(2),
                         'runs': m.group(3),
                         'balls': m.group(4),
@@ -1283,7 +1314,7 @@ def scrape_match_json():
                 if bowl_id not in seen_bowlers:
                     seen_bowlers.add(bowl_id)
                     bowling.append({
-                        'id': bowl_id,
+                        'player_id': bowl_id,  # Primary ID for verification
                         'name': m.group(2),
                         'overs': m.group(3),
                         'maidens': m.group(4),
