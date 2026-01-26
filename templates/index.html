@@ -93,39 +93,30 @@
 .matches-slider {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    padding-bottom: 10px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 5px;
 }
 
 .matches-slider::-webkit-scrollbar {
-    height: 6px;
-}
-
-.matches-slider::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-}
-
-.matches-slider::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 3px;
+    display: none;
 }
 
 .slider-track {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     padding: 5px;
 }
 
 .match-card {
-    min-width: 220px;
-    max-width: 220px;
+    min-width: 200px;
+    max-width: 200px;
     background: #fff;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    padding: 10px 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     flex-shrink: 0;
-    border-left: 4px solid #ccc;
+    border-left: 3px solid #ccc;
 }
 
 .match-card.live-card { border-left-color: #ff4444; }
@@ -134,14 +125,14 @@
 .match-card.upcoming-card { border-left-color: #3498db; }
 
 .match-status {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 700;
     color: #fff;
     background: #ff4444;
-    padding: 3px 8px;
-    border-radius: 4px;
+    padding: 2px 6px;
+    border-radius: 3px;
     display: inline-block;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
 }
 
 .match-status.innings { background: #ffaa00; color: #333; }
@@ -149,41 +140,41 @@
 .match-status.upcoming { background: #3498db; }
 
 .match-teams {
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 }
 
 .match-teams .team {
     font-weight: 600;
     color: #222;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 .match-teams .vs {
     color: #888;
-    margin: 0 5px;
-    font-size: 0.8rem;
+    margin: 0 4px;
+    font-size: 0.75rem;
 }
 
 .match-format {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #666;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
 }
 
 .match-score {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: #333;
     font-weight: 500;
 }
 
 .match-result {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #00aa55;
     font-weight: 500;
 }
 
 .match-date {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #666;
 }
 
