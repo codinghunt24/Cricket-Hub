@@ -1019,7 +1019,9 @@ def scrape_series_json():
                 name = m.group(2)
                 if sid not in seen:
                     seen.add(sid)
-                    series_data.append({'id': sid, 'name': name})
+                    slug = name.lower().replace(' ', '-').replace(',', '').replace("'", '')
+                    series_url = f"https://www.cricbuzz.com/cricket-series/{sid}/{slug}/matches"
+                    series_data.append({'id': sid, 'name': name, 'url': series_url})
             
             return jsonify({
                 'success': True,

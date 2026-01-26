@@ -157,11 +157,30 @@
     color: #10b981;
     font-family: monospace;
     font-size: 10px;
-    width: 80px;
+    width: 70px;
 }
 
 .series-table .name-col {
     font-weight: 500;
+}
+
+.series-table .url-col {
+    font-family: monospace;
+    font-size: 9px;
+    color: #9ca3af;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.series-table .url-col a {
+    color: #60a5fa;
+    text-decoration: none;
+}
+
+.series-table .url-col a:hover {
+    text-decoration: underline;
 }
 
 .loading {
@@ -175,6 +194,61 @@
     margin-bottom: 10px;
     display: block;
     color: #10b981;
+}
+
+.matches-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+}
+
+.matches-table th {
+    background: #111827;
+    color: #e4e4e7;
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9px;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+}
+
+.matches-table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #374151;
+    color: #e4e4e7;
+}
+
+.matches-table tbody tr:hover {
+    background: #374151;
+}
+
+.matches-table .format-col {
+    color: #10b981;
+    font-weight: 600;
+    width: 80px;
+}
+
+.matches-table .date-col {
+    color: #9ca3af;
+    font-size: 9px;
+    width: 120px;
+}
+
+.matches-table .teams-col {
+    font-weight: 500;
+}
+
+.matches-table .score-col {
+    font-family: monospace;
+    font-size: 9px;
+}
+
+.matches-table .result-col {
+    color: #fbbf24;
+    font-size: 9px;
+    max-width: 150px;
 }
 </style>
 
@@ -204,26 +278,56 @@ async function scrapeSeriesFromUrl() {
         
         const data = await response.json();
         
-        if (data.success && data.series && data.series.length > 0) {
-            countBadge.textContent = data.series.length + ' series';
-            
-            let html = '<table class="series-table"><thead><tr>';
-            html += '<th>Series ID</th>';
-            html += '<th>Series Name</th>';
-            html += '</tr></thead><tbody>';
-            
-            data.series.forEach(s => {
-                html += `<tr>
-                    <td class="id-col">${s.id}</td>
-                    <td class="name-col">${s.name}</td>
-                </tr>`;
-            });
-            
-            html += '</tbody></table>';
-            previewContent.innerHTML = html;
+        if (data.success) {
+            if (data.type === 'matches' && data.matches && data.matches.length > 0) {
+                countBadge.textContent = data.matches.length + ' matches';
+                
+                let html = '<table class="matches-table"><thead><tr>';
+                html += '<th>Format</th>';
+                html += '<th>Date</th>';
+                html += '<th>Teams</th>';
+                html += '<th>Score</th>';
+                html += '<th>Result</th>';
+                html += '</tr></thead><tbody>';
+                
+                data.matches.forEach(m => {
+                    html += `<tr>
+                        <td class="format-col">${m.match_format || '-'}</td>
+                        <td class="date-col">${m.match_date || '-'}</td>
+                        <td class="teams-col">${m.team1 || '?'} vs ${m.team2 || '?'}</td>
+                        <td class="score-col">${m.team1_score || '-'} vs ${m.team2_score || '-'}</td>
+                        <td class="result-col">${m.result || '-'}</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                previewContent.innerHTML = html;
+                
+            } else if (data.series && data.series.length > 0) {
+                countBadge.textContent = data.series.length + ' series';
+                
+                let html = '<table class="series-table"><thead><tr>';
+                html += '<th>ID</th>';
+                html += '<th>Series Name</th>';
+                html += '<th>URL</th>';
+                html += '</tr></thead><tbody>';
+                
+                data.series.forEach(s => {
+                    html += `<tr>
+                        <td class="id-col">${s.id}</td>
+                        <td class="name-col">${s.name}</td>
+                        <td class="url-col"><a href="${s.url}" target="_blank">${s.url}</a></td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                previewContent.innerHTML = html;
+            } else {
+                previewContent.innerHTML = '<p class="hint-text">No data found</p>';
+                countBadge.textContent = '0';
+            }
         } else {
-            previewContent.innerHTML = '<p class="hint-text">No series data found</p>';
-            countBadge.textContent = '0 series';
+            previewContent.innerHTML = '<p class="hint-text">Error: ' + (data.message || 'Unknown error') + '</p>';
         }
     } catch (error) {
         previewContent.innerHTML = '<p class="hint-text">Error: ' + error.message + '</p>';
