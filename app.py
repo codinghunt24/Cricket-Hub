@@ -250,7 +250,11 @@ def index():
     complete = [m for m in all_matches if m.state == 'Complete']
     upcoming = [m for m in all_matches if m.state == 'Upcoming']
     matches = live + innings + complete + upcoming
-    return render_template('index.html', matches=matches)
+    
+    teams = Team.query.all()
+    team_flags = {t.team_id: t.flag_url for t in teams if t.team_id}
+    
+    return render_template('index.html', matches=matches, team_flags=team_flags)
 
 @app.route('/live-scores')
 def live_scores():
@@ -260,7 +264,11 @@ def live_scores():
     complete = [m for m in all_matches if m.state == 'Complete']
     upcoming = [m for m in all_matches if m.state == 'Upcoming']
     matches = live + innings + complete + upcoming
-    return render_template('index.html', matches=matches)
+    
+    teams = Team.query.all()
+    team_flags = {t.team_id: t.flag_url for t in teams if t.team_id}
+    
+    return render_template('index.html', matches=matches, team_flags=team_flags)
 
 @app.route('/teams')
 def teams_page():

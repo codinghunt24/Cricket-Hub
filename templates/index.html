@@ -13,16 +13,29 @@
                     <div class="match-status {% if match.state == 'Innings Break' %}innings{% elif match.state == 'Complete' %}complete{% elif match.state == 'Upcoming' %}upcoming{% endif %}">
                         {% if match.state == 'Live' %}LIVE{% elif match.state == 'Innings Break' %}INNINGS BREAK{% elif match.state == 'Complete' %}COMPLETE{% else %}UPCOMING{% endif %}
                     </div>
-                    <div class="match-teams">
-                        <span class="team">{{ match.team1_name or 'Team 1' }}</span>
-                        <span class="vs">vs</span>
-                        <span class="team">{{ match.team2_name or 'Team 2' }}</span>
+                    <div class="match-teams-vertical">
+                        <div class="team-row">
+                            {% if match.team1_id and team_flags.get(match.team1_id) %}
+                            <img src="{{ team_flags.get(match.team1_id) }}" alt="" class="team-flag">
+                            {% else %}
+                            <span class="team-flag-placeholder"></span>
+                            {% endif %}
+                            <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
+                            {% if match.team1_score %}<span class="team-score">{{ match.team1_score }}</span>{% endif %}
+                        </div>
+                        <div class="team-row">
+                            {% if match.team2_id and team_flags.get(match.team2_id) %}
+                            <img src="{{ team_flags.get(match.team2_id) }}" alt="" class="team-flag">
+                            {% else %}
+                            <span class="team-flag-placeholder"></span>
+                            {% endif %}
+                            <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
+                            {% if match.team2_score %}<span class="team-score">{{ match.team2_score }}</span>{% endif %}
+                        </div>
                     </div>
                     <div class="match-format">{{ match.match_format or '-' }}</div>
                     {% if match.result %}
                     <div class="match-result">{{ match.result }}</div>
-                    {% elif match.team1_score or match.team2_score %}
-                    <div class="match-score">{{ match.team1_score or '-' }} | {{ match.team2_score or '-' }}</div>
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -139,20 +152,43 @@
 .match-status.complete { background: #00cc66; }
 .match-status.upcoming { background: #3498db; }
 
-.match-teams {
+.match-teams-vertical {
+    margin-bottom: 6px;
+}
+
+.team-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     margin-bottom: 4px;
 }
 
-.match-teams .team {
-    font-weight: 600;
-    color: #222;
-    font-size: 0.8rem;
+.team-flag {
+    width: 20px;
+    height: 14px;
+    object-fit: cover;
+    border-radius: 2px;
+    border: 1px solid #eee;
 }
 
-.match-teams .vs {
-    color: #888;
-    margin: 0 4px;
+.team-flag-placeholder {
+    width: 20px;
+    height: 14px;
+    background: #e0e0e0;
+    border-radius: 2px;
+}
+
+.team-name {
+    font-weight: 600;
+    color: #222;
     font-size: 0.75rem;
+    flex: 1;
+}
+
+.team-score {
+    font-size: 0.7rem;
+    color: #444;
+    font-weight: 500;
 }
 
 .match-format {
