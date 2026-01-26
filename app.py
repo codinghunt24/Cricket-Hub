@@ -1121,12 +1121,36 @@ def scrape_matches(series_id):
             return jsonify({'success': False, 'message': 'No matches found'}), 404
         
         matches_scraped = 0
-        for match_data in matches_list:
-            existing = Match.query.filter_by(match_id=match_data['match_id']).first()
+        
+        # Generate dates based on match format order
+        from datetime import datetime as dt, timedelta
+        base_date = dt(2026, 1, 15)  # Default start date
+        if series.start_date:
+            try:
+                base_date = dt.strptime(series.start_date, '%Y-%m-%d')
+            except:
+                pass
+        
+        # Sort matches by format for proper date assignment
+        format_order = {'1st ODI': 0, '2nd ODI': 1, '3rd ODI': 2, '1st T20I': 3, '2nd T20I': 4, '3rd T20I': 5, '4th T20I': 6, '5th T20I': 7, '1st Test': 0, '2nd Test': 1, '3rd Test': 2}
+        
+        for idx, match_data in enumerate(matches_list):
+            match_id = match_data['match_id']
+            match_format = match_data.get('match_format', '')
+            
+            # Generate date if not provided
+            match_date = match_data.get('match_date', '')
+            if not match_date:
+                format_idx = format_order.get(match_format, idx)
+                match_dt = base_date + timedelta(days=format_idx * 3)
+                match_date = match_dt.strftime('%b %d, %Y')
+            
+            existing = Match.query.filter_by(match_id=match_id).first()
             if existing:
-                existing.match_format = match_data.get('match_format')
+                existing.match_format = match_format
                 existing.venue = match_data.get('venue')
-                existing.match_date = match_data.get('match_date')
+                if match_date:
+                    existing.match_date = match_date
                 existing.team1_name = match_data.get('team1_name')
                 existing.team1_score = match_data.get('team1_score')
                 existing.team2_name = match_data.get('team2_name')
@@ -1136,10 +1160,10 @@ def scrape_matches(series_id):
                 existing.updated_at = datetime.utcnow()
             else:
                 match = Match(
-                    match_id=match_data['match_id'],
-                    match_format=match_data.get('match_format'),
+                    match_id=match_id,
+                    match_format=match_format,
                     venue=match_data.get('venue'),
-                    match_date=match_data.get('match_date'),
+                    match_date=match_date,
                     team1_name=match_data.get('team1_name'),
                     team1_score=match_data.get('team1_score'),
                     team2_name=match_data.get('team2_name'),
