@@ -950,12 +950,18 @@ def scrape_series_json():
                     continue
                 seen_ids.add(mid)
                 
-                context = html[pos:pos+3000]
+                context = html[pos:pos+2000]
+                
+                match_sid = re.search(r'"seriesId"\s*:\s*(\d+)', context)
+                if series_id_from_url and match_sid:
+                    if match_sid.group(1) != series_id_from_url:
+                        continue
                 
                 series_name = re.search(r'"seriesName"\s*:\s*"([^"]*)"', context)
                 match_desc = re.search(r'"matchDesc"\s*:\s*"([^"]*)"', context)
                 match_format = re.search(r'"matchFormat"\s*:\s*"([^"]*)"', context)
                 status = re.search(r'"status"\s*:\s*"([^"]*)"', context)
+                state = re.search(r'"state"\s*:\s*"([^"]*)"', context)
                 start_date = re.search(r'"startDate"\s*:\s*"?(\d+)"?', context)
                 
                 team1_name = re.search(r'"team1"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', context)
@@ -964,31 +970,33 @@ def scrape_series_json():
                 venue_ground = re.search(r'"venueInfo"\s*:\s*\{[^}]*"ground"\s*:\s*"([^"]*)"', context)
                 venue_city = re.search(r'"venueInfo"\s*:\s*\{[^}]*"city"\s*:\s*"([^"]*)"', context)
                 
-                t1_score_block = re.search(r'"team1Score"\s*:\s*\{.*?"inngs1"\s*:\s*\{([^}]+)\}', context, re.DOTALL)
-                t2_score_block = re.search(r'"team2Score"\s*:\s*\{.*?"inngs1"\s*:\s*\{([^}]+)\}', context, re.DOTALL)
-                
                 team1_score = ''
                 team2_score = ''
+                match_state = state.group(1) if state else ''
                 
-                if t1_score_block:
-                    sb = t1_score_block.group(1)
-                    runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
-                    wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
-                    overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
-                    if runs:
-                        team1_score = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'}"
-                        if overs:
-                            team1_score += f" ({overs.group(1)})"
-                
-                if t2_score_block:
-                    sb = t2_score_block.group(1)
-                    runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
-                    wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
-                    overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
-                    if runs:
-                        team2_score = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'}"
-                        if overs:
-                            team2_score += f" ({overs.group(1)})"
+                if match_state not in ['Preview', 'Upcoming', 'Scheduled', '']:
+                    t1_score_block = re.search(r'"team1Score"\s*:\s*\{[^{]*"inngs1"\s*:\s*\{([^}]+)\}', context)
+                    t2_score_block = re.search(r'"team2Score"\s*:\s*\{[^{]*"inngs1"\s*:\s*\{([^}]+)\}', context)
+                    
+                    if t1_score_block:
+                        sb = t1_score_block.group(1)
+                        runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
+                        wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
+                        overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
+                        if runs:
+                            team1_score = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'}"
+                            if overs:
+                                team1_score += f" ({overs.group(1)})"
+                    
+                    if t2_score_block:
+                        sb = t2_score_block.group(1)
+                        runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
+                        wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
+                        overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
+                        if runs:
+                            team2_score = f"{runs.group(1)}/{wkts.group(1) if wkts else '?'}"
+                            if overs:
+                                team2_score += f" ({overs.group(1)})"
                 
                 match_date = date_map.get(mid, '')
                 date_timestamp = 0
