@@ -929,6 +929,36 @@ def fetch_accurate_match_data(match_id, match_url_hint=None):
     
     page_text = soup.get_text(' ', strip=True)
     
+    og_title = soup.find('meta', {'property': 'og:title'})
+    og_content = og_title.get('content', '') if og_title else ''
+    
+    if og_content:
+        meta_score = re.search(r'([A-Z]+)\s+(\d+/\d+)\s*\((\d+(?:\.\d+)?)\)\s*vs\s*([A-Z]+)\s+(\d+/\d+)', og_content, re.IGNORECASE)
+        if meta_score:
+            t1_abbr = meta_score.group(1).lower()
+            t1_score = meta_score.group(2)
+            t1_overs = meta_score.group(3)
+            t2_abbr = meta_score.group(4).lower()
+            t2_score = meta_score.group(5)
+            
+            match_data['team1_name'] = team_abbrevs.get(t1_abbr, t1_abbr.upper())
+            match_data['team1_score'] = f"{t1_score} ({t1_overs})"
+            match_data['team2_name'] = team_abbrevs.get(t2_abbr, t2_abbr.upper())
+            
+            t2_overs_match = re.search(rf'{t2_abbr}\s+{re.escape(t2_score)}\s*\((\d+(?:\.\d+)?)\)', og_content, re.IGNORECASE)
+            if t2_overs_match:
+                match_data['team2_score'] = f"{t2_score} ({t2_overs_match.group(1)})"
+            else:
+                match_data['team2_score'] = t2_score
+        
+        date_in_meta = re.search(r'((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2})', og_content)
+        if date_in_meta:
+            match_data['match_date'] = date_in_meta.group(1) + ', 2026'
+        
+        format_in_meta = re.search(r'(\d+(?:st|nd|rd|th)\s+(?:ODI|T20I?|Test))', og_content, re.IGNORECASE)
+        if format_in_meta:
+            match_data['match_format'] = format_in_meta.group(1)
+    
     title_tag = soup.find('title')
     title = title_tag.get_text(strip=True) if title_tag else ''
     
@@ -967,15 +997,20 @@ def fetch_accurate_match_data(match_id, match_url_hint=None):
                 match_data['venue'] = f"{venue_match.group(1)}, {venue_match.group(2)}"
                 break
     
-    date_patterns = [
-        r'((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4})',
-        r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4})',
-    ]
-    for pattern in date_patterns:
-        date_match = re.search(pattern, page_text[:3000], re.IGNORECASE)
-        if date_match:
-            match_data['match_date'] = date_match.group(1).strip()
-            break
+    if not match_data['match_date']:
+        date_patterns = [
+            r'((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4})',
+            r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4})',
+            r'((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2})',
+        ]
+        for pattern in date_patterns:
+            date_match = re.search(pattern, page_text[:5000], re.IGNORECASE)
+            if date_match:
+                date_str = date_match.group(1).strip()
+                if not re.search(r'\d{4}', date_str):
+                    date_str = date_str + ', 2026'
+                match_data['match_date'] = date_str
+                break
     
     innings_headers = soup.find_all('div', id=lambda x: x and x.startswith('team-') and '-innings-' in x if x else False)
     
