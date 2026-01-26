@@ -132,75 +132,74 @@ def scrape_matches_from_json(series_url):
                 venue_ground = re.search(r'"venueInfo"\s*:\s*\{[^}]*"ground"\s*:\s*"([^"]*)"', context)
                 venue_city = re.search(r'"venueInfo"\s*:\s*\{[^}]*"city"\s*:\s*"([^"]*)"', context)
                 
-                # Score info - improved patterns for nested JSON
-                t1_score_block = re.search(r'"team1Score"\s*:\s*\{.*?"inngs1"\s*:\s*\{([^}]+)\}', context, re.DOTALL)
-                t2_score_block = re.search(r'"team2Score"\s*:\s*\{.*?"inngs1"\s*:\s*\{([^}]+)\}', context, re.DOTALL)
+                # Check match state - only extract scores for completed/in-progress matches
+                match_state = state.group(1) if state else ''
+                team1_score = ''
+                team2_score = ''
                 
-                t1_runs = t1_wkts = t1_overs = None
-                t2_runs = t2_wkts = t2_overs = None
+                # Only extract scores if match has started
+                if match_state not in ['Preview', 'Upcoming', 'Scheduled', '']:
+                    t1_score_block = re.search(r'"team1Score"\s*:\s*\{[^{]*"inngs1"\s*:\s*\{([^}]+)\}', context)
+                    t2_score_block = re.search(r'"team2Score"\s*:\s*\{[^{]*"inngs1"\s*:\s*\{([^}]+)\}', context)
+                    
+                    if t1_score_block:
+                        sb = t1_score_block.group(1)
+                        t1_runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
+                        t1_wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
+                        t1_overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
+                        if t1_runs:
+                            team1_score = f"{t1_runs.group(1)}/{t1_wkts.group(1) if t1_wkts else '?'}"
+                            if t1_overs:
+                                team1_score += f" ({t1_overs.group(1)})"
+                    
+                    if t2_score_block:
+                        sb = t2_score_block.group(1)
+                        t2_runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
+                        t2_wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
+                        t2_overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
+                        if t2_runs:
+                            team2_score = f"{t2_runs.group(1)}/{t2_wkts.group(1) if t2_wkts else '?'}"
+                            if t2_overs:
+                                team2_score += f" ({t2_overs.group(1)})"
                 
-                if t1_score_block:
-                    sb = t1_score_block.group(1)
-                    t1_runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
-                    t1_wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
-                    t1_overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
+                # Convert timestamp to date
+                match_date = ''
+                if start_date:
+                    try:
+                        from datetime import datetime
+                        ts = int(start_date.group(1)) / 1000
+                        dt = datetime.fromtimestamp(ts)
+                        match_date = dt.strftime('%a, %b %d, %Y')
+                    except:
+                        pass
                 
-                if t2_score_block:
-                    sb = t2_score_block.group(1)
-                    t2_runs = re.search(r'"runs"\s*:\s*(\d+)', sb)
-                    t2_wkts = re.search(r'"wickets"\s*:\s*(\d+)', sb)
-                    t2_overs = re.search(r'"overs"\s*:\s*([\d.]+)', sb)
-                    
-                    # Build scores
-                    team1_score = ''
-                    team2_score = ''
-                    if t1_runs:
-                        team1_score = f"{t1_runs.group(1)}/{t1_wkts.group(1) if t1_wkts else '?'}"
-                        if t1_overs:
-                            team1_score += f" ({t1_overs.group(1)})"
-                    if t2_runs:
-                        team2_score = f"{t2_runs.group(1)}/{t2_wkts.group(1) if t2_wkts else '?'}"
-                        if t2_overs:
-                            team2_score += f" ({t2_overs.group(1)})"
-                    
-                    # Convert timestamp to date
-                    match_date = ''
-                    if start_date:
-                        try:
-                            from datetime import datetime
-                            ts = int(start_date.group(1)) / 1000
-                            dt = datetime.fromtimestamp(ts)
-                            match_date = dt.strftime('%a, %b %d, %Y')
-                        except:
-                            pass
-                    
-                    venue = ''
-                    if venue_ground and venue_city:
-                        venue = f"{venue_ground.group(1)}, {venue_city.group(1)}"
-                    elif venue_ground:
-                        venue = venue_ground.group(1)
-                    
-                    match_data = {
-                        'match_id': mid,
-                        'series_id': series_id.group(1) if series_id else '',
-                        'series_name': series_name.group(1) if series_name else '',
-                        'match_format': match_desc.group(1) if match_desc else '',
-                        'format_type': match_format.group(1) if match_format else '',
-                        'match_date': match_date,
-                        'team1_name': team1_name.group(1) if team1_name else '',
-                        'team1_short': team1_short.group(1) if team1_short else '',
-                        'team1_score': team1_score,
-                        'team2_name': team2_name.group(1) if team2_name else '',
-                        'team2_short': team2_short.group(1) if team2_short else '',
-                        'team2_score': team2_score,
-                        'venue': venue,
-                        'result': status.group(1) if status else '',
-                        'state': state.group(1) if state else '',
-                        'match_url': f"/live-cricket-scores/{mid}"
-                    }
-                    
-                    matches.append(match_data)
-                    logger.info(f"JSON: {match_data['match_format']} | {match_data['team1_name']} vs {match_data['team2_name']} | {match_data['result']}")
+                venue = ''
+                if venue_ground and venue_city:
+                    venue = f"{venue_ground.group(1)}, {venue_city.group(1)}"
+                elif venue_ground:
+                    venue = venue_ground.group(1)
+                
+                match_data = {
+                    'match_id': mid,
+                    'series_id': series_id.group(1) if series_id else '',
+                    'series_name': series_name.group(1) if series_name else '',
+                    'match_format': match_desc.group(1) if match_desc else '',
+                    'format_type': match_format.group(1) if match_format else '',
+                    'match_date': match_date,
+                    'team1_name': team1_name.group(1) if team1_name else '',
+                    'team1_short': team1_short.group(1) if team1_short else '',
+                    'team1_score': team1_score,
+                    'team2_name': team2_name.group(1) if team2_name else '',
+                    'team2_short': team2_short.group(1) if team2_short else '',
+                    'team2_score': team2_score,
+                    'venue': venue,
+                    'result': status.group(1) if status else '',
+                    'state': match_state,
+                    'match_url': f"/live-cricket-scores/{mid}"
+                }
+                
+                matches.append(match_data)
+                logger.info(f"JSON: {match_data['match_format']} | {match_data['team1_name']} vs {match_data['team2_name']} | {match_data['result']}")
             
             except Exception as e:
                 continue
