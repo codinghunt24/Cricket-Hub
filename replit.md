@@ -9,12 +9,16 @@ A Cricbuzz-inspired cricket website built with Python Flask featuring web scrapi
 - **Note**: Enhanced scraping with multiple fallback methods for robust data extraction
 
 ## Recent Improvements
+- **Complete ID Extraction**: All entities now have primary IDs for verification
+  - match_id, series_id, team1_id, team2_id, venue_id in match data
+  - player_id in batting/bowling stats
 - Professional-level scraping accuracy with multiple URL sources (scorecard, live-scores, commentary)
 - Full team name normalization (IND → India, NZ → New Zealand)
 - Accurate venue extraction from multiple page elements
 - Complete scorecard data with batting/bowling stats
 - Match format extraction (1st ODI, 2nd Test, etc.)
 - Result extraction with fallback patterns
+- ID-verified scraping prevents data contamination from "Related Matches"
 
 ## Project Structure
 ```
