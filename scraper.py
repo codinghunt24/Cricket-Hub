@@ -110,8 +110,14 @@ def scrape_matches_from_json(series_url):
                     continue
                 seen_ids.add(mid)
                 
-                # Get large context around matchInfo block (includes team1, team2, scores, venue)
-                context = html_unescaped[pos:pos+3000]
+                # Get context - but find the END of this match's block to avoid contamination
+                # Look for next "matchInfo" or end of data to bound the context
+                next_match = html_unescaped.find('"matchInfo"', pos + 50)
+                if next_match == -1 or next_match > pos + 2500:
+                    context_end = pos + 2000
+                else:
+                    context_end = next_match
+                context = html_unescaped[pos:context_end]
                 
                 # Parse fields from context
                 series_id = re.search(r'"seriesId"\s*:\s*(\d+)', context)

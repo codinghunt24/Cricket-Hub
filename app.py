@@ -950,7 +950,13 @@ def scrape_series_json():
                     continue
                 seen_ids.add(mid)
                 
-                context = html[pos:pos+2000]
+                # Bound context by next matchInfo to prevent data contamination
+                next_match = html.find('"matchInfo"', pos + 50)
+                if next_match == -1 or next_match > pos + 2000:
+                    context_end = pos + 1500
+                else:
+                    context_end = next_match
+                context = html[pos:context_end]
                 
                 match_sid = re.search(r'"seriesId"\s*:\s*(\d+)', context)
                 if series_id_from_url and match_sid:
