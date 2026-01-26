@@ -872,21 +872,282 @@ def scrape_series_from_category(category_url):
     
     return series_list
 
+def fetch_accurate_match_data(match_id, match_url_hint=None):
+    """
+    Fetch accurate match data from Cricbuzz match page.
+    Uses multiple page sources for complete data extraction.
+    """
+    match_data = {
+        'match_id': match_id,
+        'match_format': '',
+        'venue': '',
+        'match_date': '',
+        'team1_name': '',
+        'team1_score': '',
+        'team2_name': '',
+        'team2_score': '',
+        'result': '',
+        'match_url': match_url_hint or f"{BASE_URL}/live-cricket-scores/{match_id}",
+    }
+    
+    team_abbrevs = {
+        'ind': 'India', 'nz': 'New Zealand', 'aus': 'Australia',
+        'eng': 'England', 'pak': 'Pakistan', 'sa': 'South Africa',
+        'wi': 'West Indies', 'sl': 'Sri Lanka', 'ban': 'Bangladesh',
+        'zim': 'Zimbabwe', 'afg': 'Afghanistan', 'ire': 'Ireland',
+        'sco': 'Scotland', 'ned': 'Netherlands', 'uae': 'UAE',
+        'oman': 'Oman', 'usa': 'USA', 'nep': 'Nepal'
+    }
+    
+    if match_url_hint:
+        team_match = re.search(r'/(\w+)-vs-(\w+)-(\d+(?:st|nd|rd|th)-(?:odi|t20i?|test))', match_url_hint, re.IGNORECASE)
+        if team_match:
+            t1 = team_match.group(1).lower()
+            t2 = team_match.group(2).lower()
+            fmt = team_match.group(3)
+            match_data['team1_name'] = team_abbrevs.get(t1, t1.title())
+            match_data['team2_name'] = team_abbrevs.get(t2, t2.title())
+            match_data['match_format'] = fmt.replace('-', ' ').title()
+    
+    urls_to_try = [
+        f"{BASE_URL}/live-cricket-scorecard/{match_id}",
+        f"{BASE_URL}/live-cricket-scores/{match_id}",
+    ]
+    
+    html = None
+    soup = None
+    
+    for url in urls_to_try:
+        html = fetch_page(url)
+        if html and len(html) > 5000:
+            soup = BeautifulSoup(html, 'html.parser')
+            break
+    
+    if not html or not soup:
+        logger.warning(f"Could not fetch match {match_id}")
+        return match_data
+    
+    page_text = soup.get_text(' ', strip=True)
+    
+    title_tag = soup.find('title')
+    title = title_tag.get_text(strip=True) if title_tag else ''
+    
+    title_match = re.search(r'([A-Za-z\s]+)\s+vs\s+([A-Za-z\s]+),\s*(\d+(?:st|nd|rd|th)\s+(?:ODI|T20I?|Test))', title, re.IGNORECASE)
+    if title_match:
+        if not match_data['team1_name']:
+            t1 = title_match.group(1).strip()
+            match_data['team1_name'] = TEAM_FULL_NAMES.get(t1.lower(), t1)
+        if not match_data['team2_name']:
+            t2 = title_match.group(2).strip()
+            match_data['team2_name'] = TEAM_FULL_NAMES.get(t2.lower(), t2)
+        if not match_data['match_format']:
+            match_data['match_format'] = title_match.group(3).strip()
+    
+    venue_link = soup.find('a', href=lambda h: h and '/cricket-stadium/' in h if h else False)
+    if venue_link:
+        venue_text = venue_link.get_text(strip=True)
+        parent = venue_link.find_parent()
+        if parent:
+            full_venue = parent.get_text(strip=True)
+            if ',' in full_venue and len(full_venue) < 100:
+                match_data['venue'] = full_venue
+            else:
+                match_data['venue'] = venue_text
+        else:
+            match_data['venue'] = venue_text
+    
+    if not match_data['venue']:
+        venue_patterns = [
+            r'(?:at\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),\s*([A-Z][A-Za-z\s]+(?:Stadium|Ground|Oval|Park|Arena))',
+            r'([A-Z][A-Za-z\s]+(?:Stadium|Ground|Oval|Park|Arena)),\s*([A-Z][a-z]+)',
+        ]
+        for pattern in venue_patterns:
+            venue_match = re.search(pattern, page_text[:3000])
+            if venue_match:
+                match_data['venue'] = f"{venue_match.group(1)}, {venue_match.group(2)}"
+                break
+    
+    date_patterns = [
+        r'((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4})',
+        r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4})',
+    ]
+    for pattern in date_patterns:
+        date_match = re.search(pattern, page_text[:3000], re.IGNORECASE)
+        if date_match:
+            match_data['match_date'] = date_match.group(1).strip()
+            break
+    
+    innings_headers = soup.find_all('div', id=lambda x: x and x.startswith('team-') and '-innings-' in x if x else False)
+    
+    innings_data = []
+    seen_teams = set()
+    
+    for header in innings_headers:
+        team_div = header.find('div', class_=lambda c: c and ('font-bold' in c or 'cb-font-bold' in c) if c else False)
+        if not team_div:
+            continue
+        
+        team_name_raw = team_div.get_text(strip=True)
+        if not team_name_raw or team_name_raw in seen_teams:
+            continue
+        seen_teams.add(team_name_raw)
+        
+        team_name = TEAM_FULL_NAMES.get(team_name_raw.lower(), team_name_raw)
+        
+        score_span = header.find('span', class_=lambda c: c and ('font-bold' in c or 'cb-font-bold' in c) if c else False)
+        total_score = ''
+        if score_span:
+            score_text = score_span.get_text(strip=True)
+            total_score = score_text.replace('-', '/')
+        
+        overs = ''
+        for span in header.find_all('span'):
+            text = span.get_text(strip=True)
+            if 'Ov' in text:
+                overs_match = re.search(r'(\d+(?:\.\d+)?)', text)
+                if overs_match:
+                    overs = overs_match.group(1)
+                break
+        
+        if total_score:
+            score_with_overs = f"{total_score} ({overs})" if overs else total_score
+            innings_data.append({'team': team_name, 'score': score_with_overs, 'overs': overs})
+    
+    if innings_data:
+        if len(innings_data) >= 1:
+            match_data['team1_name'] = innings_data[0]['team']
+            match_data['team1_score'] = innings_data[0]['score']
+        if len(innings_data) >= 2:
+            match_data['team2_name'] = innings_data[1]['team']
+            match_data['team2_score'] = innings_data[1]['score']
+    
+    if not match_data['team1_score']:
+        score_pattern = r'(New Zealand|India|Australia|England|Pakistan|South Africa|West Indies|Sri Lanka|Bangladesh|Afghanistan|Ireland|Zimbabwe|NZ|IND|AUS|ENG|PAK|SA|WI|SL|BAN|AFG)\s*(\d{1,3})[-/](\d{1,2})\s*\((\d+(?:\.\d+)?)\s*(?:Ov|ov)s?\)'
+        score_matches = re.findall(score_pattern, page_text, re.IGNORECASE)
+        
+        for i, (team, runs, wickets, overs) in enumerate(score_matches[:2]):
+            score = f"{runs}/{wickets} ({overs})"
+            team_name = TEAM_FULL_NAMES.get(team.lower(), team)
+            if i == 0:
+                if not match_data['team1_name']:
+                    match_data['team1_name'] = team_name
+                match_data['team1_score'] = score
+            elif i == 1:
+                if not match_data['team2_name']:
+                    match_data['team2_name'] = team_name
+                match_data['team2_score'] = score
+    
+    result_patterns = [
+        r'((?:India|New Zealand|Australia|England|Pakistan|South Africa|West Indies|Sri Lanka|Bangladesh|Afghanistan|Ireland|Zimbabwe)\s+won\s+by\s+\d+\s*(?:runs?|wkts?|wickets?))',
+        r'(Match\s+(?:tied|drawn|abandoned))',
+        r'(No\s+Result)',
+    ]
+    for pattern in result_patterns:
+        result_match = re.search(pattern, page_text, re.IGNORECASE)
+        if result_match:
+            match_data['result'] = result_match.group(1).strip()
+            break
+    
+    if not match_data['result']:
+        result_div = soup.find('div', class_=lambda c: c and ('cb-text-complete' in c or 'cb-text-live' in c) if c else False)
+        if result_div:
+            match_data['result'] = result_div.get_text(strip=True)
+    
+    if 'yet to begin' in page_text.lower() or 'starts at' in page_text.lower():
+        if not match_data['result']:
+            match_data['result'] = 'Upcoming'
+    
+    logger.info(f"Match {match_id}: {match_data['team1_name']} {match_data['team1_score']} vs {match_data['team2_name']} {match_data['team2_score']} | {match_data['result']}")
+    
+    return match_data
+
+
 def scrape_matches_from_series(series_url):
+    """
+    Scrape all matches from a series with accurate data.
+    Fetches each match page individually for complete accuracy.
+    """
     matches_list = []
     matches_url = series_url.rstrip('/') + '/matches'
     
     series_slug_match = re.search(r'/cricket-series/\d+/([^/]+)', series_url)
     series_slug = series_slug_match.group(1) if series_slug_match else ''
     
-    # Try /matches page first, then main series page as fallback
+    urls_to_try = [matches_url, series_url.rstrip('/')]
+    html = None
+    
+    for url in urls_to_try:
+        html = fetch_page(url)
+        if html and '/live-cricket-scores/' in html:
+            break
+    
+    if not html:
+        return matches_list
+    
+    soup = BeautifulSoup(html, 'html.parser')
+    
+    all_links = soup.find_all('a', href=lambda h: h and '/live-cricket-scores/' in h)
+    
+    if series_slug:
+        country_abbrevs = {
+            'new-zealand': 'nz', 'india': 'ind', 'australia': 'aus', 
+            'england': 'eng', 'pakistan': 'pak', 'south-africa': 'sa',
+            'west-indies': 'wi', 'sri-lanka': 'sl', 'bangladesh': 'ban'
+        }
+        slug_lower = series_slug.lower()
+        short_slugs = [series_slug]
+        temp_slug = slug_lower
+        for full, abbrev in country_abbrevs.items():
+            temp_slug = temp_slug.replace(full, abbrev)
+        short_slugs.append(temp_slug)
+        short_slugs.append(slug_lower.replace('-2026', '').replace('-2025', ''))
+        short_slugs.append(temp_slug.replace('-2026', '').replace('-2025', ''))
+        
+        match_links = [m for m in all_links if any(s in m.get('href', '').lower() for s in short_slugs if len(s) > 5)]
+    else:
+        match_links = all_links
+    
+    seen_ids = set()
+    match_urls = []
+    
+    for link in match_links:
+        href = link.get('href', '')
+        match_id_match = re.search(r'/live-cricket-scores/(\d+)/', href)
+        if not match_id_match:
+            continue
+        
+        match_id = match_id_match.group(1)
+        if match_id in seen_ids:
+            continue
+        seen_ids.add(match_id)
+        
+        match_url = BASE_URL + href if href.startswith('/') else href
+        match_urls.append((match_id, match_url))
+    
+    logger.info(f"Found {len(match_urls)} matches in series")
+    
+    for match_id, match_url in match_urls:
+        match_data = fetch_accurate_match_data(match_id, match_url)
+        match_data['match_url'] = match_url
+        matches_list.append(match_data)
+        time.sleep(0.5)
+    
+    return matches_list
+
+
+def scrape_matches_from_series_old(series_url):
+    matches_list = []
+    matches_url = series_url.rstrip('/') + '/matches'
+    
+    series_slug_match = re.search(r'/cricket-series/\d+/([^/]+)', series_url)
+    series_slug = series_slug_match.group(1) if series_slug_match else ''
+    
     urls_to_try = [matches_url, series_url.rstrip('/')]
     html = None
     
     for url in urls_to_try:
         html = fetch_page(url)
         if html:
-            # Check if this page has series-specific match links
             if series_slug:
                 series_match_pattern = rf'/live-cricket-scores/\d+/[^"]*{re.escape(series_slug)}[^"]*'
                 if re.search(series_match_pattern, html, re.IGNORECASE):
@@ -902,15 +1163,11 @@ def scrape_matches_from_series(series_url):
     
     current_date = None
     
-    # First, find all match IDs directly in the page source (includes JS-embedded IDs)
     all_match_ids = set(re.findall(r'/live-cricket-scores/(\d+)/', html))
     
-    # Also find bare 6-digit match IDs that might be in JavaScript data
-    # Look for IDs that start with 121 (common pattern for 2026 matches)
     series_id_match = re.search(r'/cricket-series/(\d+)/', series_url)
     if series_id_match:
         series_num = series_id_match.group(1)
-        # Find IDs that are numerically close to IDs we've already found
         bare_ids = re.findall(r'\b(12\d{4})\b', html)
         for bid in bare_ids:
             all_match_ids.add(bid)
@@ -977,16 +1234,14 @@ def scrape_matches_from_series(series_url):
         result = ''
         match_date = current_date
         
-        # Extract format from URL (most reliable)
         url_format = re.search(r'/(\d+(?:st|nd|rd|th))-(\w+)', href, re.IGNORECASE)
         if url_format:
-            ordinal = url_format.group(1).lower()  # 1st, 2nd, 3rd, etc.
-            format_type = url_format.group(2).upper()  # ODI, T20I, etc.
+            ordinal = url_format.group(1).lower()
+            format_type = url_format.group(2).upper()
             if format_type == 'T20':
                 format_type = 'T20I'
             match_format = f"{ordinal} {format_type}"
         
-        # Extract team names from URL (e.g., sl-vs-eng or eng-vs-sl)
         team_abbrevs = {
             'ind': 'India', 'nz': 'New Zealand', 'aus': 'Australia',
             'eng': 'England', 'pak': 'Pakistan', 'sa': 'South Africa',
