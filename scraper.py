@@ -507,7 +507,22 @@ def scrape_matches_from_series(series_url):
     series_slug_match = re.search(r'/cricket-series/\d+/([^/]+)', series_url)
     series_slug = series_slug_match.group(1) if series_slug_match else ''
     
-    html = fetch_page(matches_url)
+    # Try /matches page first, then main series page as fallback
+    urls_to_try = [matches_url, series_url.rstrip('/')]
+    html = None
+    
+    for url in urls_to_try:
+        html = fetch_page(url)
+        if html:
+            # Check if this page has series-specific match links
+            if series_slug:
+                series_match_pattern = rf'/live-cricket-scores/\d+/[^"]*{re.escape(series_slug)}[^"]*'
+                if re.search(series_match_pattern, html, re.IGNORECASE):
+                    break
+            else:
+                if '/live-cricket-scores/' in html:
+                    break
+    
     if not html:
         return matches_list
     
@@ -588,47 +603,53 @@ def scrape_matches_from_series(series_url):
         team2_name = ''
         team2_score = ''
         result = ''
+        match_date = current_date
         
-        format_match = re.search(r'(\d+(?:st|nd|rd|th)\s+(?:ODI|T20I|Test|T20|Match|Final|Semi-Final|Quarter-Final)[^•]*)', text, re.IGNORECASE)
-        if format_match:
-            match_format = format_match.group(1).strip()
+        # Extract format from URL (most reliable)
+        url_format = re.search(r'/(\d+(?:st|nd|rd|th)-(?:odi|t20i|test|t20|match|final))', href, re.IGNORECASE)
+        if url_format:
+            match_format = url_format.group(1).replace('-', ' ').title()
         
-        # Also try to extract format from URL
-        if not match_format:
-            url_format = re.search(r'(\d+(?:st|nd|rd|th)-(?:odi|t20i|test|t20))', href, re.IGNORECASE)
-            if url_format:
-                match_format = url_format.group(1).replace('-', ' ').title()
+        # Extract team names from URL (e.g., sl-vs-eng or eng-vs-sl)
+        team_abbrevs = {
+            'ind': 'India', 'nz': 'New Zealand', 'aus': 'Australia',
+            'eng': 'England', 'pak': 'Pakistan', 'sa': 'South Africa',
+            'wi': 'West Indies', 'sl': 'Sri Lanka', 'ban': 'Bangladesh',
+            'zim': 'Zimbabwe', 'afg': 'Afghanistan', 'ire': 'Ireland'
+        }
+        team_match = re.search(r'/live-cricket-scores/\d+/([a-z]+)-vs-([a-z]+)', href, re.IGNORECASE)
+        if team_match:
+            t1_abbrev = team_match.group(1).lower()
+            t2_abbrev = team_match.group(2).lower()
+            team1_name = team_abbrevs.get(t1_abbrev, t1_abbrev.upper())
+            team2_name = team_abbrevs.get(t2_abbrev, t2_abbrev.upper())
+        else:
+            # Extract from series slug (e.g., england-tour-of-sri-lanka-2026)
+            tour_match = re.search(r'(england|india|australia|new-zealand|pakistan|south-africa|west-indies|sri-lanka|bangladesh)-tour-of-(england|india|australia|new-zealand|pakistan|south-africa|west-indies|sri-lanka|bangladesh)', href, re.IGNORECASE)
+            if tour_match:
+                touring = tour_match.group(1).replace('-', ' ').title()
+                host = tour_match.group(2).replace('-', ' ').title()
+                team1_name = host
+                team2_name = touring
         
-        venue_match = re.search(r'•\s*([^•]+?(?:Stadium|Ground|Cricket|Arena|Oval|Park)[^•]*)', text, re.IGNORECASE)
-        if venue_match:
-            venue = venue_match.group(1).strip()
-        elif '•' in text:
-            parts = text.split('•')
-            if len(parts) > 1:
-                venue = parts[1].strip().split('\n')[0].strip()
-        
-        score_pattern = re.search(r'([A-Za-z\s]+(?:IND|NZ|AUS|ENG|SA|PAK|WI|SL|BAN|ZIM|AFG|IRE|SCO|UAE|NEP|NED|OMA|USA)?)[\s\n]+(\d+(?:-\d+)?(?:\s*\(\d+(?:\.\d+)?\))?)', text)
-        
-        title = link.get('title', '')
-        if title:
-            title_parts = title.split(' - ')
-            if len(title_parts) >= 1:
-                vs_match = re.search(r'(.+?)\s+vs\s+(.+?)(?:,|$)', title_parts[0])
-                if vs_match:
-                    team1_name = vs_match.group(1).strip()
-                    team2_name = vs_match.group(2).strip()
-            if len(title_parts) >= 2:
-                result = title_parts[-1].strip()
-        
-        score_matches = re.findall(r'(\d+(?:-\d+)?)\s*\((\d+(?:\.\d+)?)\)', text)
-        if len(score_matches) >= 1:
-            team1_score = f"{score_matches[0][0]} ({score_matches[0][1]})"
+        # Extract scores from text (pattern: XXX/Y (overs))
+        score_matches = re.findall(r'([A-Z]+)\s+(\d+(?:/\d+)?)\s*\((\d+(?:\.\d+)?)\)', text, re.IGNORECASE)
         if len(score_matches) >= 2:
-            team2_score = f"{score_matches[1][0]} ({score_matches[1][1]})"
+            team1_score = f"{score_matches[0][1]} ({score_matches[0][2]})"
+            team2_score = f"{score_matches[1][1]} ({score_matches[1][2]})"
+        elif len(score_matches) == 1:
+            team1_score = f"{score_matches[0][1]} ({score_matches[0][2]})"
         
-        result_match = re.search(r'(won by \d+\s*(?:runs?|wkts?|wickets?))', text, re.IGNORECASE)
+        # Extract result
+        result_match = re.search(r'((?:India|New Zealand|Australia|England|Pakistan|South Africa|Sri Lanka|Bangladesh|West Indies|Afghanistan|Zimbabwe|Ireland)\s+won\s+by\s+\d+\s*(?:runs?|wkts?|wickets?))', text, re.IGNORECASE)
         if result_match:
             result = result_match.group(1).strip()
+        
+        # Extract match date from text
+        date_match = re.search(r'Match starts at\s+((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d+,?\s*\d*:?\d*\s*(?:GMT|IST)?)', text, re.IGNORECASE)
+        if date_match:
+            match_date = date_match.group(1).strip()
+            result = 'Upcoming'  # Future match
         
         match_url = BASE_URL + href if href.startswith('/') else href
         
@@ -636,7 +657,7 @@ def scrape_matches_from_series(series_url):
             'match_id': match_id,
             'match_format': match_format,
             'venue': venue,
-            'match_date': current_date,
+            'match_date': match_date,
             'team1_name': team1_name,
             'team1_score': team1_score,
             'team2_name': team2_name,
