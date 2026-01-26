@@ -11,16 +11,12 @@
                 {% for match in matches %}
                 <div class="match-card">
                     <div class="card-header">
-                        <span class="series-name">{{ match.series.name if match.series else 'Cricket Match' }}</span>
+                        <span class="series-name">{{ match.match_format or 'Match' }}</span>
                         <span class="status-badge {% if match.state == 'Live' %}live{% elif match.state == 'Innings Break' %}innings{% elif match.state == 'Complete' %}complete{% else %}upcoming{% endif %}">
                             {% if match.state == 'Live' %}LIVE{% elif match.state == 'Innings Break' %}BREAK{% elif match.state == 'Complete' %}RESULT{% else %}UPCOMING{% endif %}
                         </span>
                     </div>
                     <div class="card-body">
-                        <div class="match-format-row">
-                            <span class="format-dot {% if match.state == 'Live' %}live{% elif match.state == 'Innings Break' %}innings{% endif %}"></span>
-                            <span class="format-text">{{ match.match_format or 'Match' }}</span>
-                        </div>
                         <div class="teams-container">
                             <div class="team-row">
                                 {% if match_flags.get(match.match_id ~ '_1') %}
