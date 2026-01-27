@@ -115,14 +115,15 @@
 
 <style>
 .matches-section {
-    padding: 15px 0 5px 0;
+    padding: 35px 0 10px 0;
     margin-bottom: 0;
-    overflow: hidden;
+    margin-top: 0;
+    overflow: visible;
 }
 
 .match-category {
     margin-bottom: 1px;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .category-header {
@@ -168,14 +169,14 @@
 }
 
 .slider-wrapper {
-    overflow: hidden;
+    overflow: visible;
     margin: 0 -15px;
     padding: 0 15px;
 }
 
 .matches-slider {
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -202,7 +203,7 @@
 .slider-track {
     display: flex;
     gap: 10px;
-    padding: 5px;
+    padding: 15px 5px 5px 5px;
     width: max-content;
 }
 
@@ -211,12 +212,12 @@
     max-width: 280px;
     background: #fff;
     border-radius: 8px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     flex-shrink: 0;
 }
 
-.card-header {
+.match-card > .card-header {
     background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
     padding: 8px 12px;
     display: flex;
@@ -385,11 +386,11 @@
 @media (max-width: 768px) {
     .matches-section {
         padding: 10px 0;
-        overflow: hidden;
+        overflow: visible;
     }
     
     .match-category {
-        overflow: hidden;
+        overflow: visible;
         padding: 0 8px;
     }
     
@@ -398,7 +399,7 @@
         -ms-overflow-style: none;
         -webkit-overflow-scrolling: touch;
         overflow-x: scroll;
-        overflow-y: hidden;
+        overflow-y: visible;
     }
     
     .matches-slider::-webkit-scrollbar {
@@ -469,7 +470,7 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 0 20px 0;
-    margin-top: 0;
+    margin-top: 5px;
 }
 
 .unified-content-box {
@@ -518,8 +519,8 @@
     flex: 2;
     min-width: 0;
     order: -1;
-    padding-top: 0;
-    margin-top: 0;
+    padding-top: 20px;
+    margin-top: 10px;
 }
 
 .content-card {

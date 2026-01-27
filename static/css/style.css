@@ -18,7 +18,11 @@
     --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
     --container-width: 1200px;
-    --header-height: 60px;
+    --header-height: 130px;
+}
+
+html {
+    scroll-padding-top: var(--header-height);
 }
 
 body {
@@ -87,7 +91,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: var(--header-height);
+    height: 60px;
 }
 
 .nav-logo a {
@@ -235,7 +239,7 @@ body {
 .main-content {
     margin-top: var(--header-height);
     min-height: calc(100vh - var(--header-height) - 60px);
-    padding: 30px 0;
+    padding: 10px 0;
 }
 
 .hero-section {
@@ -424,6 +428,16 @@ body {
 
 .page-header {
     margin-bottom: 30px;
+}
+
+/* Match Card Header - Critical fix */
+.match-card .card-header {
+    background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%) !important;
+    padding: 8px 12px !important;
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 35px;
 }
 
 .back-link {
