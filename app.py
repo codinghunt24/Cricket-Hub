@@ -1679,6 +1679,67 @@ def save_series_matches():
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/api/save/series-bulk', methods=['POST'])
+def save_series_bulk():
+    """Auto-save scraped series to database"""
+    try:
+        data = request.get_json()
+        series_list = data.get('series', [])
+        url = data.get('url', '')
+        
+        # Determine category from URL
+        category_slug = 'international'
+        if '/domestic' in url:
+            category_slug = 'domestic'
+        elif '/league' in url:
+            category_slug = 'league'
+        elif '/women' in url:
+            category_slug = 'women'
+        elif '/all' in url:
+            category_slug = 'all'
+        
+        category = SeriesCategory.query.filter_by(slug=category_slug).first()
+        if not category:
+            category = SeriesCategory.query.first()
+        
+        saved = 0
+        updated = 0
+        
+        for s in series_list:
+            series_id = s.get('id', '')
+            if not series_id:
+                continue
+            
+            existing = Series.query.filter_by(series_id=series_id).first()
+            if existing:
+                existing.name = s.get('name', existing.name)
+                existing.series_url = s.get('url', existing.series_url)
+                existing.date_range = s.get('month_year', existing.date_range)
+                updated += 1
+            else:
+                new_series = Series(
+                    series_id=series_id,
+                    name=s.get('name', ''),
+                    series_url=s.get('url', ''),
+                    date_range=s.get('month_year', ''),
+                    category_id=category.id if category else 1
+                )
+                db.session.add(new_series)
+                saved += 1
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'saved': saved,
+            'updated': updated,
+            'message': f'Saved {saved} new, updated {updated} series'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/scrape/series/<category_slug>', methods=['POST'])
 def scrape_series(category_slug):
     try:

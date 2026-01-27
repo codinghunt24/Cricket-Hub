@@ -564,6 +564,23 @@ async function scrapeSeriesFromUrl() {
             countBadge.textContent = data.series.length + ' series';
             document.getElementById('btn-save-all').style.display = 'flex';
             
+            // Auto-save series to database
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            try {
+                const saveResponse = await fetch('/api/save/series-bulk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ series: data.series, url: url })
+                });
+                const saveData = await saveResponse.json();
+                if (saveData.success) {
+                    countBadge.textContent = data.series.length + ' series (Saved)';
+                    countBadge.style.background = '#10b981';
+                }
+            } catch (e) {
+                console.error('Auto-save failed:', e);
+            }
+            
             let html = '<table class="series-table"><thead><tr>';
             html += '<th>ID</th>';
             html += '<th>Series Name</th>';
