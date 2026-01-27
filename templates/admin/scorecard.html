@@ -363,6 +363,24 @@ async function scrapeScorecard() {
             currentScorecard = data.scorecard;
             displayVerification(data.verification);
             displayScorecard(data.scorecard);
+            
+            // Auto-save scorecard
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            try {
+                const saveResponse = await fetch('/api/save/scorecard', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data.scorecard)
+                });
+                const saveData = await saveResponse.json();
+                if (saveData.success) {
+                    const saveBtn = document.getElementById('btn-save');
+                    saveBtn.innerHTML = '<i class="fas fa-check"></i> Saved';
+                    saveBtn.style.background = '#28a745';
+                }
+            } catch (e) {
+                console.error('Auto-save failed:', e);
+            }
         } else {
             alert(data.message || 'Failed to scrape scorecard');
         }
