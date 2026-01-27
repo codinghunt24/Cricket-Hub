@@ -264,10 +264,11 @@ def get_team_flag(team_name, teams_list):
 def index():
     all_matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
     live = [m for m in all_matches if m.state == 'Live']
-    innings = [m for m in all_matches if m.state == 'Innings Break']
-    complete = [m for m in all_matches if m.state == 'Complete']
-    upcoming = [m for m in all_matches if m.state == 'Upcoming']
-    matches = live + innings + complete + upcoming
+    status = [m for m in all_matches if m.state != 'Live' and m.result and 'opt to' in m.result.lower()]
+    innings = [m for m in all_matches if m.state == 'Innings Break' and m not in status]
+    complete = [m for m in all_matches if m.state == 'Complete' and m not in status]
+    upcoming = [m for m in all_matches if m.state == 'Upcoming' and m not in status]
+    matches = live + status + innings + complete + upcoming
     
     teams = Team.query.all()
     
@@ -284,10 +285,11 @@ def index():
 def live_scores():
     all_matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
     live = [m for m in all_matches if m.state == 'Live']
-    innings = [m for m in all_matches if m.state == 'Innings Break']
-    complete = [m for m in all_matches if m.state == 'Complete']
-    upcoming = [m for m in all_matches if m.state == 'Upcoming']
-    matches = live + innings + complete + upcoming
+    status = [m for m in all_matches if m.state != 'Live' and m.result and 'opt to' in m.result.lower()]
+    innings = [m for m in all_matches if m.state == 'Innings Break' and m not in status]
+    complete = [m for m in all_matches if m.state == 'Complete' and m not in status]
+    upcoming = [m for m in all_matches if m.state == 'Upcoming' and m not in status]
+    matches = live + status + innings + complete + upcoming
     
     teams = Team.query.all()
     
