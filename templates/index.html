@@ -1054,6 +1054,13 @@ async function loadScorecard(matchId) {
         
         if (data.success) {
             displayScorecard(data.scorecard);
+            
+            // Auto-save to database
+            fetch('/api/save/scorecard', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data.scorecard)
+            }).catch(e => console.log('Auto-save:', e));
         } else {
             scorecardContent.innerHTML = `
                 <div class="scorecard-header">
