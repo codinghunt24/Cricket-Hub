@@ -472,6 +472,93 @@ def admin_series():
 def admin_news():
     return render_template('admin/news.html')
 
+@app.route('/admin/scorecard')
+def admin_scorecard():
+    matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
+    return render_template('admin/scorecard.html', matches=matches)
+
+@app.route('/api/scrape/scorecard', methods=['POST'])
+def api_scrape_scorecard():
+    try:
+        data = request.get_json()
+        match_id = data.get('match_id', '')
+        input_series_id = data.get('series_id', '')
+        
+        if not match_id:
+            return jsonify({'success': False, 'message': 'Match ID required'}), 400
+        
+        scorecard = scraper.scrape_scorecard(match_id)
+        
+        if not scorecard:
+            return jsonify({'success': False, 'message': 'Failed to scrape scorecard'}), 400
+        
+        verification = {
+            'input_match_id': match_id,
+            'page_match_id': scorecard.get('match_id', ''),
+            'match_id_match': str(match_id) == str(scorecard.get('match_id', '')),
+            'input_series_id': input_series_id,
+            'page_series_id': scorecard.get('series_id', ''),
+            'series_id_match': not input_series_id or str(input_series_id) == str(scorecard.get('series_id', '')),
+            'team1_id': scorecard.get('team1_id', ''),
+            'team2_id': scorecard.get('team2_id', '')
+        }
+        
+        return jsonify({
+            'success': True,
+            'scorecard': scorecard,
+            'verification': verification
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/save/scorecard', methods=['POST'])
+def api_save_scorecard():
+    try:
+        data = request.get_json()
+        match_id = data.get('match_id', '')
+        
+        if not match_id:
+            return jsonify({'success': False, 'message': 'Match ID required'}), 400
+        
+        match = Match.query.filter_by(match_id=match_id).first()
+        
+        if not match:
+            match = Match(match_id=match_id)
+            db.session.add(match)
+        
+        if data.get('series_id'):
+            series = Series.query.filter_by(series_id=data.get('series_id')).first()
+            if series:
+                match.series_id = series.id
+        
+        if data.get('venue'):
+            match.venue = data.get('venue')
+        if data.get('match_date'):
+            match.match_date = data.get('match_date')
+        if data.get('result'):
+            match.result = data.get('result')
+            match.state = 'Complete'
+        
+        innings = data.get('innings', [])
+        if len(innings) >= 1:
+            inn1 = innings[0]
+            match.team1_name = inn1.get('team_name', match.team1_name)
+            match.team1_score = f"{inn1.get('total_score', '')} ({inn1.get('overs', '')} Ov)"
+        if len(innings) >= 2:
+            inn2 = innings[1]
+            match.team2_name = inn2.get('team_name', match.team2_name)
+            match.team2_score = f"{inn2.get('total_score', '')} ({inn2.get('overs', '')} Ov)"
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Scorecard saved for match {match_id}'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/admin/settings')
 def admin_settings():
     setting = ScrapeSetting.query.first()

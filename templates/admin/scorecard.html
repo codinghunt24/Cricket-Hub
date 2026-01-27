@@ -1,0 +1,546 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Scorecard - Admin Panel{% endblock %}
+{% block page_title %}Scorecard{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="scrape-section">
+        <h3>Scrape Scorecard</h3>
+        <div class="input-group">
+            <div class="input-row">
+                <label>Series ID</label>
+                <input type="text" id="series-id" placeholder="Enter Series ID (e.g., 8671)">
+            </div>
+            <div class="input-row">
+                <label>Match ID</label>
+                <input type="text" id="match-id" placeholder="Enter Match ID (e.g., 114323)">
+            </div>
+            <button class="btn-scrape" onclick="scrapeScorecard()">
+                <i class="fas fa-download"></i> Scrape Scorecard
+            </button>
+        </div>
+    </div>
+    
+    <div class="verification-section" id="verification-section" style="display: none;">
+        <h3>ID Verification</h3>
+        <div class="verification-grid" id="verification-grid"></div>
+    </div>
+    
+    <div class="scorecard-preview" id="scorecard-preview" style="display: none;">
+        <div class="preview-header">
+            <h3>Scorecard Data</h3>
+            <button class="btn-save" id="btn-save" onclick="saveScorecard()">
+                <i class="fas fa-database"></i> Save to Database
+            </button>
+        </div>
+        <div class="preview-content" id="preview-content"></div>
+    </div>
+    
+    <div class="recent-matches">
+        <h3>Recent Matches</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Match ID</th>
+                    <th>Series ID</th>
+                    <th>Teams</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in matches %}
+                <tr>
+                    <td>{{ match.match_id }}</td>
+                    <td>{{ match.series_id or '-' }}</td>
+                    <td>{{ match.team1_name }} vs {{ match.team2_name }}</td>
+                    <td>
+                        <span class="status-badge {{ match.state|lower if match.state else 'unknown' }}">
+                            {{ match.state or 'Unknown' }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn-sm" onclick="loadMatch('{{ match.match_id }}', '{{ match.series_id or '' }}')">
+                            Scrape
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+.admin-page {
+    padding: 20px;
+}
+
+.scrape-section, .verification-section, .scorecard-preview, .recent-matches {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.scrape-section h3, .verification-section h3, .scorecard-preview h3, .recent-matches h3 {
+    margin: 0 0 15px 0;
+    color: #1a472a;
+    font-size: 16px;
+    border-bottom: 2px solid #1a472a;
+    padding-bottom: 10px;
+}
+
+.input-group {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.input-row label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 600;
+}
+
+.input-row input {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 200px;
+}
+
+.btn-scrape {
+    background: linear-gradient(135deg, #1a472a, #2d6a4f);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-scrape:hover {
+    background: linear-gradient(135deg, #2d6a4f, #1a472a);
+}
+
+.btn-scrape:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.verification-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.verify-item {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 4px solid #1a472a;
+}
+
+.verify-item.mismatch {
+    border-left-color: #dc3545;
+    background: #fff5f5;
+}
+
+.verify-item.match {
+    border-left-color: #28a745;
+    background: #f0fff4;
+}
+
+.verify-label {
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.verify-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.btn-save {
+    background: #28a745;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-save:hover {
+    background: #218838;
+}
+
+.preview-content {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 15px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.innings-card {
+    background: #fff;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.innings-header {
+    background: linear-gradient(135deg, #1a472a, #2d6a4f);
+    color: #fff;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.innings-team {
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.innings-score {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.innings-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.innings-table th, .innings-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+}
+
+.innings-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #666;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.data-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #555;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.live { background: #ff4444; color: #fff; }
+.status-badge.complete { background: #28a745; color: #fff; }
+.status-badge.upcoming { background: #3498db; color: #fff; }
+.status-badge.unknown { background: #999; color: #fff; }
+
+.btn-sm {
+    background: #1a472a;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-sm:hover {
+    background: #2d6a4f;
+}
+
+.result-text {
+    background: #e8f5e9;
+    padding: 10px 15px;
+    border-radius: 6px;
+    color: #1a472a;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+    .input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .input-row input {
+        width: 100%;
+    }
+    
+    .verification-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+let currentScorecard = null;
+
+function loadMatch(matchId, seriesId) {
+    document.getElementById('match-id').value = matchId;
+    document.getElementById('series-id').value = seriesId;
+    scrapeScorecard();
+}
+
+async function scrapeScorecard() {
+    const seriesId = document.getElementById('series-id').value.trim();
+    const matchId = document.getElementById('match-id').value.trim();
+    
+    if (!matchId) {
+        alert('Please enter Match ID');
+        return;
+    }
+    
+    const btn = document.querySelector('.btn-scrape');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scraping...';
+    
+    try {
+        const response = await fetch('/api/scrape/scorecard', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                match_id: matchId,
+                series_id: seriesId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            currentScorecard = data.scorecard;
+            displayVerification(data.verification);
+            displayScorecard(data.scorecard);
+        } else {
+            alert(data.message || 'Failed to scrape scorecard');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-download"></i> Scrape Scorecard';
+    }
+}
+
+function displayVerification(verification) {
+    const section = document.getElementById('verification-section');
+    const grid = document.getElementById('verification-grid');
+    
+    if (!verification) {
+        section.style.display = 'none';
+        return;
+    }
+    
+    section.style.display = 'block';
+    
+    let html = '';
+    
+    html += `<div class="verify-item ${verification.match_id_match ? 'match' : 'mismatch'}">
+        <div class="verify-label">Match ID</div>
+        <div class="verify-value">Input: ${verification.input_match_id} | Page: ${verification.page_match_id}</div>
+    </div>`;
+    
+    html += `<div class="verify-item ${verification.series_id_match ? 'match' : 'mismatch'}">
+        <div class="verify-label">Series ID</div>
+        <div class="verify-value">Input: ${verification.input_series_id || 'Not provided'} | Page: ${verification.page_series_id}</div>
+    </div>`;
+    
+    html += `<div class="verify-item">
+        <div class="verify-label">Team 1 ID</div>
+        <div class="verify-value">${verification.team1_id || '-'}</div>
+    </div>`;
+    
+    html += `<div class="verify-item">
+        <div class="verify-label">Team 2 ID</div>
+        <div class="verify-value">${verification.team2_id || '-'}</div>
+    </div>`;
+    
+    grid.innerHTML = html;
+}
+
+function displayScorecard(scorecard) {
+    const section = document.getElementById('scorecard-preview');
+    const content = document.getElementById('preview-content');
+    
+    if (!scorecard) {
+        section.style.display = 'none';
+        return;
+    }
+    
+    section.style.display = 'block';
+    
+    let html = '';
+    
+    if (scorecard.result) {
+        html += `<div class="result-text">${scorecard.result}</div>`;
+    }
+    
+    if (scorecard.venue) {
+        html += `<p><strong>Venue:</strong> ${scorecard.venue}</p>`;
+    }
+    
+    if (scorecard.match_date) {
+        html += `<p><strong>Date:</strong> ${scorecard.match_date}</p>`;
+    }
+    
+    if (scorecard.innings && scorecard.innings.length > 0) {
+        scorecard.innings.forEach((inn, idx) => {
+            html += `<div class="innings-card">
+                <div class="innings-header">
+                    <span class="innings-team">${inn.team_name} - Innings ${inn.innings_num}</span>
+                    <span class="innings-score">${inn.total_score} (${inn.overs} Ov)</span>
+                </div>`;
+            
+            if (inn.batting && inn.batting.length > 0) {
+                html += `<table class="innings-table">
+                    <thead>
+                        <tr>
+                            <th>Batter</th>
+                            <th>Dismissal</th>
+                            <th>R</th>
+                            <th>B</th>
+                            <th>4s</th>
+                            <th>6s</th>
+                            <th>SR</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                
+                inn.batting.forEach(bat => {
+                    html += `<tr>
+                        <td>${bat.name}</td>
+                        <td>${bat.dismissal || 'not out'}</td>
+                        <td><strong>${bat.runs}</strong></td>
+                        <td>${bat.balls}</td>
+                        <td>${bat.fours}</td>
+                        <td>${bat.sixes}</td>
+                        <td>${bat.strike_rate}</td>
+                    </tr>`;
+                });
+                
+                html += `</tbody></table>`;
+            }
+            
+            if (inn.bowling && inn.bowling.length > 0) {
+                html += `<table class="innings-table" style="margin-top: 10px;">
+                    <thead>
+                        <tr>
+                            <th>Bowler</th>
+                            <th>O</th>
+                            <th>M</th>
+                            <th>R</th>
+                            <th>W</th>
+                            <th>Econ</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                
+                inn.bowling.forEach(bowl => {
+                    html += `<tr>
+                        <td>${bowl.name}</td>
+                        <td>${bowl.overs}</td>
+                        <td>${bowl.maidens}</td>
+                        <td>${bowl.runs}</td>
+                        <td><strong>${bowl.wickets}</strong></td>
+                        <td>${bowl.economy}</td>
+                    </tr>`;
+                });
+                
+                html += `</tbody></table>`;
+            }
+            
+            html += `</div>`;
+        });
+    } else {
+        html += '<p>No innings data available</p>';
+    }
+    
+    content.innerHTML = html;
+}
+
+async function saveScorecard() {
+    if (!currentScorecard) {
+        alert('No scorecard data to save');
+        return;
+    }
+    
+    const btn = document.getElementById('btn-save');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    
+    try {
+        const response = await fetch('/api/save/scorecard', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentScorecard)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Scorecard saved successfully!');
+            location.reload();
+        } else {
+            alert(data.message || 'Failed to save scorecard');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-database"></i> Save to Database';
+    }
+}
+</script>
+{% endblock %}
