@@ -1,0 +1,859 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Automation - Admin Panel{% endblock %}
+{% block page_title %}Automation{% endblock %}
+
+{% block content %}
+<div class="admin-page automation-page">
+    <div id="scrapeStatus" class="scrape-status-bar" style="display:none;"></div>
+    
+    <div class="server-time-display">
+        <span class="server-time-label">Server Time:</span>
+        <span id="serverClock" class="server-clock">--:--:--</span>
+    </div>
+    
+    <div class="automation-section">
+        <div class="section-header">
+            <h2>Live Scores</h2>
+            <button class="btn btn-primary" onclick="scrapeLiveScores()">Scrape Now</button>
+        </div>
+        <p class="section-desc">Scrape all current matches from Cricbuzz (Live, Innings Break, Complete, Upcoming)</p>
+        <div id="liveScrapingResult" class="scrape-result" style="display:none;"></div>
+    </div>
+    
+    <div class="automation-section">
+        <div class="section-header">
+            <h2>Teams</h2>
+            <div class="header-buttons">
+                <button class="btn btn-primary" onclick="scrapeAllTeams()">Scrape All Categories</button>
+                <button class="btn btn-danger" onclick="clearAllTeams()">Clear All</button>
+            </div>
+        </div>
+        <div class="auto-scrape-row">
+            <label class="toggle-label">
+                <input type="checkbox" id="teamAutoScrape" {% if team_setting and team_setting.auto_scrape_enabled %}checked{% endif %} onchange="toggleTeamAutoScrape()">
+                <span class="toggle-text">Auto Scrape</span>
+            </label>
+            <input type="time" id="teamScrapeTime" value="{{ team_setting.scrape_time if team_setting else '02:00' }}" class="time-input" onchange="toggleTeamAutoScrape()">
+            {% if team_setting and team_setting.last_scrape %}
+            <span class="last-scrape">Last: {{ team_setting.last_scrape.strftime('%d %b, %H:%M') }}</span>
+            {% endif %}
+        </div>
+        <div class="category-buttons">
+            <button class="btn btn-sm" onclick="scrapeCategory('international')">International</button>
+            <button class="btn btn-sm" onclick="scrapeCategory('domestic')">Domestic</button>
+            <button class="btn btn-sm" onclick="scrapeCategory('league')">League</button>
+            <button class="btn btn-sm" onclick="scrapeCategory('women')">Women</button>
+        </div>
+    </div>
+    
+    <div class="automation-section">
+        <div class="section-header">
+            <h2>Players</h2>
+            <button class="btn btn-primary" onclick="scrapeAllPlayers()">Scrape All Players</button>
+        </div>
+        <div class="auto-scrape-row">
+            <label class="toggle-label">
+                <input type="checkbox" id="playerAutoScrape" {% if team_setting and team_setting.player_auto_scrape_enabled %}checked{% endif %} onchange="togglePlayerAutoScrape()">
+                <span class="toggle-text">Auto Scrape</span>
+            </label>
+            <input type="time" id="playerScrapeTime" value="{{ team_setting.player_scrape_time if team_setting else '03:00' }}" class="time-input" onchange="togglePlayerAutoScrape()">
+            {% if team_setting and team_setting.last_player_scrape %}
+            <span class="last-scrape">Last: {{ team_setting.last_player_scrape.strftime('%d %b, %H:%M') }}</span>
+            {% endif %}
+        </div>
+        <h4 class="subsection-title">By Category</h4>
+        <div class="category-grid">
+            <div class="cat-box">
+                <span class="cat-name">International</span>
+                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('international')">Scrape</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="autoIntl" {% if team_setting and team_setting.intl_auto %}checked{% endif %} onchange="saveCategoryAuto('international')"> Auto</label>
+                    <input type="time" id="timeIntl" value="{{ team_setting.intl_time if team_setting and team_setting.intl_time else '04:00' }}" class="time-xs" onchange="saveCategoryAuto('international')">
+                </div>
+            </div>
+            <div class="cat-box">
+                <span class="cat-name">Domestic</span>
+                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('domestic')">Scrape</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="autoDomestic" {% if team_setting and team_setting.domestic_auto %}checked{% endif %} onchange="saveCategoryAuto('domestic')"> Auto</label>
+                    <input type="time" id="timeDomestic" value="{{ team_setting.domestic_time if team_setting and team_setting.domestic_time else '05:00' }}" class="time-xs" onchange="saveCategoryAuto('domestic')">
+                </div>
+            </div>
+            <div class="cat-box">
+                <span class="cat-name">League</span>
+                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('league')">Scrape</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="autoLeague" {% if team_setting and team_setting.league_auto %}checked{% endif %} onchange="saveCategoryAuto('league')"> Auto</label>
+                    <input type="time" id="timeLeague" value="{{ team_setting.league_time if team_setting and team_setting.league_time else '06:00' }}" class="time-xs" onchange="saveCategoryAuto('league')">
+                </div>
+            </div>
+            <div class="cat-box">
+                <span class="cat-name">Women</span>
+                <button class="btn btn-xs" onclick="scrapeCategoryPlayers('women')">Scrape</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="autoWomen" {% if team_setting and team_setting.women_auto %}checked{% endif %} onchange="saveCategoryAuto('women')"> Auto</label>
+                    <input type="time" id="timeWomen" value="{{ team_setting.women_time if team_setting and team_setting.women_time else '07:00' }}" class="time-xs" onchange="saveCategoryAuto('women')">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="automation-section">
+        <div class="section-header">
+            <h2>Player Profiles</h2>
+        </div>
+        <div id="profileScrapeStatus" class="scrape-status-bar" style="display:none;"></div>
+        <div class="category-grid">
+            <div class="cat-box">
+                <span class="cat-name">International</span>
+                <button class="btn btn-xs btn-profile" onclick="scrapeCategoryProfiles('international')">Scrape</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="profileAutoIntl" onchange="saveProfileAuto('international')"> Auto</label>
+                    <input type="time" id="profileTimeIntl" value="03:00" class="time-xs" onchange="saveProfileAuto('international')">
+                </div>
+            </div>
+            <div class="cat-box">
+                <span class="cat-name">Domestic</span>
+                <button class="btn btn-xs btn-profile" onclick="scrapeCategoryProfiles('domestic')">Scrape</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="profileAutoDomestic" onchange="saveProfileAuto('domestic')"> Auto</label>
+                    <input type="time" id="profileTimeDomestic" value="03:30" class="time-xs" onchange="saveProfileAuto('domestic')">
+                </div>
+            </div>
+            <div class="cat-box">
+                <span class="cat-name">League</span>
+                <button class="btn btn-xs btn-profile" onclick="scrapeCategoryProfiles('league')">Scrape</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="profileAutoLeague" onchange="saveProfileAuto('league')"> Auto</label>
+                    <input type="time" id="profileTimeLeague" value="04:00" class="time-xs" onchange="saveProfileAuto('league')">
+                </div>
+            </div>
+            <div class="cat-box">
+                <span class="cat-name">Women</span>
+                <button class="btn btn-xs btn-profile" onclick="scrapeCategoryProfiles('women')">Scrape</button>
+                <div class="cat-auto">
+                    <label><input type="checkbox" id="profileAutoWomen" onchange="saveProfileAuto('women')"> Auto</label>
+                    <input type="time" id="profileTimeWomen" value="04:30" class="time-xs" onchange="saveProfileAuto('women')">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="automation-section">
+        <div class="section-header">
+            <h2>Series</h2>
+        </div>
+        <div class="series-scrape-row">
+            <select id="seriesType" class="select-input" onchange="updateSeriesUrl()">
+                <option value="all">All Series</option>
+                <option value="international" selected>International</option>
+                <option value="domestic">Domestic</option>
+                <option value="league">T20 Leagues</option>
+                <option value="women">Women</option>
+            </select>
+            <input type="text" id="seriesUrl" class="url-input" value="https://www.cricbuzz.com/cricket-schedule/series/international">
+            <button class="btn btn-primary" onclick="scrapeSeries()">Scrape</button>
+        </div>
+        <div id="seriesScrapeResult" class="scrape-result" style="display:none;"></div>
+    </div>
+    
+    <div class="automation-section">
+        <div class="section-header">
+            <h2>Recent Scrape Logs</h2>
+        </div>
+        <div class="logs-table">
+            {% if recent_logs %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_logs %}
+                    <tr class="log-{{ log.status }}">
+                        <td>{{ log.created_at.strftime('%d %b, %H:%M') }}</td>
+                        <td>{{ log.category }}</td>
+                        <td><span class="status-badge {{ log.status }}">{{ log.status }}</span></td>
+                        <td>{{ log.message }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="no-logs">No scrape logs yet</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div id="loadingOverlay" class="loading-overlay" style="display:none;">
+    <div class="loading-spinner"></div>
+    <p>Scraping in progress...</p>
+</div>
+
+<style>
+.automation-page {
+    max-width: 1000px;
+}
+
+.automation-section {
+    background: #1f2937;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #374151;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: 16px;
+    color: #10b981;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.section-desc {
+    color: #9ca3af;
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.server-time-display {
+    background: #111827;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.server-time-label {
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+.server-clock {
+    color: #10b981;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: monospace;
+}
+
+.auto-scrape-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #111827;
+    border-radius: 6px;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.toggle-text {
+    color: #e4e4e7;
+    font-size: 12px;
+}
+
+.time-input {
+    padding: 5px 10px;
+    background: #1f2937;
+    border: 1px solid #374151;
+    border-radius: 4px;
+    color: #e4e4e7;
+    font-size: 12px;
+}
+
+.last-scrape {
+    color: #9ca3af;
+    font-size: 11px;
+    margin-left: auto;
+}
+
+.category-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.subsection-title {
+    color: #9ca3af;
+    font-size: 12px;
+    margin: 15px 0 10px;
+    font-weight: 500;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.cat-box {
+    background: #111827;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #374151;
+}
+
+.cat-name {
+    display: block;
+    color: #e4e4e7;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.cat-auto {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.time-xs {
+    padding: 3px 6px;
+    background: #1f2937;
+    border: 1px solid #374151;
+    border-radius: 3px;
+    color: #e4e4e7;
+    font-size: 10px;
+    width: 80px;
+}
+
+.btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background: #10b981;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #059669;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 10px;
+    background: #374151;
+    color: #e4e4e7;
+}
+
+.btn-sm:hover {
+    background: #4b5563;
+}
+
+.btn-xs {
+    padding: 4px 8px;
+    font-size: 10px;
+    background: #10b981;
+    color: white;
+}
+
+.btn-profile {
+    background: #8b5cf6;
+}
+
+.btn-profile:hover {
+    background: #7c3aed;
+}
+
+.series-scrape-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.select-input {
+    padding: 8px 12px;
+    background: #111827;
+    border: 1px solid #374151;
+    border-radius: 4px;
+    color: #e4e4e7;
+    font-size: 12px;
+    min-width: 140px;
+}
+
+.url-input {
+    flex: 1;
+    padding: 8px 12px;
+    background: #111827;
+    border: 1px solid #374151;
+    border-radius: 4px;
+    color: #e4e4e7;
+    font-size: 12px;
+    font-family: monospace;
+}
+
+.scrape-result {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+.scrape-status-bar {
+    padding: 15px;
+    background: #111827;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.scrape-progress-bar {
+    width: 100%;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    color: #e4e4e7;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.progress-track {
+    height: 8px;
+    background: #374151;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #10b981;
+    transition: width 0.3s ease;
+}
+
+.profile-fill {
+    background: #8b5cf6;
+}
+
+.progress-detail {
+    color: #9ca3af;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+.scrape-success {
+    color: #10b981;
+    font-weight: 500;
+}
+
+.scrape-error {
+    color: #ef4444;
+    font-weight: 500;
+}
+
+.logs-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.logs-table th {
+    background: #111827;
+    color: #9ca3af;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.logs-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #374151;
+    color: #e4e4e7;
+}
+
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.status-badge.success {
+    background: #10b981;
+    color: white;
+}
+
+.status-badge.error {
+    background: #ef4444;
+    color: white;
+}
+
+.no-logs {
+    color: #9ca3af;
+    text-align: center;
+    padding: 20px;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #374151;
+    border-top-color: #10b981;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-overlay p {
+    color: #e4e4e7;
+    margin-top: 15px;
+}
+</style>
+
+<script>
+function showLoading() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+function updateServerClock() {
+    fetch('/api/server-time')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('serverClock').textContent = data.time;
+        });
+}
+updateServerClock();
+setInterval(updateServerClock, 1000);
+
+function scrapeLiveScores() {
+    const resultDiv = document.getElementById('liveScrapingResult');
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = '#333';
+    resultDiv.innerHTML = '<span style="color: #10b981;">Scraping live scores from Cricbuzz...</span>';
+    
+    fetch('/api/scrape/live-scores', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                resultDiv.style.background = '#1a4d1a';
+                resultDiv.innerHTML = `<span style="color: #10b981;">Done! Total: ${data.counts.total}, Saved: ${data.saved}, Updated: ${data.updated}</span>`;
+            } else {
+                resultDiv.style.background = '#4d1a1a';
+                resultDiv.innerHTML = `<span style="color: #ef4444;">Error: ${data.message}</span>`;
+            }
+        })
+        .catch(e => {
+            resultDiv.style.background = '#4d1a1a';
+            resultDiv.innerHTML = `<span style="color: #ef4444;">Error: ${e}</span>`;
+        });
+}
+
+function scrapeAllTeams() {
+    showLoading();
+    fetch('/api/scrape/all', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            hideLoading();
+            alert(data.message);
+            if (data.success) location.reload();
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error: ' + err.message);
+        });
+}
+
+function clearAllTeams() {
+    if (!confirm('Are you sure? This will delete ALL teams and players!')) return;
+    showLoading();
+    fetch('/api/teams/clear-all', { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => {
+            hideLoading();
+            alert(data.message);
+            if (data.success) location.reload();
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error: ' + err.message);
+        });
+}
+
+function scrapeCategory(slug) {
+    showLoading();
+    fetch('/api/scrape/category/' + slug, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            hideLoading();
+            alert(data.message);
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error: ' + err.message);
+        });
+}
+
+function toggleTeamAutoScrape() {
+    const enabled = document.getElementById('teamAutoScrape').checked;
+    const scrapeTime = document.getElementById('teamScrapeTime').value;
+    
+    fetch('/api/settings/auto-scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: enabled, scrape_time: scrapeTime })
+    })
+    .then(res => res.json())
+    .then(data => alert(data.message))
+    .catch(err => alert('Error: ' + err.message));
+}
+
+function scrapeAllPlayers() {
+    showLoading();
+    fetch('/api/scrape/all-players', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            hideLoading();
+            alert(data.message);
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error: ' + err.message);
+        });
+}
+
+function togglePlayerAutoScrape() {
+    const enabled = document.getElementById('playerAutoScrape').checked;
+    const scrapeTime = document.getElementById('playerScrapeTime').value;
+    
+    fetch('/api/settings/player-auto-scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: enabled, scrape_time: scrapeTime })
+    })
+    .then(res => res.json())
+    .then(data => alert(data.message))
+    .catch(err => alert('Error: ' + err.message));
+}
+
+function scrapeCategoryPlayers(categorySlug) {
+    const statusDiv = document.getElementById('scrapeStatus');
+    statusDiv.innerHTML = `
+        <div class="scrape-progress-bar">
+            <div class="progress-info">
+                <span>Scraping ${categorySlug} players...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="progress-detail" id="progressDetail">Starting...</div>
+        </div>`;
+    statusDiv.style.display = 'block';
+    
+    const progressInterval = setInterval(() => {
+        fetch('/api/scrape/category/' + categorySlug + '/players/progress')
+            .then(res => res.json())
+            .then(prog => {
+                document.getElementById('progressPercent').textContent = prog.percent + '%';
+                document.getElementById('progressFill').style.width = prog.percent + '%';
+                if (prog.team) {
+                    document.getElementById('progressDetail').textContent = `Team ${prog.current}/${prog.total}: ${prog.team}`;
+                }
+                if (prog.status === 'complete') {
+                    clearInterval(progressInterval);
+                }
+            });
+    }, 500);
+    
+    fetch('/api/scrape/category/' + categorySlug + '/players', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            clearInterval(progressInterval);
+            document.getElementById('progressPercent').textContent = '100%';
+            document.getElementById('progressFill').style.width = '100%';
+            statusDiv.innerHTML = '<div class="scrape-success">' + data.message + '</div>';
+            setTimeout(() => { statusDiv.style.display = 'none'; }, 2000);
+        })
+        .catch(err => {
+            clearInterval(progressInterval);
+            statusDiv.innerHTML = '<div class="scrape-error">Error: ' + err.message + '</div>';
+        });
+}
+
+function saveCategoryAuto(category) {
+    const catMap = { 'international': 'Intl', 'domestic': 'Domestic', 'league': 'League', 'women': 'Women' };
+    const suffix = catMap[category];
+    const enabled = document.getElementById('auto' + suffix).checked;
+    const time = document.getElementById('time' + suffix).value;
+    
+    fetch('/api/settings/category-auto-scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: category, enabled: enabled, scrape_time: time })
+    })
+    .then(res => res.json())
+    .then(data => alert(data.message))
+    .catch(err => alert('Error: ' + err.message));
+}
+
+function scrapeCategoryProfiles(categorySlug) {
+    const statusDiv = document.getElementById('profileScrapeStatus');
+    statusDiv.innerHTML = `
+        <div class="scrape-progress-bar">
+            <div class="progress-info">
+                <span>Scraping ${categorySlug} player profiles...</span>
+                <span id="profileProgressPercent">0%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill profile-fill" id="profileProgressFill" style="width: 0%"></div>
+            </div>
+            <div class="progress-detail" id="profileProgressDetail">Starting...</div>
+        </div>`;
+    statusDiv.style.display = 'block';
+    
+    const progressInterval = setInterval(() => {
+        fetch('/api/scrape/profiles/' + categorySlug + '/progress')
+            .then(res => res.json())
+            .then(prog => {
+                document.getElementById('profileProgressPercent').textContent = prog.percent + '%';
+                document.getElementById('profileProgressFill').style.width = prog.percent + '%';
+                if (prog.current_player) {
+                    document.getElementById('profileProgressDetail').textContent = `Player ${prog.current}/${prog.total}: ${prog.current_player}`;
+                }
+                if (prog.status === 'complete') {
+                    clearInterval(progressInterval);
+                    statusDiv.innerHTML = '<div class="scrape-success">Scraped ' + (prog.scraped || prog.current) + ' player profiles!</div>';
+                    setTimeout(() => { statusDiv.style.display = 'none'; }, 2000);
+                }
+            });
+    }, 500);
+    
+    fetch('/api/scrape/profiles/' + categorySlug, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                clearInterval(progressInterval);
+                statusDiv.innerHTML = '<div class="scrape-error">' + data.message + '</div>';
+            }
+        })
+        .catch(err => {
+            clearInterval(progressInterval);
+            statusDiv.innerHTML = '<div class="scrape-error">Error: ' + err.message + '</div>';
+        });
+}
+
+function saveProfileAuto(category) {
+    const catMap = { 'international': 'Intl', 'domestic': 'Domestic', 'league': 'League', 'women': 'Women' };
+    const suffix = catMap[category];
+    const enabled = document.getElementById('profileAuto' + suffix).checked;
+    const time = document.getElementById('profileTime' + suffix).value;
+    
+    fetch('/api/settings/profile-auto-scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: category, enabled: enabled, scrape_time: time })
+    })
+    .then(res => res.json())
+    .then(data => alert(data.message))
+    .catch(err => alert('Error: ' + err.message));
+}
+
+fetch('/api/settings/profile-scrape')
+    .then(res => res.json())
+    .then(settings => {
+        const catMap = { 'international': 'Intl', 'domestic': 'Domestic', 'league': 'League', 'women': 'Women' };
+        for (const [cat, data] of Object.entries(settings)) {
+            const suffix = catMap[cat];
+            if (suffix) {
+                const checkbox = document.getElementById('profileAuto' + suffix);
+                const timeInput = document.getElementById('profileTime' + suffix);
+                if (checkbox) checkbox.checked = data.enabled;
+                if (timeInput) timeInput.value = data.time;
+            }
+        }
+    });
+
+function updateSeriesUrl() {
+    const type = document.getElementById('seriesType').value;
+    document.getElementById('seriesUrl').value = 'https://www.cricbuzz.com/cricket-schedule/series/' + type;
+}
+
+function scrapeSeries() {
+    const url = document.getElementById('seriesUrl').value;
+    const resultDiv = document.getElementById('seriesScrapeResult');
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = '#333';
+    resultDiv.innerHTML = '<span style="color: #10b981;">Scraping series...</span>';
+    
+    fetch('/api/scrape/series-json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            resultDiv.style.background = '#1a4d1a';
+            resultDiv.innerHTML = `<span style="color: #10b981;">Found ${data.series ? data.series.length : 0} series</span>`;
+        } else {
+            resultDiv.style.background = '#4d1a1a';
+            resultDiv.innerHTML = `<span style="color: #ef4444;">Error: ${data.message}</span>`;
+        }
+    })
+    .catch(e => {
+        resultDiv.style.background = '#4d1a1a';
+        resultDiv.innerHTML = `<span style="color: #ef4444;">Error: ${e}</span>`;
+    });
+}
+</script>
+{% endblock %}

@@ -409,6 +409,14 @@ def admin_dashboard():
                          categories=categories,
                          recent_logs=recent_logs)
 
+@app.route('/admin/automation')
+def admin_automation():
+    team_setting = ScrapeSetting.query.first()
+    recent_logs = ScrapeLog.query.order_by(ScrapeLog.created_at.desc()).limit(10).all()
+    return render_template('admin/automation.html', 
+                         team_setting=team_setting,
+                         recent_logs=recent_logs)
+
 @app.route('/admin/matches')
 def admin_matches():
     matches = Match.query.order_by(Match.id.desc()).all()

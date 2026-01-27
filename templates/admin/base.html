@@ -26,6 +26,12 @@
                             <span class="sidebar-text">Dashboard</span>
                         </a>
                     </li>
+                    <li class="sidebar-item {% if request.path == '/admin/automation' %}active{% endif %}">
+                        <a href="/admin/automation" class="sidebar-link">
+                            <span class="sidebar-icon">&#9881;</span>
+                            <span class="sidebar-text">Automation</span>
+                        </a>
+                    </li>
                     <li class="sidebar-item {% if request.path == '/admin/matches' %}active{% endif %}">
                         <a href="/admin/matches" class="sidebar-link">
                             <span class="sidebar-icon">&#9917;</span>
