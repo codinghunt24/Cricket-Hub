@@ -387,26 +387,27 @@
 @media (max-width: 768px) {
     .matches-section {
         padding: 10px 0;
-        overflow: visible;
+        overflow: hidden;
     }
     
     .match-category {
-        overflow: visible;
-        padding: 0 10px;
+        overflow: hidden;
+        padding: 0 8px;
     }
     
     .matches-slider {
         scrollbar-width: none;
         -ms-overflow-style: none;
         -webkit-overflow-scrolling: touch;
-        overflow-x: auto;
-        overflow-y: visible;
+        overflow-x: scroll;
+        overflow-y: hidden;
     }
     
     .matches-slider::-webkit-scrollbar {
         display: none;
-        width: 0;
-        height: 0;
+        width: 0px;
+        height: 0px;
+        background: transparent;
     }
     
     .slider-track {
@@ -439,12 +440,6 @@
         padding: 5px 0 0 0;
     }
     
-    .match-result {
-        padding-top: 0;
-        margin-top: 0;
-        margin-bottom: 0;
-    }
-    
     .match-format-row {
         margin-bottom: 4px;
     }
@@ -469,35 +464,6 @@
     
     .sidebar {
         width: 100%;
-    }
-    
-    .main-container {
-        padding: 0;
-        margin: 0;
-        max-width: 100%;
-        width: 100%;
-    }
-    
-    .content-wrapper {
-        gap: 0;
-        padding: 0;
-    }
-    
-    .content-card {
-        border-radius: 0;
-        padding: 15px 10px;
-        margin: 0;
-        box-shadow: none;
-    }
-    
-    .main-content {
-        padding: 0;
-        margin: 0;
-        width: 100%;
-    }
-    
-    .sidebar {
-        padding: 0 10px;
     }
 }
 
