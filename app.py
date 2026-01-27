@@ -2375,8 +2375,9 @@ def view_category(slug):
     category = PostCategory.query.filter_by(slug=slug).first_or_404()
     posts = Post.query.filter_by(category_id=category.id, is_published=True).order_by(Post.created_at.desc()).all()
     categories = PostCategory.query.filter_by(show_in_navbar=True).order_by(PostCategory.navbar_order).all()
+    recent_posts = Post.query.filter_by(is_published=True).order_by(Post.created_at.desc()).limit(5).all()
     
-    return render_template('category.html', category=category, posts=posts, categories=categories)
+    return render_template('category.html', category=category, posts=posts, categories=categories, recent_posts=recent_posts)
 
 @app.context_processor
 def inject_navbar_categories():
