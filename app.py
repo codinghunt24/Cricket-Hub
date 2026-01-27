@@ -2356,9 +2356,13 @@ def api_live_matches():
     match_type = request.args.get('type', 'live')
     try:
         if match_type == 'live':
-            matches = Match.query.filter(Match.state == 'live').order_by(Match.updated_at.desc()).all()
+            matches = Match.query.filter(Match.state.in_(['live', 'Live', 'LIVE', 'In Progress'])).order_by(Match.updated_at.desc()).all()
+        elif match_type == 'upcoming':
+            matches = Match.query.filter(Match.state.in_(['upcoming', 'Upcoming', 'UPCOMING'])).order_by(Match.match_date).all()
+        elif match_type == 'recent':
+            matches = Match.query.filter(Match.state.in_(['Complete', 'complete', 'COMPLETE', 'Result'])).order_by(Match.updated_at.desc()).limit(20).all()
         else:
-            matches = Match.query.filter(Match.state == 'upcoming').order_by(Match.match_date).all()
+            matches = Match.query.order_by(Match.updated_at.desc()).limit(20).all()
         
         result = []
         for m in matches:

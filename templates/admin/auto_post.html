@@ -42,8 +42,9 @@
                     <p class="info-text">Select a match to embed real-time scorecard in your post. Scorecard will update automatically when users view the post.</p>
                     
                     <div class="match-type-selector">
-                        <button type="button" class="match-type-btn active" data-type="live">Live Matches</button>
+                        <button type="button" class="match-type-btn" data-type="live">Live Matches</button>
                         <button type="button" class="match-type-btn" data-type="upcoming">Upcoming Matches</button>
+                        <button type="button" class="match-type-btn active" data-type="recent">Recent Matches</button>
                     </div>
                     
                     <div class="matches-container" id="matchesContainer">
@@ -206,6 +207,7 @@
 .match-item .status { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
 .match-item .status.live { background: #ff4444; color: #fff; animation: pulse 1.5s infinite; }
 .match-item .status.upcoming { background: #2196f3; color: #fff; }
+.match-item .status.recent { background: #4caf50; color: #fff; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
 .selected-match-info { padding: 15px; background: #e8f5e9; border-radius: 6px; margin-top: 15px; display: none; }
@@ -288,7 +290,7 @@ function loadMatches(type) {
                             </div>
                             <div style="font-size:12px;color:#666;margin-top:5px;">${match.series_name || match.match_format || ''}</div>
                         </div>
-                        <span class="status ${type}">${type === 'live' ? 'LIVE' : 'UPCOMING'}</span>
+                        <span class="status ${type}">${type === 'live' ? 'LIVE' : (type === 'upcoming' ? 'UPCOMING' : 'RESULT')}</span>
                     </div>
                 `).join('');
                 
@@ -324,7 +326,7 @@ document.querySelectorAll('.match-type-btn').forEach(btn => {
     });
 });
 
-loadMatches('live');
+loadMatches('recent');
 
 function addKeyword(keyword) {
     keyword = keyword.trim();
