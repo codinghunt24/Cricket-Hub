@@ -391,6 +391,10 @@ body {
 
 /* Responsive - Mobile */
 @media (max-width: 576px) {
+    :root {
+        --header-height: 80px;
+    }
+    
     .container {
         padding: 0 15px;
     }
