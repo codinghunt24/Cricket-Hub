@@ -387,27 +387,26 @@
 @media (max-width: 768px) {
     .matches-section {
         padding: 10px 0;
-        overflow: hidden;
+        overflow: visible;
     }
     
     .match-category {
-        overflow: hidden;
-        padding: 0;
+        overflow: visible;
+        padding: 0 10px;
     }
     
     .matches-slider {
         scrollbar-width: none;
         -ms-overflow-style: none;
         -webkit-overflow-scrolling: touch;
-        overflow-x: scroll;
-        overflow-y: hidden;
+        overflow-x: auto;
+        overflow-y: visible;
     }
     
     .matches-slider::-webkit-scrollbar {
         display: none;
-        width: 0px;
-        height: 0px;
-        background: transparent;
+        width: 0;
+        height: 0;
     }
     
     .slider-track {
@@ -486,7 +485,7 @@
     
     .content-card {
         border-radius: 0;
-        padding: 15px 0;
+        padding: 15px 10px;
         margin: 0;
         box-shadow: none;
     }
@@ -494,6 +493,11 @@
     .main-content {
         padding: 0;
         margin: 0;
+        width: 100%;
+    }
+    
+    .sidebar {
+        padding: 0 10px;
     }
 }
 
