@@ -5,10 +5,19 @@ A Cricbuzz-inspired cricket website built with Python Flask featuring web scrapi
 
 ## Current State
 - **Status**: Professional-grade match scraping with complete ID verification
-- **Last Updated**: January 26, 2026
+- **Last Updated**: January 27, 2026
 - **Note**: All scraping functions now include mandatory ID verification to prevent data contamination
 
 ## Recent Improvements
+- **Auto Post with Advanced SEO**: Complete auto-posting system for live match coverage
+  - Advanced SEO settings (Meta Title, Meta Description, Focus Keyword)
+  - Multiple keywords support with tag-based UI
+  - Suggested keywords for cricket SEO (live score, dream11, pitch report, etc.)
+  - Live/Upcoming match selection with real-time scorecard embedding
+  - Server-side scorecard rendering for SEO optimization
+  - Category selection with "Today Live Match" default
+  - Open Graph settings for social media sharing
+  - Character counters with SEO meters
 - **Blog/CMS System**: Complete content management with categories and posts
   - PostCategory model with navbar visibility and ordering
   - Post model with full SEO fields (meta_title, meta_description, meta_keywords, Open Graph)
