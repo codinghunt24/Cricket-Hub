@@ -18,7 +18,7 @@
     --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
     --container-width: 1200px;
-    --header-height: 130px;
+    --header-height: 100px;
 }
 
 html {
