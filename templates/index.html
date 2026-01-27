@@ -59,55 +59,54 @@
 </section>
 
 <section class="main-container">
-    <div class="unified-content-box">
-        <div class="content-wrapper">
-            <div class="main-content">
-                <div class="section-block">
-                    <h3>Recent News</h3>
-                    {% if recent_posts %}
-                    <div class="news-grid">
-                        {% for post in recent_posts %}
-                        <a href="/post/{{ post.slug }}" class="news-card">
-                            {% if post.thumbnail %}
-                            <img src="{{ post.thumbnail }}" alt="{{ post.title }}" class="news-thumb">
-                            {% else %}
-                            <div class="news-thumb no-thumb"></div>
-                            {% endif %}
-                            <div class="news-info">
-                                <h4>{{ post.title }}</h4>
-                                <span class="news-date">{{ post.created_at.strftime('%b %d, %Y') }}</span>
-                            </div>
-                        </a>
-                        {% endfor %}
-                    </div>
+    <div class="content-wrapper">
+        <!-- Recent News - Separate Box -->
+        <div class="news-box">
+            <h3>Recent News</h3>
+            {% if recent_posts %}
+            <div class="news-grid">
+                {% for post in recent_posts %}
+                <a href="/post/{{ post.slug }}" class="news-card">
+                    {% if post.thumbnail %}
+                    <img src="{{ post.thumbnail }}" alt="{{ post.title }}" class="news-thumb">
                     {% else %}
-                    <p class="placeholder-text">No news available yet</p>
+                    <div class="news-thumb no-thumb"></div>
                     {% endif %}
-                </div>
+                    <div class="news-info">
+                        <h4>{{ post.title }}</h4>
+                        <span class="news-date">{{ post.created_at.strftime('%b %d, %Y') }}</span>
+                    </div>
+                </a>
+                {% endfor %}
             </div>
-            <div class="sidebar">
-                <div class="section-block">
-                    <h4>Top Stories</h4>
-                    <ul class="sidebar-list">
-                        {% if recent_posts %}
-                        {% for post in recent_posts[:3] %}
-                        <li><a href="/post/{{ post.slug }}">{{ post.title[:40] }}{% if post.title|length > 40 %}...{% endif %}</a></li>
-                        {% endfor %}
-                        {% else %}
-                        <li>Latest cricket updates</li>
-                        <li>Player rankings</li>
-                        <li>Team standings</li>
-                        {% endif %}
-                    </ul>
-                </div>
-                <div class="section-block">
-                    <h4>Quick Links</h4>
-                    <ul class="sidebar-list">
-                        <li><a href="/teams">All Teams</a></li>
-                        <li><a href="/series">Series</a></li>
-                        <li><a href="/live-scores">Live Scores</a></li>
-                    </ul>
-                </div>
+            {% else %}
+            <p class="placeholder-text">No news available yet</p>
+            {% endif %}
+        </div>
+        
+        <!-- Top Stories + Quick Links - Together -->
+        <div class="sidebar-box">
+            <div class="section-block">
+                <h4>Top Stories</h4>
+                <ul class="sidebar-list">
+                    {% if recent_posts %}
+                    {% for post in recent_posts[:3] %}
+                    <li><a href="/post/{{ post.slug }}">{{ post.title[:40] }}{% if post.title|length > 40 %}...{% endif %}</a></li>
+                    {% endfor %}
+                    {% else %}
+                    <li>Latest cricket updates</li>
+                    <li>Player rankings</li>
+                    <li>Team standings</li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="section-block">
+                <h4>Quick Links</h4>
+                <ul class="sidebar-list">
+                    <li><a href="/teams">All Teams</a></li>
+                    <li><a href="/series">Series</a></li>
+                    <li><a href="/live-scores">Live Scores</a></li>
+                </ul>
             </div>
         </div>
     </div>
@@ -464,6 +463,15 @@
     .sidebar {
         width: 100%;
     }
+    
+    .news-box {
+        width: 100%;
+    }
+    
+    .sidebar-box {
+        width: 100%;
+        max-width: 100%;
+    }
 }
 
 .main-container {
@@ -513,6 +521,34 @@
     display: flex;
     gap: 20px;
     align-items: flex-start;
+    margin-top: 20px;
+}
+
+.news-box {
+    flex: 2;
+    min-width: 0;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+
+.news-box h3 {
+    margin: 0 0 15px 0;
+    color: #1a472a;
+    font-size: 1.1rem;
+    border-bottom: 2px solid #1a472a;
+    padding-bottom: 10px;
+}
+
+.sidebar-box {
+    flex: 1;
+    min-width: 250px;
+    max-width: 300px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 20px;
 }
 
 .main-content {
