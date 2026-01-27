@@ -58,6 +58,26 @@
     {% endif %}
 </section>
 
+<!-- Series Section -->
+{% if series %}
+<section class="series-section">
+    <div class="series-container">
+        <div class="series-header">
+            <h3>● Upcoming Series ►</h3>
+            <a href="/series" class="view-all-btn">View All</a>
+        </div>
+        <div class="series-grid">
+            {% for s in series %}
+            <a href="/series/{{ s.id }}" class="series-card">
+                <div class="series-name">{{ s.name }}</div>
+                <div class="series-date">{{ s.date_range or '' }}</div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <section class="main-container">
     <div class="content-wrapper">
         <!-- Recent News - Separate Box -->
@@ -120,6 +140,94 @@
 @media (max-width: 576px) {
     :root {
         --header-height: 79px !important;
+    }
+}
+
+/* Series Section Styles */
+.series-section {
+    background: #fff;
+    padding: 15px 0;
+    margin: 0 20px 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.series-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.series-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.series-header h3 {
+    color: #1a472a;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.view-all-btn {
+    color: #1a472a;
+    font-size: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 5px 12px;
+    border: 1px solid #1a472a;
+    border-radius: 15px;
+    transition: all 0.2s;
+}
+
+.view-all-btn:hover {
+    background: #1a472a;
+    color: #fff;
+}
+
+.series-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+}
+
+.series-card {
+    background: linear-gradient(135deg, #1a472a, #2d6a4f);
+    padding: 12px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.series-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26, 71, 42, 0.3);
+}
+
+.series-card .series-name {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    line-height: 1.3;
+}
+
+.series-card .series-date {
+    color: rgba(255,255,255,0.7);
+    font-size: 11px;
+}
+
+@media (max-width: 576px) {
+    .series-section {
+        margin: 0 10px 10px 10px;
+        padding: 12px 0;
+    }
+    
+    .series-grid {
+        grid-template-columns: 1fr;
     }
 }
 

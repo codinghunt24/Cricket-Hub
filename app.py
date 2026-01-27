@@ -279,7 +279,10 @@ def index():
     
     recent_posts = Post.query.filter_by(is_published=True).order_by(Post.created_at.desc()).limit(5).all()
     
-    return render_template('index.html', matches=matches, match_flags=match_flags, recent_posts=recent_posts)
+    # Get recent series for home page
+    recent_series = Series.query.order_by(Series.start_date.desc()).limit(10).all()
+    
+    return render_template('index.html', matches=matches, match_flags=match_flags, recent_posts=recent_posts, series=recent_series)
 
 @app.route('/live-scores')
 def live_scores():
