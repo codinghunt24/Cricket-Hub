@@ -235,6 +235,7 @@ def init_models(db):
         views = db.Column(db.Integer, default=0)
         
         category_id = db.Column(db.Integer, db.ForeignKey('post_categories.id'), nullable=True)
+        match_id = db.Column(db.String(50), nullable=True)
         author = db.Column(db.String(100), default='Admin')
         
         published_at = db.Column(db.DateTime, nullable=True)

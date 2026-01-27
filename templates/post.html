@@ -82,6 +82,112 @@
                 {{ post.content|safe }}
             </div>
             
+            {% if post.match_id %}
+            <div class="live-scorecard-section">
+                <h3>Live Scorecard</h3>
+                <div id="liveScorecard" class="scorecard-container">
+                    <div class="scorecard-loading">Loading live scorecard...</div>
+                </div>
+            </div>
+            
+            <script>
+            (function() {
+                const matchId = "{{ post.match_id }}";
+                
+                function fetchScorecard() {
+                    fetch('/api/scorecard/' + matchId)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                renderScorecard(data);
+                            } else {
+                                document.getElementById('liveScorecard').innerHTML = '<div class="scorecard-error">Unable to load scorecard</div>';
+                            }
+                        })
+                        .catch(err => {
+                            document.getElementById('liveScorecard').innerHTML = '<div class="scorecard-error">Error loading scorecard</div>';
+                        });
+                }
+                
+                function renderScorecard(data) {
+                    const container = document.getElementById('liveScorecard');
+                    let html = '';
+                    
+                    html += '<div class="scorecard-header">';
+                    html += '<div class="match-info">';
+                    html += '<span class="team-name">' + (data.team1_name || 'Team 1') + '</span>';
+                    html += '<span class="score">' + (data.team1_score || '-') + '</span>';
+                    html += '</div>';
+                    html += '<div class="vs-text">vs</div>';
+                    html += '<div class="match-info">';
+                    html += '<span class="team-name">' + (data.team2_name || 'Team 2') + '</span>';
+                    html += '<span class="score">' + (data.team2_score || '-') + '</span>';
+                    html += '</div>';
+                    html += '</div>';
+                    
+                    if (data.result) {
+                        html += '<div class="match-result">' + data.result + '</div>';
+                    }
+                    
+                    if (data.batting_data && data.batting_data.length > 0) {
+                        data.batting_data.forEach(function(innings) {
+                            html += '<div class="innings-card">';
+                            html += '<h4>' + (innings.team || 'Batting') + ' Innings</h4>';
+                            html += '<table class="scorecard-table"><thead><tr>';
+                            html += '<th>Batter</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th>';
+                            html += '</tr></thead><tbody>';
+                            if (innings.batsmen) {
+                                innings.batsmen.forEach(function(b) {
+                                    html += '<tr>';
+                                    html += '<td><strong>' + b.name + '</strong><br><small>' + (b.dismissal || '') + '</small></td>';
+                                    html += '<td><strong>' + (b.runs || 0) + '</strong></td>';
+                                    html += '<td>' + (b.balls || 0) + '</td>';
+                                    html += '<td>' + (b.fours || 0) + '</td>';
+                                    html += '<td>' + (b.sixes || 0) + '</td>';
+                                    html += '<td>' + (b.strike_rate || '-') + '</td>';
+                                    html += '</tr>';
+                                });
+                            }
+                            html += '</tbody></table>';
+                            html += '</div>';
+                        });
+                    }
+                    
+                    if (data.bowling_data && data.bowling_data.length > 0) {
+                        data.bowling_data.forEach(function(innings) {
+                            html += '<div class="innings-card">';
+                            html += '<h4>' + (innings.team || 'Bowling') + ' Bowling</h4>';
+                            html += '<table class="scorecard-table"><thead><tr>';
+                            html += '<th>Bowler</th><th>O</th><th>M</th><th>R</th><th>W</th><th>Econ</th>';
+                            html += '</tr></thead><tbody>';
+                            if (innings.bowlers) {
+                                innings.bowlers.forEach(function(b) {
+                                    html += '<tr>';
+                                    html += '<td><strong>' + b.name + '</strong></td>';
+                                    html += '<td>' + (b.overs || 0) + '</td>';
+                                    html += '<td>' + (b.maidens || 0) + '</td>';
+                                    html += '<td>' + (b.runs || 0) + '</td>';
+                                    html += '<td><strong>' + (b.wickets || 0) + '</strong></td>';
+                                    html += '<td>' + (b.economy || '-') + '</td>';
+                                    html += '</tr>';
+                                });
+                            }
+                            html += '</tbody></table>';
+                            html += '</div>';
+                        });
+                    }
+                    
+                    html += '<div class="scorecard-footer">Last updated: ' + new Date().toLocaleTimeString() + '</div>';
+                    
+                    container.innerHTML = html;
+                }
+                
+                fetchScorecard();
+                setInterval(fetchScorecard, 30000);
+            })();
+            </script>
+            {% endif %}
+            
             <footer class="post-footer">
                 {% if post.meta_keywords %}
                 <div class="post-tags">
@@ -160,6 +266,28 @@
 .category-list li:last-child { border-bottom: none; }
 .category-list a { color: #333; text-decoration: none; font-size: 14px; }
 .category-list a:hover { color: #1a472a; }
+
+.live-scorecard-section { margin-top: 30px; padding: 25px; background: linear-gradient(135deg, #e8f5e9 0%, #fff 100%); border-radius: 12px; border: 2px solid #1a472a; }
+.live-scorecard-section h3 { color: #1a472a; margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px; }
+.live-scorecard-section h3:before { content: ''; width: 10px; height: 10px; background: #ff4444; border-radius: 50%; animation: blink 1.5s infinite; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.scorecard-container { min-height: 100px; }
+.scorecard-loading, .scorecard-error { text-align: center; padding: 40px; color: #666; }
+.scorecard-error { color: #d32f2f; }
+.scorecard-header { display: flex; justify-content: center; align-items: center; gap: 30px; padding: 20px; background: #fff; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.match-info { text-align: center; }
+.match-info .team-name { display: block; font-weight: 700; font-size: 18px; color: #1a472a; margin-bottom: 5px; }
+.match-info .score { display: block; font-size: 24px; font-weight: 800; color: #333; }
+.vs-text { font-size: 14px; color: #888; font-weight: 600; }
+.match-result { text-align: center; padding: 12px 20px; background: #1a472a; color: #fff; border-radius: 6px; margin-bottom: 20px; font-weight: 600; }
+.innings-card { background: #fff; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.innings-card h4 { margin: 0 0 15px 0; color: #1a472a; font-size: 16px; border-bottom: 2px solid #e8f5e9; padding-bottom: 10px; }
+.scorecard-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.scorecard-table th { background: #f8f9fa; padding: 10px 8px; text-align: left; font-weight: 600; color: #666; border-bottom: 2px solid #1a472a; }
+.scorecard-table td { padding: 10px 8px; border-bottom: 1px solid #eee; }
+.scorecard-table td small { color: #888; font-size: 12px; }
+.scorecard-table tr:hover { background: #f8fff8; }
+.scorecard-footer { text-align: center; padding-top: 15px; font-size: 12px; color: #888; border-top: 1px solid #eee; margin-top: 15px; }
 
 @media (max-width: 992px) {
     .post-container { flex-direction: column; }

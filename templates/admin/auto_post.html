@@ -1,0 +1,461 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Auto Post - Advanced SEO{% endblock %}
+{% block page_title %}Auto Post - Advanced SEO{% endblock %}
+
+{% block content %}
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
+<div class="auto-post-container">
+    <form id="autoPostForm">
+        <div class="form-layout">
+            <div class="main-content">
+                <div class="card">
+                    <h3>Post Details</h3>
+                    <div class="form-group">
+                        <label for="title">Post Title *</label>
+                        <input type="text" id="title" name="title" required placeholder="IND vs NZ Live Score Today - Dream11 Prediction">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="slug">URL Slug *</label>
+                        <div class="slug-preview">
+                            <span class="slug-prefix">/post/</span>
+                            <input type="text" id="slug" name="slug" required placeholder="ind-vs-nz-live-score-dream11">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Content</label>
+                        <div id="editor"></div>
+                        <input type="hidden" id="content" name="content">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="excerpt">Excerpt (Short Description)</label>
+                        <textarea id="excerpt" name="excerpt" rows="3" placeholder="Get live score, dream11 team prediction, pitch report for today's match..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Live Match Scorecard</h3>
+                    <p class="info-text">Select a match to embed real-time scorecard in your post. Scorecard will update automatically when users view the post.</p>
+                    
+                    <div class="match-type-selector">
+                        <button type="button" class="match-type-btn active" data-type="live">Live Matches</button>
+                        <button type="button" class="match-type-btn" data-type="upcoming">Upcoming Matches</button>
+                    </div>
+                    
+                    <div class="matches-container" id="matchesContainer">
+                        <div class="loading">Loading matches...</div>
+                    </div>
+                    
+                    <input type="hidden" id="match_id" name="match_id">
+                    <div id="selectedMatchInfo" class="selected-match-info"></div>
+                </div>
+            </div>
+            
+            <div class="sidebar-content">
+                <div class="card">
+                    <h3>Publish</h3>
+                    <div class="form-group">
+                        <label><input type="checkbox" id="is_published" name="is_published"> Published</label>
+                    </div>
+                    <div class="form-group">
+                        <label><input type="checkbox" id="is_featured" name="is_featured"> Featured Post</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Create Post</button>
+                </div>
+                
+                <div class="card">
+                    <h3>Category</h3>
+                    <div class="form-group">
+                        <select id="category_id" name="category_id">
+                            <option value="">Select Category</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if cat.slug == 'today-live-match' %}selected{% endif %}>{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="card seo-card">
+                    <h3>Advanced SEO Settings</h3>
+                    
+                    <div class="form-group">
+                        <label for="meta_title">Meta Title</label>
+                        <input type="text" id="meta_title" name="meta_title" placeholder="IND vs NZ Live Score | Dream11 Team Today">
+                        <div class="seo-meter">
+                            <div class="meter-bar" id="titleMeter"></div>
+                        </div>
+                        <small><span id="metaTitleCount">0</span>/60 characters - Google displays 50-60</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="meta_description">Meta Description</label>
+                        <textarea id="meta_description" name="meta_description" rows="3" placeholder="Get IND vs NZ live score updates, dream11 team prediction, pitch report, playing 11 and match preview for today's T20 match..."></textarea>
+                        <div class="seo-meter">
+                            <div class="meter-bar" id="descMeter"></div>
+                        </div>
+                        <small><span id="metaDescCount">0</span>/160 characters - Google displays 150-160</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Meta Keywords (Multiple)</label>
+                        <div class="keywords-container" id="keywordsContainer">
+                            <div class="keywords-input-wrapper">
+                                <input type="text" id="keywordInput" placeholder="Type keyword and press Enter">
+                                <button type="button" class="btn-add-keyword" id="addKeywordBtn">+</button>
+                            </div>
+                            <div class="keywords-tags" id="keywordsTags"></div>
+                            <input type="hidden" id="meta_keywords" name="meta_keywords">
+                        </div>
+                        <div class="suggested-keywords">
+                            <strong>Suggested Keywords:</strong>
+                            <div class="keyword-suggestions">
+                                <span class="suggestion" data-keyword="IND vs NZ live score">IND vs NZ live score</span>
+                                <span class="suggestion" data-keyword="IND vs NZ dream11 team">IND vs NZ dream11 team</span>
+                                <span class="suggestion" data-keyword="today match prediction">today match prediction</span>
+                                <span class="suggestion" data-keyword="pitch report">pitch report</span>
+                                <span class="suggestion" data-keyword="playing 11 today">playing 11 today</span>
+                                <span class="suggestion" data-keyword="live cricket score">live cricket score</span>
+                                <span class="suggestion" data-keyword="match preview">match preview</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="focus_keyword">Focus Keyword</label>
+                        <input type="text" id="focus_keyword" name="focus_keyword" placeholder="IND vs NZ live score">
+                        <small>Main keyword for SEO optimization</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="canonical_url">Canonical URL</label>
+                        <input type="text" id="canonical_url" name="canonical_url" placeholder="https://...">
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Open Graph (Social Media)</h3>
+                    <div class="form-group">
+                        <label for="og_title">OG Title</label>
+                        <input type="text" id="og_title" name="og_title" placeholder="Share title for Facebook/Twitter">
+                    </div>
+                    <div class="form-group">
+                        <label for="og_description">OG Description</label>
+                        <textarea id="og_description" name="og_description" rows="2" placeholder="Share description for social media"></textarea>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Thumbnail</h3>
+                    <div class="thumbnail-preview" id="thumbPreview">
+                        <span>No image selected</span>
+                    </div>
+                    <input type="file" id="thumbnailFile" accept="image/*" style="display:none">
+                    <input type="hidden" id="thumbnail" name="thumbnail">
+                    <button type="button" class="btn btn-secondary btn-block" onclick="document.getElementById('thumbnailFile').click()">Upload Image</button>
+                </div>
+                
+                <div class="card">
+                    <h3>Author</h3>
+                    <div class="form-group">
+                        <input type="text" id="author" name="author" value="Admin" placeholder="Author name">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+.auto-post-container { padding: 20px; }
+.form-layout { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+.card { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }
+.card h3 { margin: 0 0 20px 0; color: #1a472a; font-size: 16px; border-bottom: 2px solid #1a472a; padding-bottom: 10px; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #333; font-size: 14px; }
+.form-group input[type="text"], .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+.form-group input[type="checkbox"] { margin-right: 8px; }
+.form-group small { display: block; margin-top: 4px; color: #888; font-size: 12px; }
+.slug-preview { display: flex; align-items: center; }
+.slug-prefix { background: #f8f9fa; padding: 10px; border: 1px solid #ddd; border-right: none; border-radius: 4px 0 0 4px; color: #666; font-size: 14px; }
+.slug-preview input { border-radius: 0 4px 4px 0; }
+.btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
+.btn-primary { background: #1a472a; color: #fff; }
+.btn-primary:hover { background: #2d5a3d; }
+.btn-secondary { background: #6c757d; color: #fff; }
+.btn-block { width: 100%; }
+#editor { height: 300px; background: #fff; border-radius: 0 0 4px 4px; }
+.ql-toolbar { border-radius: 4px 4px 0 0; background: #f8f9fa; }
+.ql-container { border-radius: 0 0 4px 4px; font-size: 16px; }
+
+.match-type-selector { display: flex; gap: 10px; margin-bottom: 15px; }
+.match-type-btn { flex: 1; padding: 12px; border: 2px solid #1a472a; background: #fff; color: #1a472a; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+.match-type-btn.active { background: #1a472a; color: #fff; }
+.match-type-btn:hover { background: #2d5a3d; color: #fff; }
+
+.matches-container { max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; padding: 10px; }
+.match-item { display: flex; align-items: center; padding: 12px; border: 2px solid #eee; border-radius: 6px; margin-bottom: 8px; cursor: pointer; transition: all 0.3s; }
+.match-item:hover { border-color: #1a472a; background: #f8fff8; }
+.match-item.selected { border-color: #1a472a; background: #e8f5e9; }
+.match-item .teams { flex: 1; }
+.match-item .team { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+.match-item .vs { color: #888; font-size: 12px; margin: 2px 0; }
+.match-item .status { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.match-item .status.live { background: #ff4444; color: #fff; animation: pulse 1.5s infinite; }
+.match-item .status.upcoming { background: #2196f3; color: #fff; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+.selected-match-info { padding: 15px; background: #e8f5e9; border-radius: 6px; margin-top: 15px; display: none; }
+.selected-match-info.show { display: block; }
+.selected-match-info strong { color: #1a472a; }
+
+.info-text { color: #666; font-size: 14px; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px; border-left: 4px solid #1a472a; }
+
+.seo-card { background: linear-gradient(135deg, #fff 0%, #f0fff0 100%); }
+.seo-meter { height: 4px; background: #eee; border-radius: 2px; margin-top: 5px; overflow: hidden; }
+.meter-bar { height: 100%; background: #4caf50; transition: width 0.3s, background 0.3s; width: 0; }
+.meter-bar.warning { background: #ff9800; }
+.meter-bar.danger { background: #f44336; }
+
+.keywords-container { border: 1px solid #ddd; border-radius: 4px; padding: 10px; background: #f8f9fa; }
+.keywords-input-wrapper { display: flex; gap: 8px; margin-bottom: 10px; }
+.keywords-input-wrapper input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+.btn-add-keyword { width: 36px; height: 36px; background: #1a472a; color: #fff; border: none; border-radius: 4px; font-size: 20px; cursor: pointer; }
+.keywords-tags { display: flex; flex-wrap: wrap; gap: 8px; min-height: 30px; }
+.keyword-tag { display: inline-flex; align-items: center; gap: 5px; background: #1a472a; color: #fff; padding: 5px 10px; border-radius: 20px; font-size: 13px; }
+.keyword-tag .remove { cursor: pointer; font-weight: bold; margin-left: 5px; }
+
+.suggested-keywords { margin-top: 15px; padding: 10px; background: #fff; border-radius: 4px; }
+.suggested-keywords strong { display: block; margin-bottom: 8px; color: #1a472a; font-size: 13px; }
+.keyword-suggestions { display: flex; flex-wrap: wrap; gap: 8px; }
+.suggestion { background: #e8f5e9; color: #1a472a; padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.3s; border: 1px solid transparent; }
+.suggestion:hover { background: #1a472a; color: #fff; }
+
+.thumbnail-preview { width: 100%; height: 150px; background: #f8f9fa; border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; overflow: hidden; }
+.thumbnail-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+.loading { text-align: center; padding: 30px; color: #888; }
+.no-matches { text-align: center; padding: 30px; color: #888; font-style: italic; }
+
+@media (max-width: 1024px) {
+    .form-layout { grid-template-columns: 1fr; }
+}
+</style>
+
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script>
+var quill = new Quill('#editor', {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'align': [] }],
+            ['link', 'image'],
+            ['blockquote'],
+            ['clean']
+        ]
+    }
+});
+
+let keywords = [];
+let selectedMatchId = null;
+
+function loadMatches(type) {
+    const container = document.getElementById('matchesContainer');
+    container.innerHTML = '<div class="loading">Loading matches...</div>';
+    
+    fetch(`/api/live-matches?type=${type}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.matches && data.matches.length > 0) {
+                container.innerHTML = data.matches.map(match => `
+                    <div class="match-item" data-match-id="${match.match_id}" data-match-title="${match.team1_name} vs ${match.team2_name}">
+                        <div class="teams">
+                            <div class="team">
+                                <strong>${match.team1_name || 'TBA'}</strong>
+                                <span>${match.team1_score || ''}</span>
+                            </div>
+                            <div class="vs">vs</div>
+                            <div class="team">
+                                <strong>${match.team2_name || 'TBA'}</strong>
+                                <span>${match.team2_score || ''}</span>
+                            </div>
+                            <div style="font-size:12px;color:#666;margin-top:5px;">${match.series_name || match.match_format || ''}</div>
+                        </div>
+                        <span class="status ${type}">${type === 'live' ? 'LIVE' : 'UPCOMING'}</span>
+                    </div>
+                `).join('');
+                
+                document.querySelectorAll('.match-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        document.querySelectorAll('.match-item').forEach(i => i.classList.remove('selected'));
+                        this.classList.add('selected');
+                        selectedMatchId = this.dataset.matchId;
+                        document.getElementById('match_id').value = selectedMatchId;
+                        
+                        const matchTitle = this.dataset.matchTitle;
+                        document.getElementById('selectedMatchInfo').innerHTML = `
+                            <strong>Selected Match:</strong> ${matchTitle}<br>
+                            <small>Match ID: ${selectedMatchId} - Real-time scorecard will be shown in post</small>
+                        `;
+                        document.getElementById('selectedMatchInfo').classList.add('show');
+                    });
+                });
+            } else {
+                container.innerHTML = '<div class="no-matches">No matches found</div>';
+            }
+        })
+        .catch(err => {
+            container.innerHTML = '<div class="no-matches">Error loading matches</div>';
+        });
+}
+
+document.querySelectorAll('.match-type-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.match-type-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        loadMatches(this.dataset.type);
+    });
+});
+
+loadMatches('live');
+
+function addKeyword(keyword) {
+    keyword = keyword.trim();
+    if (keyword && !keywords.includes(keyword)) {
+        keywords.push(keyword);
+        renderKeywords();
+    }
+}
+
+function removeKeyword(keyword) {
+    keywords = keywords.filter(k => k !== keyword);
+    renderKeywords();
+}
+
+function renderKeywords() {
+    const container = document.getElementById('keywordsTags');
+    container.innerHTML = keywords.map(k => `
+        <span class="keyword-tag">${k}<span class="remove" onclick="removeKeyword('${k}')">&times;</span></span>
+    `).join('');
+    document.getElementById('meta_keywords').value = keywords.join(', ');
+}
+
+document.getElementById('keywordInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        addKeyword(this.value);
+        this.value = '';
+    }
+});
+
+document.getElementById('addKeywordBtn').addEventListener('click', function() {
+    const input = document.getElementById('keywordInput');
+    addKeyword(input.value);
+    input.value = '';
+});
+
+document.querySelectorAll('.suggestion').forEach(s => {
+    s.addEventListener('click', function() {
+        addKeyword(this.dataset.keyword);
+    });
+});
+
+document.getElementById('title').addEventListener('input', function() {
+    const slug = this.value.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+    document.getElementById('slug').value = slug;
+});
+
+function updateMeter(input, meter, max) {
+    const len = input.value.length;
+    const percent = Math.min((len / max) * 100, 100);
+    meter.style.width = percent + '%';
+    meter.classList.remove('warning', 'danger');
+    if (percent > 90) meter.classList.add('danger');
+    else if (percent > 70) meter.classList.add('warning');
+}
+
+document.getElementById('meta_title').addEventListener('input', function() {
+    document.getElementById('metaTitleCount').textContent = this.value.length;
+    updateMeter(this, document.getElementById('titleMeter'), 60);
+});
+
+document.getElementById('meta_description').addEventListener('input', function() {
+    document.getElementById('metaDescCount').textContent = this.value.length;
+    updateMeter(this, document.getElementById('descMeter'), 160);
+});
+
+document.getElementById('thumbnailFile').addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const result = await res.json();
+        if (result.success) {
+            document.getElementById('thumbnail').value = result.url;
+            document.getElementById('thumbPreview').innerHTML = `<img src="${result.url}" alt="">`;
+        } else {
+            alert(result.message || 'Upload failed');
+        }
+    } catch (err) {
+        alert('Upload error: ' + err.message);
+    }
+});
+
+document.getElementById('autoPostForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    document.getElementById('content').value = quill.root.innerHTML;
+    
+    const formData = {
+        title: document.getElementById('title').value,
+        slug: document.getElementById('slug').value,
+        content: document.getElementById('content').value,
+        excerpt: document.getElementById('excerpt').value,
+        thumbnail: document.getElementById('thumbnail').value,
+        category_id: document.getElementById('category_id').value || null,
+        match_id: document.getElementById('match_id').value || null,
+        is_published: document.getElementById('is_published').checked,
+        is_featured: document.getElementById('is_featured').checked,
+        meta_title: document.getElementById('meta_title').value,
+        meta_description: document.getElementById('meta_description').value,
+        meta_keywords: document.getElementById('meta_keywords').value,
+        canonical_url: document.getElementById('canonical_url').value,
+        og_title: document.getElementById('og_title').value,
+        og_description: document.getElementById('og_description').value,
+        author: document.getElementById('author').value
+    };
+    
+    try {
+        const res = await fetch('/api/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        const result = await res.json();
+        if (result.success) {
+            alert('Post created successfully!');
+            window.location.href = '/admin/posts';
+        } else {
+            alert(result.message || 'Error saving post');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+});
+</script>
+{% endblock %}

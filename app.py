@@ -2346,6 +2346,37 @@ def admin_post_edit(post_id):
     categories = PostCategory.query.order_by(PostCategory.name).all()
     return render_template('admin/post_edit.html', post=post, categories=categories)
 
+@app.route('/admin/auto-post')
+def admin_auto_post():
+    categories = PostCategory.query.order_by(PostCategory.name).all()
+    return render_template('admin/auto_post.html', categories=categories)
+
+@app.route('/api/live-matches')
+def api_live_matches():
+    match_type = request.args.get('type', 'live')
+    try:
+        if match_type == 'live':
+            matches = Match.query.filter(Match.state == 'live').order_by(Match.updated_at.desc()).all()
+        else:
+            matches = Match.query.filter(Match.state == 'upcoming').order_by(Match.match_date).all()
+        
+        result = []
+        for m in matches:
+            result.append({
+                'match_id': m.match_id,
+                'team1_name': m.team1_name,
+                'team2_name': m.team2_name,
+                'team1_score': m.team1_score,
+                'team2_score': m.team2_score,
+                'match_format': m.match_format,
+                'series_name': m.series_name,
+                'state': m.state,
+                'result': m.result
+            })
+        return jsonify({'matches': result})
+    except Exception as e:
+        return jsonify({'matches': [], 'error': str(e)})
+
 @app.route('/api/categories', methods=['POST'])
 def api_create_category():
     try:
@@ -2423,6 +2454,7 @@ def api_create_post():
             excerpt=data.get('excerpt', ''),
             thumbnail=data.get('thumbnail', ''),
             category_id=data.get('category_id') if data.get('category_id') else None,
+            match_id=data.get('match_id') if data.get('match_id') else None,
             is_published=data.get('is_published', False),
             is_featured=data.get('is_featured', False),
             meta_title=data.get('meta_title', ''),
@@ -2543,6 +2575,73 @@ def inject_navbar_categories():
         return dict(nav_categories=nav_categories)
     except:
         return dict(nav_categories=[])
+
+@app.route('/api/scorecard/<match_id>')
+def api_get_scorecard(match_id):
+    try:
+        from scraper import scrape_scorecard
+        
+        match = Match.query.filter_by(match_id=match_id).first()
+        
+        scorecard_data = scrape_scorecard(match_id)
+        
+        if not scorecard_data:
+            if match:
+                return jsonify({
+                    'success': True,
+                    'team1_name': match.team1_name,
+                    'team2_name': match.team2_name,
+                    'team1_score': match.team1_score,
+                    'team2_score': match.team2_score,
+                    'result': match.result,
+                    'batting_data': match.batting_data or [],
+                    'bowling_data': match.bowling_data or []
+                })
+            return jsonify({'success': False, 'message': 'Unable to fetch scorecard'})
+        
+        innings = scorecard_data.get('innings', [])
+        batting_data = []
+        bowling_data = []
+        
+        for inning in innings:
+            batting_data.append({
+                'team': inning.get('team', ''),
+                'batsmen': inning.get('batsmen', [])
+            })
+            bowling_data.append({
+                'team': inning.get('team', ''),
+                'bowlers': inning.get('bowlers', [])
+            })
+        
+        team1_name = scorecard_data.get('team1_name') or (match.team1_name if match else '')
+        team2_name = scorecard_data.get('team2_name') or (match.team2_name if match else '')
+        team1_score = scorecard_data.get('team1_score') or (match.team1_score if match else '')
+        team2_score = scorecard_data.get('team2_score') or (match.team2_score if match else '')
+        result = scorecard_data.get('result') or (match.result if match else '')
+        
+        if match:
+            match.team1_name = team1_name
+            match.team2_name = team2_name
+            match.team1_score = team1_score
+            match.team2_score = team2_score
+            match.result = result
+            match.batting_data = batting_data
+            match.bowling_data = bowling_data
+            db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'team1_name': team1_name,
+            'team2_name': team2_name,
+            'team1_score': team1_score,
+            'team2_score': team2_score,
+            'result': result,
+            'batting_data': batting_data,
+            'bowling_data': bowling_data
+        })
+    except Exception as e:
+        logging.error(f"Error fetching scorecard: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)})
 
 if __name__ == '__main__':
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'

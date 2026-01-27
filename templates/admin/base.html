@@ -68,6 +68,12 @@
                             <span class="sidebar-text">Categories</span>
                         </a>
                     </li>
+                    <li class="sidebar-item {% if '/admin/auto-post' in request.path %}active{% endif %}">
+                        <a href="/admin/auto-post" class="sidebar-link">
+                            <span class="sidebar-icon">&#128640;</span>
+                            <span class="sidebar-text">Auto Post</span>
+                        </a>
+                    </li>
                     <li class="sidebar-item {% if request.path == '/admin/settings' %}active{% endif %}">
                         <a href="/admin/settings" class="sidebar-link">
                             <span class="sidebar-icon">&#9881;</span>
