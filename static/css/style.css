@@ -339,7 +339,16 @@ body {
     
     .sub-navbar {
         overflow-x: auto;
+        overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .sub-navbar::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
     }
     
     .sub-navbar .nav-container {
@@ -351,6 +360,12 @@ body {
         gap: 5px;
         flex-wrap: nowrap;
         white-space: nowrap;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .sub-nav-menu::-webkit-scrollbar {
+        display: none;
     }
     
     .sub-nav-menu li a {

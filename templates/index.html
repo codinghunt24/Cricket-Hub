@@ -169,15 +169,21 @@
     color: #555;
 }
 
+.slider-wrapper {
+    overflow: hidden;
+    margin: 0 -15px;
+    padding: 0 15px;
+}
+
 .matches-slider {
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    padding-bottom: 0;
+    padding-bottom: 15px;
+    margin-bottom: -15px;
     cursor: grab;
-    margin-bottom: 10px;
 }
 
 .matches-slider::-webkit-scrollbar {
