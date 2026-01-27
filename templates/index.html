@@ -10,7 +10,7 @@
             <div class="matches-slider">
                 <div class="slider-track">
                 {% for match in matches %}
-                <div class="match-card">
+                <div class="match-card" data-match-id="{{ match.match_id }}" onclick="loadScorecard('{{ match.match_id }}')">
                     <div class="card-header">
                         <span class="series-name">{{ match.match_format or 'Match' }}</span>
                         <span class="status-badge {% if match.state == 'Live' %}live{% elif match.state == 'Innings Break' %}innings{% elif match.state == 'Complete' %}complete{% else %}upcoming{% endif %}">
@@ -60,8 +60,9 @@
 
 <section class="main-container">
     <div class="content-wrapper">
-        <!-- Recent News - Separate Box -->
-        <div class="news-box">
+        <!-- Recent News / Scorecard - Separate Box -->
+        <div class="news-box" id="content-box">
+            <div id="news-content">
             <h3>Recent News</h3>
             {% if recent_posts %}
             <div class="news-grid">
@@ -82,6 +83,8 @@
             {% else %}
             <p class="placeholder-text">No news available yet</p>
             {% endif %}
+            </div>
+            <div id="scorecard-content" style="display: none;"></div>
         </div>
         
         <!-- Top Stories + Quick Links - Together -->
@@ -787,6 +790,177 @@
 .sidebar-list a:hover {
     text-decoration: underline;
 }
+
+.match-card {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.match-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+
+.match-card.active {
+    border: 2px solid #1a472a;
+}
+
+/* Scorecard Styles */
+.scorecard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #1a472a;
+}
+
+.scorecard-header h3 {
+    margin: 0;
+    color: #1a472a;
+    font-size: 1.1rem;
+    border: none;
+    padding: 0;
+}
+
+.back-to-news {
+    background: #1a472a;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.back-to-news:hover {
+    background: #2d5a3d;
+}
+
+.scorecard-match-info {
+    background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+    color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.scorecard-match-info .match-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.scorecard-match-info .match-venue {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+.scorecard-match-info .match-result-text {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #90EE90;
+}
+
+.innings-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.innings-header {
+    background: #2d5a3d;
+    color: #fff;
+    padding: 10px 15px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+}
+
+.innings-body {
+    padding: 10px 15px;
+}
+
+.batting-table, .bowling-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+}
+
+.batting-table th, .bowling-table th {
+    text-align: left;
+    padding: 8px 5px;
+    background: #e9ecef;
+    font-weight: 600;
+    color: #333;
+}
+
+.batting-table td, .bowling-table td {
+    padding: 8px 5px;
+    border-bottom: 1px solid #eee;
+}
+
+.batting-table .player-name, .bowling-table .player-name {
+    font-weight: 500;
+    color: #1a472a;
+}
+
+.batting-table .runs, .bowling-table .wickets {
+    font-weight: 700;
+    color: #222;
+}
+
+.batting-table .dismissal {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.extras-row, .total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 0.85rem;
+}
+
+.total-row {
+    font-weight: 700;
+    border-top: 2px solid #ddd;
+    margin-top: 5px;
+    padding-top: 10px;
+}
+
+.section-title {
+    font-weight: 600;
+    color: #1a472a;
+    margin: 15px 0 8px 0;
+    font-size: 0.9rem;
+}
+
+.scorecard-loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.scorecard-loading i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #1a472a;
+}
+
+@media (max-width: 576px) {
+    .batting-table, .bowling-table {
+        font-size: 0.75rem;
+    }
+    
+    .batting-table th, .batting-table td,
+    .bowling-table th, .bowling-table td {
+        padding: 6px 3px;
+    }
+}
 </style>
 
 <script>
@@ -797,9 +971,11 @@ document.addEventListener('DOMContentLoaded', function() {
         let isDown = false;
         let startX;
         let scrollLeft;
+        let isDragging = false;
         
         slider.addEventListener('mousedown', (e) => {
             isDown = true;
+            isDragging = false;
             slider.style.cursor = 'grabbing';
             startX = e.pageX - slider.offsetLeft;
             scrollLeft = slider.scrollLeft;
@@ -818,11 +994,193 @@ document.addEventListener('DOMContentLoaded', function() {
         slider.addEventListener('mousemove', (e) => {
             if (!isDown) return;
             e.preventDefault();
+            isDragging = true;
             const x = e.pageX - slider.offsetLeft;
             const walk = (x - startX) * 2;
             slider.scrollLeft = scrollLeft - walk;
         });
+        
+        slider.addEventListener('click', (e) => {
+            if (isDragging) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+        }, true);
     });
 });
+
+async function loadScorecard(matchId) {
+    const newsContent = document.getElementById('news-content');
+    const scorecardContent = document.getElementById('scorecard-content');
+    
+    document.querySelectorAll('.match-card').forEach(card => {
+        card.classList.remove('active');
+        if (card.dataset.matchId === matchId) {
+            card.classList.add('active');
+        }
+    });
+    
+    newsContent.style.display = 'none';
+    scorecardContent.style.display = 'block';
+    scorecardContent.innerHTML = `
+        <div class="scorecard-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading scorecard...</p>
+        </div>
+    `;
+    
+    document.getElementById('content-box').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    try {
+        const response = await fetch('/api/scrape/scorecard', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ match_id: matchId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displayScorecard(data.scorecard);
+        } else {
+            scorecardContent.innerHTML = `
+                <div class="scorecard-header">
+                    <h3>Scorecard</h3>
+                    <button class="back-to-news" onclick="showNews()">← Back to News</button>
+                </div>
+                <div class="scorecard-loading">
+                    <p>Unable to load scorecard. Please try again.</p>
+                </div>
+            `;
+        }
+    } catch (err) {
+        scorecardContent.innerHTML = `
+            <div class="scorecard-header">
+                <h3>Scorecard</h3>
+                <button class="back-to-news" onclick="showNews()">← Back to News</button>
+            </div>
+            <div class="scorecard-loading">
+                <p>Error loading scorecard.</p>
+            </div>
+        `;
+    }
+}
+
+function displayScorecard(scorecard) {
+    const scorecardContent = document.getElementById('scorecard-content');
+    
+    let html = `
+        <div class="scorecard-header">
+            <h3>Live Scorecard</h3>
+            <button class="back-to-news" onclick="showNews()">← Back to News</button>
+        </div>
+        <div class="scorecard-match-info">
+            <div class="match-title">${scorecard.team1_name || 'Team 1'} vs ${scorecard.team2_name || 'Team 2'}</div>
+            <div class="match-venue">${scorecard.venue || ''}</div>
+            ${scorecard.result ? `<div class="match-result-text">${scorecard.result}</div>` : ''}
+        </div>
+    `;
+    
+    if (scorecard.innings && scorecard.innings.length > 0) {
+        scorecard.innings.forEach((inning, idx) => {
+            html += `
+                <div class="innings-card">
+                    <div class="innings-header">
+                        <span>${inning.team_name || 'Team'} - Innings ${idx + 1}</span>
+                        <span>${inning.total_score || '0'}/${inning.wickets || '0'} (${inning.overs || '0'} Ov)</span>
+                    </div>
+                    <div class="innings-body">
+            `;
+            
+            if (inning.batting && inning.batting.length > 0) {
+                html += `
+                    <div class="section-title">Batting</div>
+                    <table class="batting-table">
+                        <thead>
+                            <tr>
+                                <th>Batter</th>
+                                <th>R</th>
+                                <th>B</th>
+                                <th>4s</th>
+                                <th>6s</th>
+                                <th>SR</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                inning.batting.forEach(batter => {
+                    html += `
+                        <tr>
+                            <td>
+                                <span class="player-name">${batter.name || ''}</span>
+                                <div class="dismissal">${batter.dismissal || ''}</div>
+                            </td>
+                            <td class="runs">${batter.runs || '0'}</td>
+                            <td>${batter.balls || '0'}</td>
+                            <td>${batter.fours || '0'}</td>
+                            <td>${batter.sixes || '0'}</td>
+                            <td>${batter.strike_rate || '0'}</td>
+                        </tr>
+                    `;
+                });
+                html += `</tbody></table>`;
+            }
+            
+            if (inning.extras) {
+                html += `<div class="extras-row"><span>Extras</span><span>${inning.extras}</span></div>`;
+            }
+            html += `<div class="total-row"><span>Total</span><span>${inning.total_score || '0'}/${inning.wickets || '0'} (${inning.overs || '0'} Ov)</span></div>`;
+            
+            if (inning.bowling && inning.bowling.length > 0) {
+                html += `
+                    <div class="section-title">Bowling</div>
+                    <table class="bowling-table">
+                        <thead>
+                            <tr>
+                                <th>Bowler</th>
+                                <th>O</th>
+                                <th>M</th>
+                                <th>R</th>
+                                <th>W</th>
+                                <th>Eco</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                inning.bowling.forEach(bowler => {
+                    html += `
+                        <tr>
+                            <td class="player-name">${bowler.name || ''}</td>
+                            <td>${bowler.overs || '0'}</td>
+                            <td>${bowler.maidens || '0'}</td>
+                            <td>${bowler.runs || '0'}</td>
+                            <td class="wickets">${bowler.wickets || '0'}</td>
+                            <td>${bowler.economy || '0'}</td>
+                        </tr>
+                    `;
+                });
+                html += `</tbody></table>`;
+            }
+            
+            html += `</div></div>`;
+        });
+    } else {
+        html += `<div class="scorecard-loading"><p>No innings data available yet.</p></div>`;
+    }
+    
+    scorecardContent.innerHTML = html;
+}
+
+function showNews() {
+    const newsContent = document.getElementById('news-content');
+    const scorecardContent = document.getElementById('scorecard-content');
+    
+    newsContent.style.display = 'block';
+    scorecardContent.style.display = 'none';
+    
+    document.querySelectorAll('.match-card').forEach(card => {
+        card.classList.remove('active');
+    });
+}
 </script>
 {% endblock %}
