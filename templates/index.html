@@ -39,7 +39,7 @@
                             </div>
                         </div>
                         {% if match.result %}
-                        <div class="match-result">{{ match.result }}</div>
+                        <div class="match-result {% if 'won' in match.result.lower() or 'win' in match.result.lower() %}result-won{% elif 'need' in match.result.lower() %}result-need{% elif 'match starts' in match.result.lower() or 'start' in match.result.lower() %}result-upcoming{% endif %}">{{ match.result }}</div>
                         {% endif %}
                     </div>
                 </div>
@@ -482,6 +482,18 @@
     margin-top: 2px;
     margin-bottom: 0;
     line-height: 1.2;
+}
+
+.match-result.result-won {
+    color: #2196F3;
+}
+
+.match-result.result-need {
+    color: #e53935;
+}
+
+.match-result.result-upcoming {
+    color: #FF9800;
 }
 
 .match-date {
