@@ -166,17 +166,30 @@
 }
 
 .matches-slider {
-    overflow-x: scroll;
+    overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
     padding-bottom: 5px;
     cursor: grab;
 }
 
 .matches-slider::-webkit-scrollbar {
-    display: none;
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+.matches-slider::-webkit-scrollbar-thumb {
+    display: none !important;
+    background: transparent !important;
+}
+
+.matches-slider::-webkit-scrollbar-track {
+    display: none !important;
+    background: transparent !important;
 }
 
 .matches-slider:active {
@@ -380,6 +393,18 @@
 @media (max-width: 768px) {
     .matches-section {
         padding: 10px 8px;
+    }
+    
+    .matches-slider {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .matches-slider::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
     }
     
     .match-card {
