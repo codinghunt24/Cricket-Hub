@@ -7,6 +7,13 @@
 <div class="admin-page">
     <div class="scrape-tab">
         <div class="url-input-group">
+            <select id="series-type" class="url-select" onchange="updateSeriesUrl()">
+                <option value="all">All Series</option>
+                <option value="international" selected>International</option>
+                <option value="domestic">Domestic</option>
+                <option value="league">T20 Leagues</option>
+                <option value="women">Women</option>
+            </select>
             <input type="text" id="series-url" class="url-input" 
                    value="https://www.cricbuzz.com/cricket-schedule/series/international" 
                    placeholder="Enter Cricbuzz series URL">
@@ -43,6 +50,22 @@
     display: flex;
     gap: 10px;
     align-items: center;
+}
+
+.url-select {
+    padding: 8px 12px;
+    background: #111827;
+    border: 1px solid #374151;
+    border-radius: 4px;
+    color: #e4e4e7;
+    font-size: 12px;
+    cursor: pointer;
+    min-width: 140px;
+}
+
+.url-select:focus {
+    outline: none;
+    border-color: #10b981;
 }
 
 .url-input {
@@ -435,6 +458,13 @@
 let seriesData = [];
 let matchesData = {};
 let currentSeriesUrl = '';
+
+function updateSeriesUrl() {
+    const select = document.getElementById('series-type');
+    const urlInput = document.getElementById('series-url');
+    const type = select.value;
+    urlInput.value = 'https://www.cricbuzz.com/cricket-schedule/series/' + type;
+}
 
 async function saveAllToDb() {
     const btn = document.getElementById('btn-save-all');
