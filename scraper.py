@@ -399,6 +399,7 @@ def scrape_live_scores():
             status = 'Live'
         
         # Extract team names and match format from title
+        # Title format: "England vs Sri Lanka, 3rd ODI - ENG opt to bat"
         teams = ''
         match_format = ''
         if ' - ' in title:
@@ -410,15 +411,31 @@ def scrape_live_scores():
         else:
             teams = title.strip()
         
+        # Extract match format from title (e.g., "3rd ODI", "1st T20I", "16th Match")
+        format_match = re.search(r',\s*(\d+(?:st|nd|rd|th)\s+(?:ODI|T20I?|Test|T10|Match)[^,\-]*)', title, re.IGNORECASE)
+        if format_match:
+            match_format = format_match.group(1).strip()
+        else:
+            # Try alternate patterns for finals, semi-finals, etc.
+            alt_format = re.search(r',\s*(Final|Semi[- ]?[Ff]inal|Quarter[- ]?[Ff]inal|Play[- ]?off|Qualifier|Group\s+[A-Z0-9]+)[^,\-]*', title, re.IGNORECASE)
+            if alt_format:
+                match_format = alt_format.group(1).strip()
+            else:
+                # Try to extract from Super Six format
+                super_match = re.search(r',\s*(\d+(?:st|nd|rd|th)\s+Match[^,\-]*)', title, re.IGNORECASE)
+                if super_match:
+                    match_format = super_match.group(1).strip()
+        
         # Try to get teams from div text
         team_div = link.find('div', class_='text-white')
         if team_div:
             teams = team_div.get_text(strip=True)
         
-        # Try to get match format from format div
-        format_div = link.find('div', class_=re.compile(r'text-xs'))
-        if format_div:
-            match_format = format_div.get_text(strip=True)
+        # Try to get match format from format div if not found in title
+        if not match_format:
+            format_div = link.find('div', class_=re.compile(r'text-xs'))
+            if format_div:
+                match_format = format_div.get_text(strip=True)
         
         # Split teams
         team1 = ''
@@ -443,6 +460,19 @@ def scrape_live_scores():
         team1_score = ''
         team2_score = ''
         
+        # Extract result/status text from title (e.g., "ENG opt to bat", "India won by 5 wkts")
+        result_text = ''
+        if ' - ' in title:
+            parts = title.split(' - ')
+            if len(parts) > 1:
+                result_text = parts[-1].strip()
+                # Remove "Live", "Preview", "Upcoming" etc. from result
+                if result_text.lower() in ['live', 'preview', 'upcoming', 'scheduled', 'undefined']:
+                    result_text = ''
+        
+        # Log for verification
+        logger.info(f"Match ID: {match_id} | Format: {match_format} | Teams: {team1} vs {team2} | Result: {result_text}")
+        
         match_data = {
             'match_id': match_id,
             'team1': team1,
@@ -450,6 +480,7 @@ def scrape_live_scores():
             'teams': teams,
             'match_format': match_format,
             'status': status,
+            'result': result_text,
             'match_url': BASE_URL + href,
             'series_id': series_id,
             'series_name': series_name or series_map.get(series_id, ''),
