@@ -117,10 +117,12 @@
 .matches-section {
     padding: 20px 0 0 0;
     margin-bottom: 0;
+    overflow: hidden;
 }
 
 .match-category {
     margin-bottom: 1px;
+    overflow: hidden;
 }
 
 .category-header {
@@ -169,27 +171,22 @@
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
-    padding-bottom: 5px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 0;
     cursor: grab;
+    margin-bottom: 10px;
 }
 
 .matches-slider::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
-    background: transparent !important;
+    display: none;
+    width: 0;
+    height: 0;
 }
 
-.matches-slider::-webkit-scrollbar-thumb {
-    display: none !important;
-    background: transparent !important;
-}
-
-.matches-slider::-webkit-scrollbar-track {
-    display: none !important;
-    background: transparent !important;
+.matches-slider * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .matches-slider:active {
@@ -392,19 +389,32 @@
 
 @media (max-width: 768px) {
     .matches-section {
-        padding: 10px 8px;
+        padding: 10px 0;
+        overflow: hidden;
+    }
+    
+    .match-category {
+        overflow: hidden;
+        padding: 0 8px;
     }
     
     .matches-slider {
-        scrollbar-width: none !important;
-        -ms-overflow-style: none !important;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
         -webkit-overflow-scrolling: touch;
+        overflow-x: scroll;
+        overflow-y: hidden;
     }
     
     .matches-slider::-webkit-scrollbar {
-        display: none !important;
-        width: 0 !important;
-        height: 0 !important;
+        display: none;
+        width: 0px;
+        height: 0px;
+        background: transparent;
+    }
+    
+    .slider-track {
+        padding: 5px 0;
     }
     
     .match-card {
