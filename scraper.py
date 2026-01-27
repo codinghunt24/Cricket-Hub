@@ -2016,6 +2016,22 @@ def scrape_scorecard(match_id):
     venue_id_match = re.search(r'"venueInfo"\s*:\s*\{[^}]*"id"\s*:\s*(\d+)', html)
     
     soup = BeautifulSoup(html, 'html.parser')
+    
+    # Extract team names from JSON data in HTML
+    team1_name_match = re.search(r'"team1"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', html)
+    team2_name_match = re.search(r'"team2"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', html)
+    team1_name = team1_name_match.group(1) if team1_name_match else ''
+    team2_name = team2_name_match.group(1) if team2_name_match else ''
+    
+    # Also try from title
+    if not team1_name or not team2_name:
+        title_match = re.search(r'([A-Za-z\s]+)\s+vs\s+([A-Za-z\s]+)', str(soup.title) if soup.title else '')
+        if title_match:
+            if not team1_name:
+                team1_name = title_match.group(1).strip()
+            if not team2_name:
+                team2_name = title_match.group(2).strip()
+    
     scorecard = {
         # PRIMARY IDs - Required for verification
         'match_id': verified_match_id,
@@ -2023,10 +2039,14 @@ def scrape_scorecard(match_id):
         'team1_id': team1_id_match.group(1) if team1_id_match else '',
         'team2_id': team2_id_match.group(1) if team2_id_match else '',
         'venue_id': venue_id_match.group(1) if venue_id_match else '',
+        # Team names
+        'team1_name': team1_name,
+        'team2_name': team2_name,
         # Scorecard data
         'innings': [],
         'venue': '',
-        'match_date': ''
+        'match_date': '',
+        'result': ''
     }
     
     venue_link = soup.find('a', href=lambda h: h and '/cricket-series/' in h and '/venues/' in h)
@@ -2049,15 +2069,30 @@ def scrape_scorecard(match_id):
     page_text = soup.get_text()
     html_content = str(soup)
     
-    result_match = re.search(r'(India|New Zealand|Australia|England|South Africa|Pakistan|Sri Lanka|West Indies|Bangladesh|Afghanistan|Ireland|Zimbabwe|Scotland|Netherlands|Nepal|UAE|Oman|USA) won by (\d+ (?:runs?|wkts?))', html_content, re.IGNORECASE)
-    if result_match:
-        scorecard['result'] = f"{result_match.group(1)} won by {result_match.group(2)}"
-    elif 'Match drawn' in html_content:
-        scorecard['result'] = "Match drawn"
-    elif 'Match tied' in html_content:
-        scorecard['result'] = "Match tied"
-    elif 'No result' in html_content:
-        scorecard['result'] = "No result"
+    # Extract result from JSON data first (more accurate)
+    result_json = re.search(r'"status"\s*:\s*"([^"]*)"', html)
+    if result_json:
+        status_text = result_json.group(1)
+        if 'won' in status_text.lower() or 'need' in status_text.lower() or 'Match' in status_text:
+            scorecard['result'] = status_text
+    
+    # Fallback to HTML parsing
+    if not scorecard.get('result'):
+        result_div = soup.find('div', class_=lambda c: c and 'cb-col-100' in c and 'cb-min-stts' in c if c else False)
+        if result_div:
+            scorecard['result'] = result_div.get_text(strip=True)
+    
+    # Further fallback
+    if not scorecard.get('result'):
+        result_match = re.search(rf'({re.escape(team1_name)}|{re.escape(team2_name)}) won by (\d+ (?:runs?|wkts?))', html_content, re.IGNORECASE)
+        if result_match:
+            scorecard['result'] = f"{result_match.group(1)} won by {result_match.group(2)}"
+        elif 'Match drawn' in html_content:
+            scorecard['result'] = "Match drawn"
+        elif 'Match tied' in html_content:
+            scorecard['result'] = "Match tied"
+        elif 'No result' in html_content:
+            scorecard['result'] = "No result"
     
     innings_headers = soup.find_all('div', id=lambda x: x and x.startswith('team-') and '-innings-' in x and not x.startswith('scard-') and not x.startswith('caret-'))
     
