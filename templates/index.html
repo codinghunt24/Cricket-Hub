@@ -6,8 +6,9 @@
 <section class="matches-section">
     {% if matches %}
     <div class="match-category">
-        <div class="matches-slider">
-            <div class="slider-track">
+        <div class="slider-wrapper">
+            <div class="matches-slider">
+                <div class="slider-track">
                 {% for match in matches %}
                 <div class="match-card">
                     <div class="card-header">
@@ -43,6 +44,7 @@
                     </div>
                 </div>
                 {% endfor %}
+                </div>
             </div>
         </div>
     </div>
