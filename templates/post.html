@@ -169,6 +169,46 @@
                     <div class="scorecard-footer">Scorecard updates on page refresh</div>
                 </div>
             </div>
+            
+            <div class="faq-section">
+                <h2>Frequently Asked Questions (FAQs)</h2>
+                <div class="faq-container" itemscope itemtype="https://schema.org/FAQPage">
+                    <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                        <h3 class="faq-question" itemprop="name">Who won the {{ scorecard.team1_name }} vs {{ scorecard.team2_name }} match?</h3>
+                        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                            <p itemprop="text">{{ scorecard.result }}. {{ scorecard.team1_name }} scored {{ scorecard.team1_score }} while {{ scorecard.team2_name }} scored {{ scorecard.team2_score }}.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                        <h3 class="faq-question" itemprop="name">What was the score of {{ scorecard.team1_name }} in today's match?</h3>
+                        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                            <p itemprop="text">{{ scorecard.team1_name }} scored {{ scorecard.team1_score }} in this match against {{ scorecard.team2_name }}.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                        <h3 class="faq-question" itemprop="name">What was the score of {{ scorecard.team2_name }} in today's match?</h3>
+                        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                            <p itemprop="text">{{ scorecard.team2_name }} scored {{ scorecard.team2_score }} in this match against {{ scorecard.team1_name }}.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                        <h3 class="faq-question" itemprop="name">Where can I watch {{ scorecard.team1_name }} vs {{ scorecard.team2_name }} live?</h3>
+                        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                            <p itemprop="text">You can watch {{ scorecard.team1_name }} vs {{ scorecard.team2_name }} live on official broadcast partners. For live score updates, visit CricLive for ball-by-ball commentary and real-time scorecard.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                        <h3 class="faq-question" itemprop="name">What is the live score of {{ scorecard.team1_name }} vs {{ scorecard.team2_name }}?</h3>
+                        <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                            <p itemprop="text">The current score is {{ scorecard.team1_name }}: {{ scorecard.team1_score }} and {{ scorecard.team2_name }}: {{ scorecard.team2_score }}. Refresh the page for latest updates.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {% endif %}
             
             <footer class="post-footer">
@@ -271,6 +311,14 @@
 .scorecard-table td small { color: #888; font-size: 12px; }
 .scorecard-table tr:hover { background: #f8fff8; }
 .scorecard-footer { text-align: center; padding-top: 15px; font-size: 12px; color: #888; border-top: 1px solid #eee; margin-top: 15px; }
+
+.faq-section { margin-top: 30px; padding: 25px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.faq-section h2 { color: #1a472a; font-size: 1.5rem; margin: 0 0 20px 0; padding-bottom: 15px; border-bottom: 3px solid #1a472a; }
+.faq-container { display: flex; flex-direction: column; gap: 15px; }
+.faq-item { background: #f8f9fa; border-radius: 8px; padding: 18px; border-left: 4px solid #1a472a; transition: all 0.3s ease; }
+.faq-item:hover { background: #e8f5e9; box-shadow: 0 2px 8px rgba(26,71,42,0.15); }
+.faq-question { color: #1a472a; font-size: 1rem; font-weight: 600; margin: 0 0 10px 0; line-height: 1.4; }
+.faq-answer p { color: #555; font-size: 15px; line-height: 1.6; margin: 0; }
 
 @media (max-width: 992px) {
     .post-container { flex-direction: column; }
