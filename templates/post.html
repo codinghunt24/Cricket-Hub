@@ -82,110 +82,93 @@
                 {{ post.content|safe }}
             </div>
             
-            {% if post.match_id %}
+            {% if scorecard %}
             <div class="live-scorecard-section">
                 <h3>Live Scorecard</h3>
-                <div id="liveScorecard" class="scorecard-container">
-                    <div class="scorecard-loading">Loading live scorecard...</div>
+                <div class="scorecard-container">
+                    <div class="scorecard-header">
+                        <div class="match-info">
+                            <span class="team-name">{{ scorecard.team1_name or 'Team 1' }}</span>
+                            <span class="score">{{ scorecard.team1_score or '-' }}</span>
+                        </div>
+                        <div class="vs-text">vs</div>
+                        <div class="match-info">
+                            <span class="team-name">{{ scorecard.team2_name or 'Team 2' }}</span>
+                            <span class="score">{{ scorecard.team2_score or '-' }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if scorecard.result %}
+                    <div class="match-result">{{ scorecard.result }}</div>
+                    {% endif %}
+                    
+                    {% if scorecard.batting_data %}
+                    {% for innings in scorecard.batting_data %}
+                    <div class="innings-card">
+                        <h4>{{ innings.team or 'Batting' }} Innings</h4>
+                        <table class="scorecard-table">
+                            <thead>
+                                <tr>
+                                    <th>Batter</th>
+                                    <th>R</th>
+                                    <th>B</th>
+                                    <th>4s</th>
+                                    <th>6s</th>
+                                    <th>SR</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for b in innings.batsmen %}
+                                <tr>
+                                    <td><strong>{{ b.name }}</strong><br><small>{{ b.dismissal or '' }}</small></td>
+                                    <td><strong>{{ b.runs or 0 }}</strong></td>
+                                    <td>{{ b.balls or 0 }}</td>
+                                    <td>{{ b.fours or 0 }}</td>
+                                    <td>{{ b.sixes or 0 }}</td>
+                                    <td>{{ b.strike_rate or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    
+                    {% if scorecard.bowling_data %}
+                    {% for innings in scorecard.bowling_data %}
+                    <div class="innings-card">
+                        <h4>{{ innings.team or 'Bowling' }} Bowling</h4>
+                        <table class="scorecard-table">
+                            <thead>
+                                <tr>
+                                    <th>Bowler</th>
+                                    <th>O</th>
+                                    <th>M</th>
+                                    <th>R</th>
+                                    <th>W</th>
+                                    <th>Econ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for b in innings.bowlers %}
+                                <tr>
+                                    <td><strong>{{ b.name }}</strong></td>
+                                    <td>{{ b.overs or 0 }}</td>
+                                    <td>{{ b.maidens or 0 }}</td>
+                                    <td>{{ b.runs or 0 }}</td>
+                                    <td><strong>{{ b.wickets or 0 }}</strong></td>
+                                    <td>{{ b.economy or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    
+                    <div class="scorecard-footer">Scorecard updates on page refresh</div>
                 </div>
             </div>
-            
-            <script>
-            (function() {
-                const matchId = "{{ post.match_id }}";
-                
-                function fetchScorecard() {
-                    fetch('/api/scorecard/' + matchId)
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                renderScorecard(data);
-                            } else {
-                                document.getElementById('liveScorecard').innerHTML = '<div class="scorecard-error">Unable to load scorecard</div>';
-                            }
-                        })
-                        .catch(err => {
-                            document.getElementById('liveScorecard').innerHTML = '<div class="scorecard-error">Error loading scorecard</div>';
-                        });
-                }
-                
-                function renderScorecard(data) {
-                    const container = document.getElementById('liveScorecard');
-                    let html = '';
-                    
-                    html += '<div class="scorecard-header">';
-                    html += '<div class="match-info">';
-                    html += '<span class="team-name">' + (data.team1_name || 'Team 1') + '</span>';
-                    html += '<span class="score">' + (data.team1_score || '-') + '</span>';
-                    html += '</div>';
-                    html += '<div class="vs-text">vs</div>';
-                    html += '<div class="match-info">';
-                    html += '<span class="team-name">' + (data.team2_name || 'Team 2') + '</span>';
-                    html += '<span class="score">' + (data.team2_score || '-') + '</span>';
-                    html += '</div>';
-                    html += '</div>';
-                    
-                    if (data.result) {
-                        html += '<div class="match-result">' + data.result + '</div>';
-                    }
-                    
-                    if (data.batting_data && data.batting_data.length > 0) {
-                        data.batting_data.forEach(function(innings) {
-                            html += '<div class="innings-card">';
-                            html += '<h4>' + (innings.team || 'Batting') + ' Innings</h4>';
-                            html += '<table class="scorecard-table"><thead><tr>';
-                            html += '<th>Batter</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th>';
-                            html += '</tr></thead><tbody>';
-                            if (innings.batsmen) {
-                                innings.batsmen.forEach(function(b) {
-                                    html += '<tr>';
-                                    html += '<td><strong>' + b.name + '</strong><br><small>' + (b.dismissal || '') + '</small></td>';
-                                    html += '<td><strong>' + (b.runs || 0) + '</strong></td>';
-                                    html += '<td>' + (b.balls || 0) + '</td>';
-                                    html += '<td>' + (b.fours || 0) + '</td>';
-                                    html += '<td>' + (b.sixes || 0) + '</td>';
-                                    html += '<td>' + (b.strike_rate || '-') + '</td>';
-                                    html += '</tr>';
-                                });
-                            }
-                            html += '</tbody></table>';
-                            html += '</div>';
-                        });
-                    }
-                    
-                    if (data.bowling_data && data.bowling_data.length > 0) {
-                        data.bowling_data.forEach(function(innings) {
-                            html += '<div class="innings-card">';
-                            html += '<h4>' + (innings.team || 'Bowling') + ' Bowling</h4>';
-                            html += '<table class="scorecard-table"><thead><tr>';
-                            html += '<th>Bowler</th><th>O</th><th>M</th><th>R</th><th>W</th><th>Econ</th>';
-                            html += '</tr></thead><tbody>';
-                            if (innings.bowlers) {
-                                innings.bowlers.forEach(function(b) {
-                                    html += '<tr>';
-                                    html += '<td><strong>' + b.name + '</strong></td>';
-                                    html += '<td>' + (b.overs || 0) + '</td>';
-                                    html += '<td>' + (b.maidens || 0) + '</td>';
-                                    html += '<td>' + (b.runs || 0) + '</td>';
-                                    html += '<td><strong>' + (b.wickets || 0) + '</strong></td>';
-                                    html += '<td>' + (b.economy || '-') + '</td>';
-                                    html += '</tr>';
-                                });
-                            }
-                            html += '</tbody></table>';
-                            html += '</div>';
-                        });
-                    }
-                    
-                    html += '<div class="scorecard-footer">Last updated: ' + new Date().toLocaleTimeString() + '</div>';
-                    
-                    container.innerHTML = html;
-                }
-                
-                fetchScorecard();
-                setInterval(fetchScorecard, 30000);
-            })();
-            </script>
             {% endif %}
             
             <footer class="post-footer">

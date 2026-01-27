@@ -2557,7 +2557,51 @@ def view_post(slug):
     recent_posts = Post.query.filter(Post.is_published==True, Post.id!=post.id).order_by(Post.created_at.desc()).limit(5).all()
     categories = PostCategory.query.filter_by(show_in_navbar=True).order_by(PostCategory.navbar_order).all()
     
-    return render_template('post.html', post=post, recent_posts=recent_posts, categories=categories)
+    scorecard_data = None
+    if post.match_id:
+        try:
+            from scraper import scrape_scorecard
+            match = Match.query.filter_by(match_id=post.match_id).first()
+            scorecard_raw = scrape_scorecard(post.match_id)
+            
+            if scorecard_raw:
+                innings = scorecard_raw.get('innings', [])
+                batting_data = []
+                bowling_data = []
+                
+                for inning in innings:
+                    batting_data.append({
+                        'team': inning.get('team', ''),
+                        'batsmen': inning.get('batsmen', [])
+                    })
+                    bowling_data.append({
+                        'team': inning.get('team', ''),
+                        'bowlers': inning.get('bowlers', [])
+                    })
+                
+                scorecard_data = {
+                    'team1_name': scorecard_raw.get('team1_name') or (match.team1_name if match else ''),
+                    'team2_name': scorecard_raw.get('team2_name') or (match.team2_name if match else ''),
+                    'team1_score': scorecard_raw.get('team1_score') or (match.team1_score if match else ''),
+                    'team2_score': scorecard_raw.get('team2_score') or (match.team2_score if match else ''),
+                    'result': scorecard_raw.get('result') or (match.result if match else ''),
+                    'batting_data': batting_data,
+                    'bowling_data': bowling_data
+                }
+            elif match:
+                scorecard_data = {
+                    'team1_name': match.team1_name,
+                    'team2_name': match.team2_name,
+                    'team1_score': match.team1_score,
+                    'team2_score': match.team2_score,
+                    'result': match.result,
+                    'batting_data': match.batting_data or [],
+                    'bowling_data': match.bowling_data or []
+                }
+        except Exception as e:
+            logging.error(f"Error fetching scorecard for post: {str(e)}")
+    
+    return render_template('post.html', post=post, recent_posts=recent_posts, categories=categories, scorecard=scorecard_data)
 
 @app.route('/category/<slug>')
 def view_category(slug):
