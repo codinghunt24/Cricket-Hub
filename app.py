@@ -406,13 +406,15 @@ def admin_matches():
     complete_count = len([m for m in matches if m.state == 'Complete'])
     upcoming_count = len([m for m in matches if m.state == 'Upcoming'])
     result_count = len([m for m in matches if m.result])
+    status_count = len([m for m in matches if m.result and 'opt to' in m.result.lower()])
     return render_template('admin/matches.html', 
                            matches=matches,
                            live_count=live_count,
                            innings_count=innings_count,
                            complete_count=complete_count,
                            upcoming_count=upcoming_count,
-                           result_count=result_count)
+                           result_count=result_count,
+                           status_count=status_count)
 
 @app.route('/admin/teams')
 def admin_teams():
