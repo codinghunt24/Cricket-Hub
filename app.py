@@ -71,7 +71,7 @@ def utility_processor():
     return dict(get_team_flag=get_team_flag)
 
 from models import init_models
-TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, PostCategory, Post, AdminUser = init_models(db)
+TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser = init_models(db)
 
 import scraper
 from scheduler import init_scheduler, update_schedule, update_player_schedule
@@ -493,9 +493,11 @@ def admin_dashboard():
 @admin_required
 def admin_automation():
     team_setting = ScrapeSetting.query.first()
+    live_score_setting = LiveScoreScrapeSetting.query.first()
     recent_logs = ScrapeLog.query.order_by(ScrapeLog.created_at.desc()).limit(10).all()
     return render_template('admin/automation.html', 
                          team_setting=team_setting,
+                         live_score_setting=live_score_setting,
                          recent_logs=recent_logs)
 
 @app.route('/admin/matches')
@@ -2317,6 +2319,47 @@ def get_match_scrape_settings():
             'last_scrape': setting.last_scrape.isoformat() if setting.last_scrape else None
         })
     return jsonify({'enabled': False, 'time': '10:00', 'last_scrape': None})
+
+@app.route('/api/settings/live-score-auto-scrape', methods=['POST'])
+def toggle_live_score_auto_scrape():
+    try:
+        data = request.get_json() or {}
+        enabled = data.get('enabled', False)
+        interval = data.get('interval', 60)
+        
+        setting = LiveScoreScrapeSetting.query.first()
+        if not setting:
+            setting = LiveScoreScrapeSetting(auto_scrape_enabled=enabled, interval_seconds=interval)
+            db.session.add(setting)
+        else:
+            setting.auto_scrape_enabled = enabled
+            setting.interval_seconds = interval
+        
+        db.session.commit()
+        
+        from scheduler import update_live_score_schedule
+        update_live_score_schedule(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scraper, enabled, interval)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Live score auto-scrape {"enabled" if enabled else "disabled"} (every {interval}s)',
+            'enabled': enabled,
+            'interval': interval
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/settings/live-score-scrape', methods=['GET'])
+def get_live_score_scrape_settings():
+    setting = LiveScoreScrapeSetting.query.first()
+    if setting:
+        return jsonify({
+            'enabled': setting.auto_scrape_enabled,
+            'interval': setting.interval_seconds,
+            'last_scrape': setting.last_scrape.isoformat() if setting.last_scrape else None
+        })
+    return jsonify({'enabled': False, 'interval': 60, 'last_scrape': None})
 
 @app.route('/api/settings/series-auto-scrape', methods=['POST'])
 def toggle_series_auto_scrape():

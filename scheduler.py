@@ -274,3 +274,81 @@ def update_category_player_schedule(app, db, ScrapeSetting, TeamCategory, Team, 
         print(f"[SCHEDULER] {category.title()} player scrape scheduled at {scrape_time}")
     else:
         print(f"[SCHEDULER] {category.title()} player scrape disabled")
+
+def run_live_score_scrape(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scraper):
+    with app.app_context():
+        try:
+            setting = LiveScoreScrapeSetting.query.first()
+            if not setting or not setting.auto_scrape_enabled:
+                return
+            
+            all_matches = scraper.scrape_live_scores()
+            
+            updated_count = 0
+            for match_data in all_matches:
+                match_id = match_data.get('match_id')
+                if not match_id:
+                    continue
+                
+                existing = Match.query.filter_by(match_id=match_id).first()
+                if existing:
+                    existing.team1_name = match_data.get('team1_name')
+                    existing.team1_score = match_data.get('team1_score')
+                    existing.team2_name = match_data.get('team2_name')
+                    existing.team2_score = match_data.get('team2_score')
+                    existing.result = match_data.get('result')
+                    existing.state = match_data.get('state')
+                    existing.match_format = match_data.get('match_format')
+                    existing.venue = match_data.get('venue')
+                    existing.match_date = match_data.get('match_date')
+                    existing.match_url = match_data.get('match_url')
+                    existing.updated_at = datetime.utcnow()
+                else:
+                    new_match = Match(
+                        match_id=match_id,
+                        team1_name=match_data.get('team1_name'),
+                        team1_score=match_data.get('team1_score'),
+                        team2_name=match_data.get('team2_name'),
+                        team2_score=match_data.get('team2_score'),
+                        result=match_data.get('result'),
+                        state=match_data.get('state'),
+                        match_format=match_data.get('match_format'),
+                        venue=match_data.get('venue'),
+                        match_date=match_data.get('match_date'),
+                        match_url=match_data.get('match_url')
+                    )
+                    db.session.add(new_match)
+                updated_count += 1
+            
+            db.session.commit()
+            
+            setting.last_scrape = datetime.utcnow()
+            db.session.commit()
+            
+            print(f"[SCHEDULER] Live score auto-scrape: {updated_count} matches updated")
+            
+        except Exception as e:
+            print(f"[SCHEDULER] Live score auto-scrape error: {e}")
+            db.session.rollback()
+
+def update_live_score_schedule(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scraper, enabled, interval_seconds):
+    global scheduler
+    
+    job_id = 'live_score_auto_scrape'
+    
+    if job_id in [job.id for job in scheduler.get_jobs()]:
+        scheduler.remove_job(job_id)
+    
+    if enabled:
+        from apscheduler.triggers.interval import IntervalTrigger
+        
+        scheduler.add_job(
+            func=lambda: run_live_score_scrape(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scraper),
+            trigger=IntervalTrigger(seconds=interval_seconds),
+            id=job_id,
+            replace_existing=True
+        )
+        
+        print(f"[SCHEDULER] Live score auto-scrape enabled (every {interval_seconds}s)")
+    else:
+        print(f"[SCHEDULER] Live score auto-scrape disabled")

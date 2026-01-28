@@ -197,6 +197,15 @@ def init_models(db):
         last_scrape = db.Column(db.DateTime, nullable=True)
         updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    class LiveScoreScrapeSetting(db.Model):
+        __tablename__ = 'live_score_scrape_settings'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        auto_scrape_enabled = db.Column(db.Boolean, default=False)
+        interval_seconds = db.Column(db.Integer, default=60)
+        last_scrape = db.Column(db.DateTime, nullable=True)
+        updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
     class PostCategory(db.Model):
         __tablename__ = 'post_categories'
         
@@ -253,4 +262,4 @@ def init_models(db):
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
         last_login = db.Column(db.DateTime, nullable=True)
     
-    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, PostCategory, Post, AdminUser
+    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser

@@ -695,6 +695,33 @@
     color: var(--admin-text);
 }
 
+.interval-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.interval-input {
+    width: 80px;
+    padding: 8px 12px;
+    border: 1px solid var(--admin-border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: var(--admin-input-bg);
+    color: var(--admin-text);
+    text-align: center;
+}
+
+.interval-input:focus {
+    outline: none;
+    border-color: var(--admin-primary);
+}
+
+.interval-label {
+    font-size: 0.85rem;
+    color: var(--admin-text-muted);
+}
+
 .last-scrape {
     font-size: 0.85rem;
     color: var(--admin-text-muted);

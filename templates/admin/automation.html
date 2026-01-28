@@ -18,6 +18,21 @@
             <button class="btn btn-primary" onclick="scrapeLiveScores()">Scrape Now</button>
         </div>
         <p class="section-desc">Scrape all current matches from Cricbuzz (Live, Innings Break, Complete, Upcoming)</p>
+        <div class="auto-scrape-row">
+            <label class="toggle-label">
+                <input type="checkbox" id="liveScoreAutoScrape" {% if live_score_setting and live_score_setting.auto_scrape_enabled %}checked{% endif %} onchange="toggleLiveScoreAutoScrape()">
+                <span class="toggle-text">Auto Scrape</span>
+            </label>
+            <div class="interval-input-wrapper">
+                <input type="number" id="liveScoreInterval" value="{{ live_score_setting.interval_seconds if live_score_setting else 60 }}" min="10" max="3600" class="interval-input" onchange="toggleLiveScoreAutoScrape()">
+                <span class="interval-label">seconds</span>
+            </div>
+            {% if live_score_setting and live_score_setting.last_scrape %}
+            <span class="last-scrape" id="liveScoreLastScrape">Last: {{ live_score_setting.last_scrape.strftime('%d %b, %H:%M:%S') }}</span>
+            {% else %}
+            <span class="last-scrape" id="liveScoreLastScrape"></span>
+            {% endif %}
+        </div>
         <div id="liveScrapingResult" class="scrape-result" style="display:none;"></div>
     </div>
     
@@ -596,6 +611,30 @@ function scrapeLiveScores() {
             resultDiv.style.background = '#4d1a1a';
             resultDiv.innerHTML = `<span style="color: #ef4444;">Error: ${e}</span>`;
         });
+}
+
+function toggleLiveScoreAutoScrape() {
+    const enabled = document.getElementById('liveScoreAutoScrape').checked;
+    const interval = parseInt(document.getElementById('liveScoreInterval').value) || 60;
+    
+    fetch('/api/settings/live-score-auto-scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: enabled, interval: interval })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const resultDiv = document.getElementById('liveScrapingResult');
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = '#1a4d1a';
+            resultDiv.innerHTML = `<span style="color: #10b981;">${data.message}</span>`;
+            setTimeout(() => { resultDiv.style.display = 'none'; }, 3000);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(e => alert('Error: ' + e));
 }
 
 function scrapeAllTeams() {
