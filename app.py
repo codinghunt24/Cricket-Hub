@@ -312,12 +312,15 @@ def live_scores():
     upcoming = [m for m in all_matches if m.state == 'Upcoming' and m not in status]
     matches = live + status + innings + complete + upcoming
     
+    # Recent completed matches for sidebar (excluding upcoming)
+    recent_matches = Match.query.filter(Match.state == 'Complete').order_by(Match.updated_at.desc()).limit(5).all()
+    
     teams = Team.query.all()
     
     match_flags = {}
-    for m in matches:
-        match_flags[f"{m.match_id}_1"] = get_team_flag(m.team1_name, teams)
-        match_flags[f"{m.match_id}_2"] = get_team_flag(m.team2_name, teams)
+    for m in matches + recent_matches:
+        match_flags[m.team1_name] = get_team_flag(m.team1_name, teams)
+        match_flags[m.team2_name] = get_team_flag(m.team2_name, teams)
     
     # Get "Today Live Match" category posts
     today_live_category = PostCategory.query.filter_by(slug='today-live-match').first()
@@ -325,7 +328,7 @@ def live_scores():
     if today_live_category:
         today_live_posts = Post.query.filter_by(category_id=today_live_category.id, is_published=True).order_by(Post.created_at.desc()).limit(10).all()
     
-    return render_template('live_scores.html', matches=matches, match_flags=match_flags, today_live_posts=today_live_posts, today_live_category=today_live_category)
+    return render_template('live_scores.html', matches=matches, match_flags=match_flags, today_live_posts=today_live_posts, today_live_category=today_live_category, recent_matches=recent_matches)
 
 @app.route('/teams')
 def teams_page():

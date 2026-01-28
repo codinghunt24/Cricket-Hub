@@ -90,7 +90,7 @@
             <div class="section-block">
                 <h4>Recent Match</h4>
                 <div class="recent-matches-list">
-                    {% for match in matches[:5] %}
+                    {% for match in recent_matches %}
                     <div class="recent-match-card" onclick="loadScorecard('{{ match.match_id }}')">
                         <div class="recent-match-teams">
                             <div class="recent-team">
@@ -105,13 +105,7 @@
                         </div>
                         <div class="recent-match-info">
                             <span class="recent-match-format">{{ match.match_format }}</span>
-                            {% if match.state == 'Live' %}
-                            <span class="recent-match-status live">LIVE</span>
-                            {% elif match.state == 'Complete' %}
                             <span class="recent-match-status complete">Result</span>
-                            {% else %}
-                            <span class="recent-match-status upcoming">Upcoming</span>
-                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}
