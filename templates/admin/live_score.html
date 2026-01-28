@@ -60,8 +60,8 @@
         <!-- Series Table -->
         <div class="table-section">
             <div class="table-header series" style="background: linear-gradient(135deg, #8b5cf6, #6366f1);">
-                <span>📋 Series (<span id="series-count">0</span>)</span>
-                <button type="button" class="btn btn-sm" onclick="scrapeSeries()" id="scrape-series-btn" style="margin-left: 15px; background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Fetch Series</button>
+                <span>📋 Series (<span id="series-count">0</span>) | Matches (<span id="match-count">0</span>)</span>
+                <button type="button" class="btn btn-sm" onclick="scrapeSeries()" id="scrape-series-btn" style="margin-left: 15px; background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Fetch Data</button>
             </div>
             <div class="table-wrapper">
                 <table class="excel-table">
@@ -69,12 +69,12 @@
                         <tr>
                             <th>Series ID</th>
                             <th>Series Name</th>
-                            <th>Series Slug</th>
-                            <th>URL</th>
+                            <th>Match Count</th>
+                            <th>Match IDs</th>
                         </tr>
                     </thead>
                     <tbody id="series-tbody">
-                        <tr><td colspan="4" class="no-data">Click "Fetch Series" to load</td></tr>
+                        <tr><td colspan="4" class="no-data">Click "Fetch Data" to load series and matches</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -551,7 +551,8 @@ input:checked + .toggle-slider::after {
 <script>
 function scrapeSeries() {
     const btn = document.getElementById('scrape-series-btn');
-    const countEl = document.getElementById('series-count');
+    const seriesCountEl = document.getElementById('series-count');
+    const matchCountEl = document.getElementById('match-count');
     const tbody = document.getElementById('series-tbody');
     
     btn.disabled = true;
@@ -564,18 +565,26 @@ function scrapeSeries() {
     .then(response => response.json())
     .then(data => {
         btn.disabled = false;
-        btn.textContent = 'Fetch Series';
+        btn.textContent = 'Fetch Data';
         
         if (data.success) {
-            countEl.textContent = data.count;
+            seriesCountEl.textContent = data.count;
+            
+            // Calculate total matches
+            let totalMatches = 0;
+            data.series.forEach(function(s) {
+                totalMatches += s.match_count || 0;
+            });
+            matchCountEl.textContent = totalMatches;
             
             tbody.innerHTML = '';
             data.series.forEach(function(s) {
                 const row = document.createElement('tr');
-                row.innerHTML = '<td>' + s.series_id + '</td>' +
+                const matchIdsStr = s.match_ids ? s.match_ids.join(', ') : '-';
+                row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
                     '<td>' + s.series_name + '</td>' +
-                    '<td>' + s.series_slug + '</td>' +
-                    '<td><a href="' + s.series_url + '" target="_blank">View</a></td>';
+                    '<td>' + (s.match_count || 0) + '</td>' +
+                    '<td style="font-size: 0.8rem; max-width: 400px; word-wrap: break-word;">' + matchIdsStr + '</td>';
                 tbody.appendChild(row);
             });
         } else {
@@ -584,7 +593,7 @@ function scrapeSeries() {
     })
     .catch(function(err) {
         btn.disabled = false;
-        btn.textContent = 'Fetch Series';
+        btn.textContent = 'Fetch Data';
         tbody.innerHTML = '<tr><td colspan="4" class="no-data">Error: ' + err.message + '</td></tr>';
     });
 }

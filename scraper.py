@@ -43,7 +43,8 @@ def scrape_live_scores():
 def scrape_series_from_live_page():
     """
     Scrape unique series from Cricbuzz live-scores page.
-    Returns list of series with series_id, series_name, series_url
+    Each series includes its match IDs found on the page.
+    Returns list of series with series_id, series_name, series_url, and match_ids
     """
     url = "https://www.cricbuzz.com/cricket-match/live-scores"
     html = fetch_page(url)
@@ -55,15 +56,18 @@ def scrape_series_from_live_page():
     soup = BeautifulSoup(html, 'html.parser')
     
     series_list = []
-    seen_ids = set()
+    seen_series_ids = set()
     
-    # Find all series links
-    series_links = soup.find_all('a', href=re.compile(r'/cricket-series/(\d+)/'))
+    # Find all parent divs with class 'mb-3' which contain series + matches
+    parent_divs = soup.find_all('div', class_='mb-3')
     
-    for link in series_links:
-        href = link.get('href', '')
+    for parent in parent_divs:
+        # Find series link in this parent
+        series_link = parent.find('a', href=re.compile(r'/cricket-series/(\d+)/'))
+        if not series_link:
+            continue
         
-        # Extract series_id from URL
+        href = series_link.get('href', '')
         match = re.search(r'/cricket-series/(\d+)/([^/\?"]+)', href)
         if not match:
             continue
@@ -72,25 +76,42 @@ def scrape_series_from_live_page():
         series_slug = match.group(2)
         
         # Skip duplicates
-        if series_id in seen_ids:
+        if series_id in seen_series_ids:
             continue
-        seen_ids.add(series_id)
+        seen_series_ids.add(series_id)
         
-        series_name = link.get_text(strip=True)
+        series_name = series_link.get_text(strip=True)
         
         # Skip if no name or just navigation links
         if not series_name or series_name in ['Matches', 'Points Table', 'Venues']:
             continue
         
+        # Find all match links under this series parent
+        match_links = parent.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+        match_ids = []
+        seen_match_ids = set()
+        
+        for m_link in match_links:
+            m_href = m_link.get('href', '')
+            m_match = re.search(r'/live-cricket-scores/(\d+)/', m_href)
+            if m_match:
+                mid = m_match.group(1)
+                if mid not in seen_match_ids:
+                    seen_match_ids.add(mid)
+                    match_ids.append(mid)
+        
         series_list.append({
             'series_id': series_id,
             'series_name': series_name,
             'series_slug': series_slug,
-            'series_url': BASE_URL + href
+            'series_url': BASE_URL + href,
+            'match_ids': match_ids,
+            'match_count': len(match_ids)
         })
     
-    logger.info(f"Found {len(series_list)} unique series")
-    return {'success': True, 'series': series_list, 'message': f'Found {len(series_list)} series'}
+    total_matches = sum(s['match_count'] for s in series_list)
+    logger.info(f"Found {len(series_list)} series with {total_matches} total matches")
+    return {'success': True, 'series': series_list, 'message': f'Found {len(series_list)} series with {total_matches} matches'}
 
 
 def scrape_scorecard(match_id):
