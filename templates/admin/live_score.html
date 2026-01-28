@@ -685,18 +685,20 @@ function scrapeSeries() {
                         '<td>-</td>' +
                         '<td>-</td>' +
                         '<td>-</td>' +
+                        '<td>-</td>' +
+                        '<td>-</td>' +
                         '<td>-</td>';
                     tbody.appendChild(row);
                 }
             });
         } else {
-            tbody.innerHTML = '<tr><td colspan="7" class="no-data">Error: ' + data.message + '</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="no-data">Error: ' + data.message + '</td></tr>';
         }
     })
     .catch(function(err) {
         btn.disabled = false;
         btn.textContent = 'Fetch Data';
-        tbody.innerHTML = '<tr><td colspan="7" class="no-data">Error: ' + err.message + '</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="no-data">Error: ' + err.message + '</td></tr>';
     });
 }
 </script>
