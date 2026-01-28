@@ -38,6 +38,12 @@
                             <span class="sidebar-text">Teams</span>
                         </a>
                     </li>
+                    <li class="sidebar-item {% if request.path == '/admin/series' %}active{% endif %}">
+                        <a href="/admin/series" class="sidebar-link">
+                            <span class="sidebar-icon">&#127941;</span>
+                            <span class="sidebar-text">Series</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             
