@@ -8,7 +8,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
-from scraper import validate_team2_score
 
 class Base(DeclarativeBase):
     pass
@@ -176,15 +175,7 @@ def upsert_match(match_data, db_series_id=None):
         existing.team1_name = match_data.get('team1') or match_data.get('team1_name', existing.team1_name)
         existing.team1_score = match_data.get('team1_score', existing.team1_score)
         existing.team2_name = match_data.get('team2') or match_data.get('team2_name', existing.team2_name)
-        # Validate team2 score - clear if they haven't actually batted
-        raw_team2_score = match_data.get('team2_score', existing.team2_score)
-        validated_team2_score = validate_team2_score(
-            existing.team1_score, 
-            raw_team2_score, 
-            match_data.get('result', existing.result),
-            existing.state
-        )
-        existing.team2_score = validated_team2_score
+        existing.team2_score = match_data.get('team2_score', existing.team2_score)
         existing.result = match_data.get('result', existing.result)
         existing.match_url = match_data.get('match_url', existing.match_url)
         existing.series_name = match_data.get('series_name', existing.series_name)
