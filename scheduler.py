@@ -579,3 +579,92 @@ def update_category_series_schedule(app, db, SeriesCategory, Series, ScrapeLog, 
         print(f"[SCHEDULER] {category.title()} series scrape scheduled at {scrape_time}")
     else:
         print(f"[SCHEDULER] {category.title()} series scrape disabled")
+
+def run_category_matches_scrape(app, db, SeriesCategory, Series, Match, ScrapeLog, MatchScrapeSetting, scraper, category_slug):
+    with app.app_context():
+        try:
+            if category_slug == 'all':
+                all_series = Series.query.all()
+            else:
+                category = SeriesCategory.query.filter_by(slug=category_slug).first()
+                if category:
+                    all_series = Series.query.filter_by(category_id=category.id).all()
+                else:
+                    all_series = []
+            
+            total_matches = 0
+            for series in all_series:
+                try:
+                    matches_list = scraper.scrape_matches_from_series(series.series_url)
+                    if matches_list:
+                        for match_data in matches_list:
+                            match_id = match_data.get('match_id')
+                            if not match_id:
+                                continue
+                            
+                            existing = Match.query.filter_by(match_id=match_id).first()
+                            if existing:
+                                existing.match_format = match_data.get('match_format', existing.match_format)
+                                existing.venue = match_data.get('venue', existing.venue)
+                                existing.match_date = match_data.get('match_date', existing.match_date)
+                                existing.team1_name = match_data.get('team1', existing.team1_name)
+                                existing.team2_name = match_data.get('team2', existing.team2_name)
+                                existing.result = match_data.get('result', existing.result)
+                                existing.series_id = series.id
+                                existing.updated_at = datetime.utcnow()
+                            else:
+                                match = Match(
+                                    match_id=match_id,
+                                    match_format=match_data.get('match_format', ''),
+                                    venue=match_data.get('venue', ''),
+                                    match_date=match_data.get('match_date', ''),
+                                    team1_name=match_data.get('team1', ''),
+                                    team2_name=match_data.get('team2', ''),
+                                    result=match_data.get('result', ''),
+                                    series_id=series.id
+                                )
+                                db.session.add(match)
+                            total_matches += 1
+                except Exception as e:
+                    print(f"[SCHEDULER] Error scraping matches for {series.name}: {e}")
+                    continue
+            
+            db.session.commit()
+            
+            setting = MatchScrapeSetting.query.filter_by(category_slug=category_slug).first()
+            if setting:
+                setting.last_scrape = datetime.utcnow()
+                db.session.commit()
+            
+            log = ScrapeLog(
+                category=f'auto_{category_slug}_matches',
+                status='success',
+                message=f'Auto scraped {total_matches} matches'
+            )
+            db.session.add(log)
+            db.session.commit()
+            
+            print(f"[SCHEDULER] Auto {category_slug} matches scrape completed: {total_matches} matches")
+            
+        except Exception as e:
+            print(f"[SCHEDULER] Auto {category_slug} matches scrape error: {e}")
+
+def update_category_matches_schedule(app, db, SeriesCategory, Series, Match, ScrapeLog, MatchScrapeSetting, scraper, category, enabled, scrape_time):
+    job_id = f'{category}_matches_scrape'
+    
+    if job_id in [job.id for job in scheduler.get_jobs()]:
+        scheduler.remove_job(job_id)
+    
+    if enabled:
+        hour, minute = map(int, scrape_time.split(':'))
+        
+        scheduler.add_job(
+            func=lambda cat=category: run_category_matches_scrape(app, db, SeriesCategory, Series, Match, ScrapeLog, MatchScrapeSetting, scraper, cat),
+            trigger=CronTrigger(hour=hour, minute=minute),
+            id=job_id,
+            replace_existing=True
+        )
+        
+        print(f"[SCHEDULER] {category.title()} matches scrape scheduled at {scrape_time}")
+    else:
+        print(f"[SCHEDULER] {category.title()} matches scrape disabled")

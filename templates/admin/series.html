@@ -47,6 +47,27 @@
         </div>
     </div>
     
+    <div class="auto-scrape-section">
+        <h4><i class="fas fa-calendar-check"></i> Matches Auto Scheduler</h4>
+        <div class="auto-scrape-grid">
+            {% for cat in ['all', 'international', 'domestic', 'league', 'women'] %}
+            <div class="auto-scrape-card" id="match-card-{{ cat }}">
+                <div class="card-header">
+                    <span class="cat-name">{{ cat|title }}</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="match-toggle-{{ cat }}" onchange="toggleMatchAutoScrape('{{ cat }}')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="card-body">
+                    <input type="time" id="match-time-{{ cat }}" value="09:00" class="time-input">
+                    <span class="last-scrape" id="match-last-{{ cat }}">Never</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
     <div class="data-preview" id="data-preview">
         <div class="preview-header">
             <h3>JSON Data Preview</h3>
@@ -623,7 +644,10 @@ let seriesData = [];
 let matchesData = {};
 let currentSeriesUrl = '';
 
-document.addEventListener('DOMContentLoaded', loadSeriesSettings);
+document.addEventListener('DOMContentLoaded', function() {
+    loadSeriesSettings();
+    loadMatchesSettings();
+});
 
 async function loadSeriesSettings() {
     try {
@@ -646,6 +670,62 @@ async function loadSeriesSettings() {
         });
     } catch (e) {
         console.error('Error loading settings:', e);
+    }
+}
+
+async function loadMatchesSettings() {
+    try {
+        const response = await fetch('/api/settings/matches-scrape');
+        const data = await response.json();
+        
+        ['all', 'international', 'domestic', 'league', 'women'].forEach(cat => {
+            const setting = data[cat];
+            if (setting) {
+                document.getElementById(`match-toggle-${cat}`).checked = setting.enabled;
+                document.getElementById(`match-time-${cat}`).value = setting.time || '09:00';
+                if (setting.last_scrape) {
+                    const date = new Date(setting.last_scrape);
+                    document.getElementById(`match-last-${cat}`).textContent = date.toLocaleString();
+                }
+                if (setting.enabled) {
+                    document.getElementById(`match-card-${cat}`).classList.add('active');
+                }
+            }
+        });
+    } catch (e) {
+        console.error('Error loading match settings:', e);
+    }
+}
+
+async function toggleMatchAutoScrape(category) {
+    const toggle = document.getElementById(`match-toggle-${category}`);
+    const timeInput = document.getElementById(`match-time-${category}`);
+    const card = document.getElementById(`match-card-${category}`);
+    
+    const enabled = toggle.checked;
+    const scrapeTime = timeInput.value || '09:00';
+    
+    try {
+        const response = await fetch('/api/settings/matches-auto-scrape', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ category, enabled, scrape_time: scrapeTime })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            if (enabled) {
+                card.classList.add('active');
+            } else {
+                card.classList.remove('active');
+            }
+        } else {
+            alert('Error: ' + data.message);
+            toggle.checked = !enabled;
+        }
+    } catch (e) {
+        alert('Error: ' + e.message);
+        toggle.checked = !enabled;
     }
 }
 

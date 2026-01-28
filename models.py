@@ -200,6 +200,7 @@ def init_models(db):
         __tablename__ = 'match_scrape_settings'
         
         id = db.Column(db.Integer, primary_key=True)
+        category_slug = db.Column(db.String(50), nullable=True)
         auto_scrape_enabled = db.Column(db.Boolean, default=False)
         scrape_time = db.Column(db.String(10), default='10:00')
         last_scrape = db.Column(db.DateTime, nullable=True)

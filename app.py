@@ -74,7 +74,7 @@ from models import init_models
 TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser = init_models(db)
 
 import scraper
-from scheduler import init_scheduler, update_schedule, update_player_schedule, update_category_profile_schedule, update_category_series_schedule
+from scheduler import init_scheduler, update_schedule, update_player_schedule, update_category_profile_schedule, update_category_series_schedule, update_category_matches_schedule
 
 with app.app_context():
     db.create_all()
@@ -2850,6 +2850,38 @@ def toggle_series_auto_scrape():
 @app.route('/api/settings/series-scrape')
 def get_series_scrape_settings():
     settings = SeriesScrapeSetting.query.all()
+    return jsonify({s.category_slug: {'enabled': s.auto_scrape_enabled, 'time': s.scrape_time, 'last_scrape': s.last_scrape.isoformat() if s.last_scrape else None} for s in settings})
+
+@app.route('/api/settings/matches-auto-scrape', methods=['POST'])
+def toggle_matches_auto_scrape():
+    try:
+        data = request.get_json() or {}
+        category = data.get('category', '')
+        enabled = data.get('enabled', False)
+        scrape_time = data.get('scrape_time', '09:00')
+        
+        if category not in ['all', 'international', 'domestic', 'league', 'women']:
+            return jsonify({'success': False, 'message': 'Invalid category'}), 400
+        
+        setting = MatchScrapeSetting.query.filter_by(category_slug=category).first()
+        if setting:
+            setting.auto_scrape_enabled = enabled
+            setting.scrape_time = scrape_time
+            db.session.commit()
+        
+        update_category_matches_schedule(app, db, SeriesCategory, Series, Match, ScrapeLog, MatchScrapeSetting, scraper, category, enabled, scrape_time)
+        
+        return jsonify({
+            'success': True,
+            'message': f'{category.title()} matches auto scrape {"enabled" if enabled else "disabled"} at {scrape_time}'
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/settings/matches-scrape')
+def get_matches_scrape_settings():
+    settings = MatchScrapeSetting.query.filter(MatchScrapeSetting.category_slug.isnot(None)).all()
     return jsonify({s.category_slug: {'enabled': s.auto_scrape_enabled, 'time': s.scrape_time, 'last_scrape': s.last_scrape.isoformat() if s.last_scrape else None} for s in settings})
 
 @app.route('/api/scrape/live-scores', methods=['POST'])
