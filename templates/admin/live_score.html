@@ -70,12 +70,12 @@
                 <table class="excel-table">
                     <thead>
                         <tr>
-                            <th>Series ID</th>
-                            <th>Series Name</th>
-                            <th>Match ID</th>
-                            <th>Match Title</th>
+                            <th>Series</th>
+                            <th>Match</th>
                             <th>Team 1</th>
+                            <th>Score</th>
                             <th>Team 2</th>
+                            <th>Score</th>
                             <th>Status</th>
                             <th>Result</th>
                             <th>Action</th>
@@ -85,11 +85,11 @@
                         {% if all_matches %}
                             {% for m in all_matches %}
                             <tr id="row-{{ m.match_id }}">
-                                <td><a href="https://www.cricbuzz.com/cricket-series/{{ m.series_id }}" target="_blank">{{ m.series_id or '-' }}</a></td>
-                                <td>{{ m.series_name or '-' }}</td>
+                                <td><a href="https://www.cricbuzz.com/cricket-series/{{ m.series_id }}" target="_blank" title="{{ m.series_name }}">{{ m.series_name[:20] }}...</a></td>
                                 <td><a href="https://www.cricbuzz.com/live-cricket-scores/{{ m.match_id }}" target="_blank">{{ m.match_id }}</a></td>
-                                <td>{{ m.match_title or '-' }}</td>
+                                <td class="team-cell">{% if m.team1_flag %}<img src="{{ m.team1_flag }}" class="team-flag" alt="">{% endif %}</td>
                                 <td class="score-cell">{{ m.team1_score or '-' }}</td>
+                                <td class="team-cell">{% if m.team2_flag %}<img src="{{ m.team2_flag }}" class="team-flag" alt="">{% endif %}</td>
                                 <td class="score-cell">{{ m.team2_score or '-' }}</td>
                                 <td class="status-cell {% if m.status == 'Live' %}status-live{% elif m.status == 'Completed' %}status-completed{% endif %}">{{ m.status or '-' }}</td>
                                 <td class="result-cell">{{ m.result or '-' }}</td>
@@ -497,6 +497,17 @@ input:checked + .toggle-slider::after {
     font-weight: 600;
     color: #2196F3;
     white-space: nowrap;
+}
+
+.team-flag {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.team-cell {
+    text-align: center;
 }
 .status-upcoming {
     color: #f59e0b !important;

@@ -565,6 +565,8 @@ def admin_live_score():
                     'match_title': m.get('match_title', '-'),
                     'team1_score': m.get('team1_score', '-'),
                     'team2_score': m.get('team2_score', '-'),
+                    'team1_flag': m.get('team1_flag', ''),
+                    'team2_flag': m.get('team2_flag', ''),
                     'status': m.get('match_status', '-'),
                     'result': m.get('match_result', '-')
                 })

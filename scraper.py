@@ -137,6 +137,32 @@ def scrape_series_from_live_page():
                             break
                     grandparent = grandparent.parent
     
+    # Extract team flag URLs
+    flag_map = {}  # match_id -> {team1_flag, team2_flag}
+    all_imgs = search_scope.find_all('img')
+    for img in all_imgs:
+        src = img.get('src', '')
+        if 'static.cricbuzz.com' in src and '.jpg' in src:
+            # Find match_id from nearby link
+            parent = img.parent
+            for _ in range(8):
+                if parent:
+                    link = parent.find('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+                    if link:
+                        m = re.search(r'/live-cricket-scores/(\d+)/', link.get('href', ''))
+                        if m:
+                            mid = m.group(1)
+                            if mid not in flag_map:
+                                flag_map[mid] = {'team1_flag': None, 'team2_flag': None}
+                            
+                            # First flag = Team 1, Second flag = Team 2
+                            if not flag_map[mid]['team1_flag']:
+                                flag_map[mid]['team1_flag'] = src
+                            elif not flag_map[mid]['team2_flag']:
+                                flag_map[mid]['team2_flag'] = src
+                            break
+                    parent = parent.parent
+    
     # Also check title attributes for Upcoming matches (Preview)
     preview_links = search_scope.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
     for link in preview_links:
@@ -218,13 +244,20 @@ def scrape_series_from_live_page():
                         team1_score = scores.get('team1_score', '-')
                         team2_score = scores.get('team2_score', '-')
                         
+                        # Get flags
+                        flags = flag_map.get(mid, {})
+                        team1_flag = flags.get('team1_flag', '')
+                        team2_flag = flags.get('team2_flag', '')
+                        
                         matches.append({
                             'match_id': mid,
                             'match_title': match_title if match_title else '-',
                             'match_status': match_status,
                             'match_result': match_result,
                             'team1_score': team1_score,
-                            'team2_score': team2_score
+                            'team2_score': team2_score,
+                            'team1_flag': team1_flag,
+                            'team2_flag': team2_flag
                         })
         
         # Only add series if it has matches with status
