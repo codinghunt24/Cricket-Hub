@@ -941,6 +941,26 @@ body {
     border-bottom: 2px solid var(--bg-light);
 }
 
+.career-stats-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.career-stat-half {
+    flex: 1;
+    min-width: 480px;
+}
+
+@media (max-width: 1024px) {
+    .career-stats-row {
+        flex-direction: column;
+    }
+    .career-stat-half {
+        min-width: 100%;
+    }
+}
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));

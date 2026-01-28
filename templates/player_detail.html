@@ -85,10 +85,11 @@
             </div>
         </div>
         
+        <div class="career-stats-row">
         {% if player.batting_stats %}
         {% set bat = player.batting_stats %}
         {% if bat.Test or bat.ODI or bat.T20 or bat.IPL %}
-        <div class="player-stats-card">
+        <div class="player-stats-card career-stat-half">
             <h3>Batting Career Summary</h3>
             <div class="stats-table-wrapper">
                 <table class="format-stats-table">
@@ -210,7 +211,7 @@
         {% if player.bowling_stats %}
         {% set bowl = player.bowling_stats %}
         {% if bowl.Test or bowl.ODI or bowl.T20 or bowl.IPL %}
-        <div class="player-stats-card">
+        <div class="player-stats-card career-stat-half">
             <h3>Bowling Career Summary</h3>
             <div class="stats-table-wrapper">
                 <table class="format-stats-table">
@@ -328,6 +329,7 @@
         </div>
         {% endif %}
         {% endif %}
+        </div>
         
         {% if player.career_timeline and player.career_timeline|length > 0 %}
         <div class="player-stats-card">
