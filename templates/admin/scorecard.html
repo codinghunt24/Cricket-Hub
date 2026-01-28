@@ -215,6 +215,43 @@
     color: #888;
 }
 
+.section-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1a472a;
+    padding: 10px 15px 5px;
+    text-transform: uppercase;
+    border-top: 1px solid #eee;
+    margin-top: 5px;
+}
+
+.innings-card:first-child .section-title:first-of-type {
+    border-top: none;
+}
+
+.dismissal-text {
+    font-size: 11px;
+    color: #666;
+    max-width: 200px;
+}
+
+.fow-table td {
+    font-size: 12px;
+}
+
+.innings-table th {
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.innings-table td:nth-child(n+3) {
+    text-align: center;
+}
+
+.innings-table th:nth-child(n+3) {
+    text-align: center;
+}
+
 @media (max-width: 768px) {
     .input-group {
         flex-direction: column;
@@ -280,23 +317,31 @@ function displayScorecard(scorecard) {
     
     preview.style.display = 'block';
     
-    // Match title
+    // Match title - use team1 and team2 fields from scraper
     let teams = '';
-    if (scorecard.team1_name && scorecard.team2_name) {
+    if (scorecard.team1 && scorecard.team2) {
+        teams = scorecard.team1 + ' vs ' + scorecard.team2;
+    } else if (scorecard.team1_name && scorecard.team2_name) {
         teams = scorecard.team1_name + ' vs ' + scorecard.team2_name;
     }
-    title.textContent = teams || 'Scorecard';
+    title.textContent = teams || scorecard.match_title || 'Scorecard';
     
     // Match info
     let infoHtml = '';
+    if (scorecard.series_name) {
+        infoHtml += '<p><span class="label">Series:</span> ' + scorecard.series_name + '</p>';
+    }
     if (scorecard.venue) {
         infoHtml += '<p><span class="label">Venue:</span> ' + scorecard.venue + '</p>';
     }
-    if (scorecard.match_date) {
-        infoHtml += '<p><span class="label">Date:</span> ' + scorecard.match_date + '</p>';
+    if (scorecard.match_time) {
+        infoHtml += '<p><span class="label">Time:</span> ' + scorecard.match_time + '</p>';
     }
     if (scorecard.match_format) {
         infoHtml += '<p><span class="label">Format:</span> ' + scorecard.match_format + '</p>';
+    }
+    if (scorecard.match_status) {
+        infoHtml += '<p><span class="label">Status:</span> ' + scorecard.match_status + '</p>';
     }
     matchInfo.innerHTML = infoHtml;
     
@@ -317,13 +362,14 @@ function displayScorecard(scorecard) {
             
             // Batting
             if (inn.batting && inn.batting.length > 0) {
+                html += '<div class="section-title">Batting</div>';
                 html += '<table class="innings-table">';
                 html += '<thead><tr><th>Batter</th><th>Dismissal</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th></tr></thead>';
                 html += '<tbody>';
                 inn.batting.forEach(bat => {
                     html += '<tr>';
-                    html += '<td>' + bat.name + '</td>';
-                    html += '<td>' + (bat.dismissal || 'not out') + '</td>';
+                    html += '<td>' + bat.player + '</td>';
+                    html += '<td class="dismissal-text">' + (bat.dismissal || 'not out') + '</td>';
                     html += '<td><strong>' + bat.runs + '</strong></td>';
                     html += '<td>' + bat.balls + '</td>';
                     html += '<td>' + bat.fours + '</td>';
@@ -336,17 +382,34 @@ function displayScorecard(scorecard) {
             
             // Bowling
             if (inn.bowling && inn.bowling.length > 0) {
-                html += '<table class="innings-table" style="margin-top: 10px;">';
+                html += '<div class="section-title">Bowling</div>';
+                html += '<table class="innings-table">';
                 html += '<thead><tr><th>Bowler</th><th>O</th><th>M</th><th>R</th><th>W</th><th>Econ</th></tr></thead>';
                 html += '<tbody>';
                 inn.bowling.forEach(bowl => {
                     html += '<tr>';
-                    html += '<td>' + bowl.name + '</td>';
+                    html += '<td>' + bowl.bowler + '</td>';
                     html += '<td>' + bowl.overs + '</td>';
                     html += '<td>' + bowl.maidens + '</td>';
                     html += '<td>' + bowl.runs + '</td>';
                     html += '<td><strong>' + bowl.wickets + '</strong></td>';
                     html += '<td>' + bowl.economy + '</td>';
+                    html += '</tr>';
+                });
+                html += '</tbody></table>';
+            }
+            
+            // Fall of Wickets
+            if (inn.fall_of_wickets && inn.fall_of_wickets.length > 0) {
+                html += '<div class="section-title">Fall of Wickets</div>';
+                html += '<table class="innings-table fow-table">';
+                html += '<thead><tr><th>Player</th><th>Score</th><th>Over</th></tr></thead>';
+                html += '<tbody>';
+                inn.fall_of_wickets.forEach(fow => {
+                    html += '<tr>';
+                    html += '<td>' + fow.player + '</td>';
+                    html += '<td>' + fow.score + '</td>';
+                    html += '<td>' + fow.over + '</td>';
                     html += '</tr>';
                 });
                 html += '</tbody></table>';

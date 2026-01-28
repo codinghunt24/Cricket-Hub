@@ -279,8 +279,125 @@ def scrape_scorecard(match_id):
                 'total_score': f"{runs}/{wickets}",
                 'overs': overs,
                 'batting': [],
-                'bowling': []
+                'bowling': [],
+                'fall_of_wickets': []
             }
+            
+            # Extract batting data from scard-team-XXX-innings-X div
+            # The id pattern: scard-team-129-innings-1
+            team_match = re.search(r'team-(\d+)-innings-(\d+)', inn_id)
+            if team_match:
+                team_id = team_match.group(1)
+                inn_num = team_match.group(2)
+                scard_id = f"scard-team-{team_id}-innings-{inn_num}"
+                scard_div = soup.find('div', id=scard_id)
+                
+                if scard_div:
+                    # Extract batting data from scorecard-bat-grid divs
+                    bat_grids = scard_div.find_all('div', class_=re.compile(r'scorecard-bat-grid'))
+                    for bat_row in bat_grids:
+                        # Skip header row (has "Batter" text)
+                        if bat_row.find('div', string=re.compile(r'^Batter$')):
+                            continue
+                        
+                        # Find player name link
+                        player_link = bat_row.find('a', href=re.compile(r'/profiles/'))
+                        if not player_link:
+                            continue
+                        
+                        player_name = player_link.get_text(strip=True)
+                        
+                        # Find dismissal text (in text-cbTxtSec div)
+                        dismissal_div = bat_row.find('div', class_=re.compile(r'text-cbTxtSec'))
+                        dismissal = dismissal_div.get_text(strip=True) if dismissal_div else 'not out'
+                        
+                        # Extract runs, balls, 4s, 6s, SR from divs with justify-center
+                        stats_divs = bat_row.find_all('div', class_=re.compile(r'justify-center'))
+                        stats = []
+                        for sd in stats_divs:
+                            text = sd.get_text(strip=True)
+                            if text and text not in ['R', 'B', '4s', '6s', 'SR', '']:
+                                stats.append(text)
+                        
+                        if len(stats) >= 5:
+                            batting_entry = {
+                                'player': player_name,
+                                'dismissal': dismissal,
+                                'runs': stats[0],
+                                'balls': stats[1],
+                                'fours': stats[2],
+                                'sixes': stats[3],
+                                'strike_rate': stats[4]
+                            }
+                            innings_data['batting'].append(batting_entry)
+                    
+                    # Extract bowling data from scorecard-bowl-grid divs
+                    bowl_grids = scard_div.find_all('div', class_=re.compile(r'scorecard-bowl-grid'))
+                    for bowl_row in bowl_grids:
+                        # Skip header row
+                        if bowl_row.find('div', string=re.compile(r'^Bowler$')):
+                            continue
+                        
+                        # Find bowler name link
+                        bowler_link = bowl_row.find('a', href=re.compile(r'/profiles/'))
+                        if not bowler_link:
+                            continue
+                        
+                        bowler_name = bowler_link.get_text(strip=True)
+                        
+                        # Extract O, M, R, W, NB, WD, ECO - keep all values including empty for position alignment
+                        stats_divs = bowl_row.find_all('div', class_=re.compile(r'justify-center'))
+                        all_stats = []
+                        for sd in stats_divs:
+                            text = sd.get_text(strip=True)
+                            # Skip header labels
+                            if text in ['O', 'M', 'R', 'W', 'NB', 'WD', 'ECO']:
+                                continue
+                            all_stats.append(text)
+                        
+                        # Bowling columns: O, M, R, W, (NB, WD hidden on mobile), ECO
+                        # Economy is always the last column before the highlight icon
+                        if len(all_stats) >= 5:
+                            bowling_entry = {
+                                'bowler': bowler_name,
+                                'overs': all_stats[0],
+                                'maidens': all_stats[1],
+                                'runs': all_stats[2],
+                                'wickets': all_stats[3],
+                                'economy': all_stats[-1]  # Economy is always last
+                            }
+                            innings_data['bowling'].append(bowling_entry)
+                    
+                    # Extract fall of wickets from scorecard-fow-grid divs
+                    fow_grids = scard_div.find_all('div', class_=re.compile(r'scorecard-fow-grid'))
+                    for fow_row in fow_grids:
+                        # Skip header row
+                        if fow_row.find('div', string=re.compile(r'Fall of Wickets')):
+                            continue
+                        
+                        # Find player name
+                        player_link = fow_row.find('a', href=re.compile(r'/profiles/'))
+                        if not player_link:
+                            continue
+                        
+                        player_name = player_link.get_text(strip=True)
+                        
+                        # Extract score and over
+                        stats_divs = fow_row.find_all('div', class_=re.compile(r'justify-center'))
+                        stats = []
+                        for sd in stats_divs:
+                            text = sd.get_text(strip=True)
+                            if text and text not in ['Score', 'Over', 'Overs', 'Runs', '']:
+                                stats.append(text)
+                        
+                        if len(stats) >= 2:
+                            fow_entry = {
+                                'player': player_name,
+                                'score': stats[0],  # e.g., "73-1"
+                                'over': stats[1]    # e.g., "8.6"
+                            }
+                            innings_data['fall_of_wickets'].append(fow_entry)
+            
             result['innings'].append(innings_data)
             
             # Set team scores
