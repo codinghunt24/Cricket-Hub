@@ -316,15 +316,27 @@ def run_live_score_scrape(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scr
                 
                 existing = Match.query.filter_by(match_id=match_id).first()
                 if existing:
-                    existing.team1_name = match_data.get('team1', '')
-                    existing.team1_score = match_data.get('team1_score', '')
-                    existing.team2_name = match_data.get('team2', '')
-                    existing.team2_score = match_data.get('team2_score', '')
-                    existing.result = match_data.get('result', '')
-                    existing.state = match_data.get('status', '')
-                    existing.match_format = match_data.get('match_format', '')
-                    existing.match_url = match_data.get('match_url', '')
-                    existing.cricbuzz_series_id = match_data.get('series_id', '')
+                    # Update team names if provided
+                    if match_data.get('team1'):
+                        existing.team1_name = match_data.get('team1')
+                    if match_data.get('team2'):
+                        existing.team2_name = match_data.get('team2')
+                    # Only update scores if new value is not empty (preserve existing scores)
+                    if match_data.get('team1_score'):
+                        existing.team1_score = match_data.get('team1_score')
+                    if match_data.get('team2_score'):
+                        existing.team2_score = match_data.get('team2_score')
+                    # Update result only if not empty
+                    if match_data.get('result'):
+                        existing.result = match_data.get('result')
+                    if match_data.get('status'):
+                        existing.state = match_data.get('status')
+                    if match_data.get('match_format'):
+                        existing.match_format = match_data.get('match_format')
+                    if match_data.get('match_url'):
+                        existing.match_url = match_data.get('match_url')
+                    if match_data.get('series_id'):
+                        existing.cricbuzz_series_id = match_data.get('series_id')
                     existing.updated_at = datetime.utcnow()
                 else:
                     new_match = Match(
