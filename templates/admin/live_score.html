@@ -61,7 +61,10 @@
         <div class="table-section">
             <div class="table-header series" style="background: linear-gradient(135deg, #8b5cf6, #6366f1);">
                 <span>📋 Series (<span id="series-count">0</span>) | Matches (<span id="match-count">0</span>)</span>
-                <button type="button" class="btn btn-sm" onclick="scrapeSeries()" id="scrape-series-btn" style="margin-left: 15px; background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Fetch Data</button>
+                <div style="display: flex; gap: 10px; margin-left: 15px;">
+                    <button type="button" class="btn btn-sm" onclick="scrapeSeries()" id="scrape-series-btn" style="background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Fetch Data</button>
+                    <button type="button" class="btn btn-sm" onclick="sortMatchesByStatus()" style="background: #ef4444; color: #fff; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">🔴 Live First</button>
+                </div>
             </div>
             <div class="table-wrapper">
                 <table class="excel-table">
@@ -531,6 +534,9 @@ function scrapeScorecard(matchId, seriesId, seriesName, btn) {
             '</td>';
             
             mainRow.after(dropdownRow);
+            
+            // Auto-sort matches by status (Live first)
+            sortMatchesByStatus();
         } else {
             btn.textContent = '✗';
             btn.style.background = '#ef4444';
@@ -549,6 +555,37 @@ function toggleScorecard(matchId) {
     if (row) {
         row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
     }
+}
+
+function sortMatchesByStatus() {
+    const tbody = document.getElementById('series-tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr:not(.scorecard-row)'));
+    
+    // Define status priority (Live = 1, Break/Tea/Lunch = 2, Upcoming = 3, Complete = 4, Unknown = 5)
+    function getStatusPriority(row) {
+        const statusCell = row.querySelector('.status-cell');
+        if (!statusCell) return 5;
+        const status = statusCell.textContent.toLowerCase().trim();
+        
+        if (status === 'live') return 1;
+        if (status.includes('break') || status === 'tea' || status === 'lunch' || status === 'stumps') return 2;
+        if (status === 'upcoming') return 3;
+        if (status.includes('won') || status === 'completed' || status.includes('drawn') || status.includes('tied')) return 4;
+        return 5; // Not scraped yet
+    }
+    
+    // Sort rows by status priority
+    rows.sort((a, b) => getStatusPriority(a) - getStatusPriority(b));
+    
+    // Re-append rows in sorted order (with their scorecard rows)
+    rows.forEach(row => {
+        tbody.appendChild(row);
+        const matchId = row.id.replace('row-', '');
+        const scorecardRow = document.getElementById('scorecard-' + matchId);
+        if (scorecardRow) {
+            tbody.appendChild(scorecardRow);
+        }
+    });
 }
 
 function scrapeSeries() {
