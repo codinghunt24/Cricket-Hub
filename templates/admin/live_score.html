@@ -577,20 +577,28 @@ function scrapeSeries() {
             matchCountEl.textContent = totalMatches;
             
             tbody.innerHTML = '';
-            // Create separate row for each match ID
+            // Create grouped rows - Series ID appears once with rowspan
             data.series.forEach(function(s) {
-                if (s.match_ids && s.match_ids.length > 0) {
-                    s.match_ids.forEach(function(matchId) {
+                const matchCount = s.match_ids ? s.match_ids.length : 0;
+                
+                if (matchCount > 0) {
+                    s.match_ids.forEach(function(matchId, index) {
                         const row = document.createElement('tr');
-                        row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
-                            '<td>' + s.series_name + '</td>' +
-                            '<td><a href="https://www.cricbuzz.com/live-cricket-scores/' + matchId + '" target="_blank">' + matchId + '</a></td>';
+                        if (index === 0) {
+                            // First row - includes Series ID and Name with rowspan
+                            row.innerHTML = '<td rowspan="' + matchCount + '" style="vertical-align: middle; background: #f8f9fa;"><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
+                                '<td rowspan="' + matchCount + '" style="vertical-align: middle; background: #f8f9fa;">' + s.series_name + '</td>' +
+                                '<td><a href="https://www.cricbuzz.com/live-cricket-scores/' + matchId + '" target="_blank">' + matchId + '</a></td>';
+                        } else {
+                            // Subsequent rows - only Match ID
+                            row.innerHTML = '<td><a href="https://www.cricbuzz.com/live-cricket-scores/' + matchId + '" target="_blank">' + matchId + '</a></td>';
+                        }
                         tbody.appendChild(row);
                     });
                 } else {
                     const row = document.createElement('tr');
-                    row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
-                        '<td>' + s.series_name + '</td>' +
+                    row.innerHTML = '<td style="background: #f8f9fa;"><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
+                        '<td style="background: #f8f9fa;">' + s.series_name + '</td>' +
                         '<td>-</td>';
                     tbody.appendChild(row);
                 }
