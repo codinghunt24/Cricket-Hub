@@ -6,13 +6,27 @@
 {% block content %}
 <div class="admin-dashboard">
     <div class="dashboard-cards">
-        <div class="dashboard-card">
-            <div class="card-icon">&#127951;</div>
-            <div class="card-info">
-                <h3>Live Score</h3>
-                <p>Manage live cricket scores</p>
+        <a href="/admin/live-score" class="dashboard-card-link">
+            <div class="dashboard-card">
+                <div class="card-icon">&#127951;</div>
+                <div class="card-info">
+                    <h3>Live Score</h3>
+                    <p>Manage live cricket scores</p>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
+
+<style>
+.dashboard-card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.dashboard-card-link:hover .dashboard-card {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+</style>
 {% endblock %}

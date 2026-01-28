@@ -545,6 +545,94 @@ def admin_dashboard():
                          categories=categories,
                          recent_logs=recent_logs)
 
+@app.route('/admin/live-score')
+@admin_required
+def admin_live_score():
+    setting = LiveScoreScrapeSetting.query.first()
+    if not setting:
+        setting = LiveScoreScrapeSetting(auto_scrape_enabled=False, interval_seconds=60)
+        db.session.add(setting)
+        db.session.commit()
+    
+    all_matches = Match.query.order_by(Match.updated_at.desc()).all()
+    
+    seen_ids = set()
+    unique_matches = []
+    for m in all_matches:
+        if m.match_id and m.match_id not in seen_ids:
+            seen_ids.add(m.match_id)
+            unique_matches.append(m)
+    
+    live = [m for m in unique_matches if m.state == 'Live']
+    in_progress = [m for m in unique_matches if m.state == 'In Progress']
+    innings = [m for m in unique_matches if m.state == 'Innings Break']
+    stumps = [m for m in unique_matches if m.state == 'Stumps']
+    lunch = [m for m in unique_matches if m.state == 'Lunch']
+    tea = [m for m in unique_matches if m.state == 'Tea']
+    drinks = [m for m in unique_matches if m.state == 'Drinks']
+    preview = [m for m in unique_matches if m.state == 'Preview']
+    upcoming = [m for m in unique_matches if m.state == 'Upcoming']
+    complete = [m for m in unique_matches if m.state == 'Complete']
+    abandon = [m for m in unique_matches if m.state == 'Abandon']
+    
+    matches = live + in_progress + innings + stumps + lunch + tea + drinks + preview + upcoming + complete + abandon
+    
+    counts = {
+        'live': len(live) + len(in_progress),
+        'innings_break': len(innings) + len(stumps) + len(lunch) + len(tea) + len(drinks),
+        'complete': len(complete) + len(abandon),
+        'upcoming': len(upcoming) + len(preview)
+    }
+    
+    return render_template('admin/live_score.html', 
+                         setting=setting,
+                         matches=matches,
+                         counts=counts)
+
+@app.route('/admin/live-score/settings', methods=['POST'])
+@admin_required
+def admin_live_score_settings():
+    setting = LiveScoreScrapeSetting.query.first()
+    if not setting:
+        setting = LiveScoreScrapeSetting()
+        db.session.add(setting)
+    
+    setting.auto_scrape_enabled = 'auto_enabled' in request.form
+    setting.interval_seconds = int(request.form.get('interval', 60))
+    db.session.commit()
+    
+    if setting.auto_scrape_enabled:
+        from scheduler import update_live_score_schedule
+        update_live_score_schedule(setting.interval_seconds)
+    
+    flash('Live score settings updated', 'success')
+    return redirect(url_for('admin_live_score'))
+
+@app.route('/admin/live-score/scrape', methods=['POST'])
+@admin_required
+def admin_live_score_scrape():
+    try:
+        result = scraper.scrape_live_scores()
+        
+        if result.get('success'):
+            for match_data in result.get('matches', []):
+                upsert_match(match_data)
+            
+            db.session.commit()
+            
+            setting = LiveScoreScrapeSetting.query.first()
+            if setting:
+                setting.last_scrape = datetime.utcnow()
+                db.session.commit()
+            
+            flash(f"Scraped {len(result.get('matches', []))} matches successfully", 'success')
+        else:
+            flash('Failed to scrape live scores', 'error')
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+    
+    return redirect(url_for('admin_live_score'))
+
 @app.route('/admin/automation')
 @admin_required
 def admin_automation():

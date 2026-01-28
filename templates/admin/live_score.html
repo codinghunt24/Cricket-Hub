@@ -1,0 +1,407 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Live Score - Admin Panel{% endblock %}
+{% block page_title %}Live Score{% endblock %}
+
+{% block content %}
+<div class="live-score-admin">
+    <div class="admin-section">
+        <div class="section-header">
+            <h2>Scrape Settings</h2>
+        </div>
+        <div class="settings-card">
+            <form method="POST" action="/admin/live-score/settings" class="settings-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="toggle-label">
+                            <input type="checkbox" name="auto_enabled" {% if setting and setting.auto_scrape_enabled %}checked{% endif %}>
+                            <span class="toggle-slider"></span>
+                            Auto-Refresh Enabled
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>Refresh Interval (seconds)</label>
+                        <input type="number" name="interval" value="{{ setting.interval_seconds if setting else 60 }}" min="30" max="600" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </div>
+                {% if setting and setting.last_scrape %}
+                <p class="last-update">Last Updated: {{ setting.last_scrape.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                {% endif %}
+            </form>
+            <form method="POST" action="/admin/live-score/scrape" class="scrape-form">
+                <button type="submit" class="btn btn-success">Scrape Now</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <div class="section-header">
+            <h2>Live Matches ({{ matches|length }})</h2>
+            <div class="match-counts">
+                <span class="count-badge live">Live: {{ counts.live }}</span>
+                <span class="count-badge innings">Innings Break: {{ counts.innings_break }}</span>
+                <span class="count-badge complete">Complete: {{ counts.complete }}</span>
+                <span class="count-badge upcoming">Upcoming: {{ counts.upcoming }}</span>
+            </div>
+        </div>
+
+        <div class="matches-table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Match ID</th>
+                        <th>Series</th>
+                        <th>Format</th>
+                        <th>Team 1</th>
+                        <th>Team 2</th>
+                        <th>Status</th>
+                        <th>Result</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for match in matches %}
+                    <tr class="match-row status-{{ match.state|lower|replace(' ', '-') if match.state else 'unknown' }}">
+                        <td class="match-id">
+                            <a href="{{ match.match_url }}" target="_blank" title="View on Cricbuzz">{{ match.match_id }}</a>
+                        </td>
+                        <td class="series-info">
+                            <span class="series-name">{{ match.series_name or '-' }}</span>
+                            <small class="series-id">ID: {{ match.cricbuzz_series_id or '-' }}</small>
+                        </td>
+                        <td>{{ match.match_format or '-' }}</td>
+                        <td class="team-cell">
+                            <span class="team-name">{{ match.team1_name or '-' }}</span>
+                            <span class="team-score">{{ match.team1_score or '' }}</span>
+                        </td>
+                        <td class="team-cell">
+                            <span class="team-name">{{ match.team2_name or '-' }}</span>
+                            <span class="team-score">{{ match.team2_score or '' }}</span>
+                        </td>
+                        <td>
+                            <span class="status-badge {{ match.state|lower|replace(' ', '-') if match.state else 'unknown' }}">
+                                {{ match.state or 'Unknown' }}
+                            </span>
+                        </td>
+                        <td class="result-cell">{{ match.result or '-' }}</td>
+                        <td class="actions-cell">
+                            <a href="/match/{{ match.match_id }}" class="btn btn-sm" title="View Match">View</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="no-data">No matches found. Click "Scrape Now" to fetch live scores.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.live-score-admin {
+    padding: 20px;
+}
+
+.admin-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.settings-card {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.settings-form {
+    flex: 1;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.form-control {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    width: 100px;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.toggle-slider {
+    width: 40px;
+    height: 20px;
+    background: #ccc;
+    border-radius: 20px;
+    position: relative;
+    transition: 0.3s;
+}
+
+.toggle-slider::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: 0.3s;
+}
+
+input:checked + .toggle-slider {
+    background: #28a745;
+}
+
+input:checked + .toggle-slider::after {
+    left: 22px;
+}
+
+.last-update {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 10px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: #fff;
+}
+
+.btn-success {
+    background: #28a745;
+    color: #fff;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    background: #6c757d;
+    color: #fff;
+}
+
+.match-counts {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.count-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.count-badge.live {
+    background: #dc3545;
+    color: #fff;
+}
+
+.count-badge.innings {
+    background: #ffc107;
+    color: #000;
+}
+
+.count-badge.complete {
+    background: #28a745;
+    color: #fff;
+}
+
+.count-badge.upcoming {
+    background: #17a2b8;
+    color: #fff;
+}
+
+.matches-table-container {
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.admin-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+.match-row.status-live {
+    background: rgba(220, 53, 69, 0.05);
+}
+
+.match-row.status-innings-break {
+    background: rgba(255, 193, 7, 0.1);
+}
+
+.match-id a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.match-id a:hover {
+    text-decoration: underline;
+}
+
+.series-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.series-name {
+    font-weight: 500;
+}
+
+.series-id {
+    color: #888;
+    font-size: 0.7rem;
+}
+
+.team-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.team-name {
+    font-weight: 500;
+}
+
+.team-score {
+    color: #28a745;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.status-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.live {
+    background: #dc3545;
+    color: #fff;
+}
+
+.status-badge.in-progress {
+    background: #fd7e14;
+    color: #fff;
+}
+
+.status-badge.innings-break {
+    background: #ffc107;
+    color: #000;
+}
+
+.status-badge.stumps {
+    background: #6f42c1;
+    color: #fff;
+}
+
+.status-badge.lunch,
+.status-badge.tea,
+.status-badge.drinks {
+    background: #20c997;
+    color: #fff;
+}
+
+.status-badge.preview {
+    background: #17a2b8;
+    color: #fff;
+}
+
+.status-badge.upcoming {
+    background: #6c757d;
+    color: #fff;
+}
+
+.status-badge.complete {
+    background: #28a745;
+    color: #fff;
+}
+
+.status-badge.abandon {
+    background: #343a40;
+    color: #fff;
+}
+
+.result-cell {
+    max-width: 200px;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #888;
+}
+</style>
+{% endblock %}
