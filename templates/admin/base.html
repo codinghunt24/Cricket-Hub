@@ -20,70 +20,10 @@
             
             <nav class="sidebar-nav">
                 <ul class="sidebar-menu">
-                    <li class="sidebar-item {% if request.path == '/admin' %}active{% endif %}">
-                        <a href="/admin" class="sidebar-link">
-                            <span class="sidebar-icon">&#128200;</span>
-                            <span class="sidebar-text">Dashboard</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item {% if request.path == '/admin/automation' %}active{% endif %}">
-                        <a href="/admin/automation" class="sidebar-link">
-                            <span class="sidebar-icon">&#9881;</span>
-                            <span class="sidebar-text">Automation</span>
-                        </a>
-                    </li>
                     <li class="sidebar-item {% if request.path == '/admin/matches' %}active{% endif %}">
                         <a href="/admin/matches" class="sidebar-link">
                             <span class="sidebar-icon">&#9917;</span>
                             <span class="sidebar-text">Matches</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item {% if request.path == '/admin/teams' %}active{% endif %}">
-                        <a href="/admin/teams" class="sidebar-link">
-                            <span class="sidebar-icon">&#128101;</span>
-                            <span class="sidebar-text">Teams</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item {% if request.path == '/admin/series' %}active{% endif %}">
-                        <a href="/admin/series" class="sidebar-link">
-                            <span class="sidebar-icon">&#127942;</span>
-                            <span class="sidebar-text">Series</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item {% if request.path == '/admin/scorecard' %}active{% endif %}">
-                        <a href="/admin/scorecard" class="sidebar-link">
-                            <span class="sidebar-icon">&#128203;</span>
-                            <span class="sidebar-text">Scorecard</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item {% if request.path == '/admin/news' %}active{% endif %}">
-                        <a href="/admin/news" class="sidebar-link">
-                            <span class="sidebar-icon">&#128240;</span>
-                            <span class="sidebar-text">News</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item {% if '/admin/posts' in request.path %}active{% endif %}">
-                        <a href="/admin/posts" class="sidebar-link">
-                            <span class="sidebar-icon">&#128221;</span>
-                            <span class="sidebar-text">Posts</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item {% if '/admin/categories' in request.path %}active{% endif %}">
-                        <a href="/admin/categories" class="sidebar-link">
-                            <span class="sidebar-icon">&#128193;</span>
-                            <span class="sidebar-text">Categories</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item {% if '/admin/auto-post' in request.path %}active{% endif %}">
-                        <a href="/admin/auto-post" class="sidebar-link">
-                            <span class="sidebar-icon">&#128640;</span>
-                            <span class="sidebar-text">Auto Post</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item {% if request.path == '/admin/settings' %}active{% endif %}">
-                        <a href="/admin/settings" class="sidebar-link">
-                            <span class="sidebar-icon">&#9881;</span>
-                            <span class="sidebar-text">Settings</span>
                         </a>
                     </li>
                 </ul>
