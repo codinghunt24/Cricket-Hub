@@ -624,6 +624,15 @@ def admin_scrape_series():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
+@app.route('/admin/live-score/scrape-scorecard/<match_id>', methods=['POST'])
+@admin_required
+def admin_scrape_scorecard(match_id):
+    try:
+        result = scraper.scrape_scorecard(match_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 @app.route('/admin/automation')
 @admin_required
 def admin_automation():

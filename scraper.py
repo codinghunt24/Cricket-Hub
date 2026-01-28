@@ -120,8 +120,79 @@ def scrape_series_from_live_page():
 
 
 def scrape_scorecard(match_id):
-    """Scrape scorecard for a match."""
-    return None
+    """
+    Scrape scorecard/match info for a match.
+    Returns basic match info available in HTML.
+    """
+    url = f"{BASE_URL}/live-cricket-scorecard/{match_id}"
+    html = fetch_page(url)
+    
+    if not html:
+        return {'success': False, 'match_id': match_id, 'message': 'Failed to fetch page'}
+    
+    from bs4 import BeautifulSoup
+    import json
+    
+    soup = BeautifulSoup(html, 'html.parser')
+    
+    result = {
+        'match_id': match_id,
+        'match_title': None,
+        'match_status': None,
+        'team1': None,
+        'team2': None,
+        'venue': None,
+        'match_format': None,
+        'series_name': None
+    }
+    
+    # Get title from page
+    title_tag = soup.find('title')
+    if title_tag:
+        title_text = title_tag.get_text(strip=True)
+        # Extract match title from "Cricket scorecard | India vs New Zealand, 4th T20I..."
+        if '|' in title_text:
+            result['match_title'] = title_text.split('|')[1].strip().split(' - ')[0].strip()
+        else:
+            result['match_title'] = title_text
+    
+    # Try to get SportsEvent JSON-LD data
+    json_ld_scripts = soup.find_all('script', type='application/ld+json')
+    for script in json_ld_scripts:
+        try:
+            data = json.loads(script.string)
+            if isinstance(data, dict) and data.get('@type') == 'SportsEvent':
+                if data.get('name'):
+                    result['match_title'] = data['name'].split(' - ')[0].strip()
+                if data.get('location'):
+                    loc = data['location']
+                    if isinstance(loc, dict):
+                        result['venue'] = loc.get('name')
+                    elif isinstance(loc, str):
+                        result['venue'] = loc
+                break
+        except:
+            continue
+    
+    # Parse team names from title
+    if result['match_title']:
+        vs_match = re.search(r'(.+?)\s+vs\s+(.+?),', result['match_title'])
+        if vs_match:
+            result['team1'] = vs_match.group(1).strip()
+            result['team2'] = vs_match.group(2).strip()
+        
+        # Extract format (T20I, ODI, Test, etc.)
+        format_match = re.search(r'\d+(?:st|nd|rd|th)?\s+(T20I?|ODI|Test|T20)', result['match_title'])
+        if format_match:
+            result['match_format'] = format_match.group(1)
+    
+    # Get series name from breadcrumb/link
+    series_link = soup.find('a', href=re.compile(r'/cricket-series/\d+/'))
+    if series_link:
+        result['series_name'] = series_link.get_text(strip=True)
+    
+    logger.info(f"Scraped match {match_id}: {result['match_title']}")
+    return {'success': True, **result}
 
 
 def scrape_category(category_slug):

@@ -71,10 +71,11 @@
                             <th>Series Name</th>
                             <th>Match ID</th>
                             <th>Match Title</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="series-tbody">
-                        <tr><td colspan="4" class="no-data">Click "Fetch Data" to load series and matches</td></tr>
+                        <tr><td colspan="5" class="no-data">Click "Fetch Data" to load series and matches</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -546,9 +547,56 @@ input:checked + .toggle-slider::after {
     font-style: italic;
 }
 
+.scrape-btn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.scrape-btn:hover {
+    background: #2563eb;
+}
+
+.scrape-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
 </style>
 
 <script>
+function scrapeScorecard(matchId, btn) {
+    btn.disabled = true;
+    btn.textContent = '...';
+    
+    fetch('/admin/live-score/scrape-scorecard/' + matchId, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            btn.textContent = '✓';
+            btn.style.background = '#10b981';
+            // Show result in alert or modal
+            alert('Match: ' + data.match_title + '\nTeam1: ' + data.team1 + '\nTeam2: ' + data.team2 + '\nVenue: ' + data.venue + '\nFormat: ' + data.match_format);
+        } else {
+            btn.textContent = '✗';
+            btn.style.background = '#ef4444';
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(function(err) {
+        btn.textContent = '✗';
+        btn.style.background = '#ef4444';
+        alert('Error: ' + err.message);
+    });
+}
+
 function scrapeSeries() {
     const btn = document.getElementById('scrape-series-btn');
     const seriesCountEl = document.getElementById('series-count');
@@ -586,7 +634,8 @@ function scrapeSeries() {
                         row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
                             '<td>' + s.series_name + '</td>' +
                             '<td><a href="https://www.cricbuzz.com/live-cricket-scores/' + match.match_id + '" target="_blank">' + match.match_id + '</a></td>' +
-                            '<td>' + match.match_title + '</td>';
+                            '<td>' + match.match_title + '</td>' +
+                            '<td><button class="scrape-btn" onclick="scrapeScorecard(\'' + match.match_id + '\', this)">Scrape</button></td>';
                         tbody.appendChild(row);
                     });
                 } else {
@@ -594,18 +643,19 @@ function scrapeSeries() {
                     row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
                         '<td>' + s.series_name + '</td>' +
                         '<td>-</td>' +
+                        '<td>-</td>' +
                         '<td>-</td>';
                     tbody.appendChild(row);
                 }
             });
         } else {
-            tbody.innerHTML = '<tr><td colspan="4" class="no-data">Error: ' + data.message + '</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="no-data">Error: ' + data.message + '</td></tr>';
         }
     })
     .catch(function(err) {
         btn.disabled = false;
         btn.textContent = 'Fetch Data';
-        tbody.innerHTML = '<tr><td colspan="4" class="no-data">Error: ' + err.message + '</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="no-data">Error: ' + err.message + '</td></tr>';
     });
 }
 </script>
