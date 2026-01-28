@@ -141,9 +141,12 @@ def scrape_scorecard(match_id):
         'match_status': None,
         'team1': None,
         'team2': None,
+        'team1_score': None,
+        'team2_score': None,
         'venue': None,
         'match_format': None,
-        'series_name': None
+        'series_name': None,
+        'result': None
     }
     
     # Get title from page
@@ -191,12 +194,51 @@ def scrape_scorecard(match_id):
     if series_link:
         result['series_name'] = series_link.get_text(strip=True)
     
-    # Try to get match status from live-cricket-scores page
+    # Try to get match status and scores from live-cricket-scores page
     live_url = f"{BASE_URL}/live-cricket-scores/{match_id}"
     live_html = fetch_page(live_url)
     if live_html:
         live_soup = BeautifulSoup(live_html, 'html.parser')
         page_text = live_soup.get_text()
+        
+        # Extract scores - look for patterns like "NZ14-0(1)" or "IND180/5(18.2)"
+        # First look for team abbreviation + score patterns
+        score_patterns = [
+            r'([A-Z]{2,5})(\d{1,3})-(\d{1,2})\((\d+(?:\.\d)?)\)',  # NZ14-0(1)
+            r'([A-Z]{2,5})(\d{1,3})/(\d{1,2})\((\d+(?:\.\d)?)\)',  # IND180/5(18.2)
+            r'([A-Z]{2,5})\s*(\d{1,3})-(\d{1,2})',  # NZ 14-0
+            r'([A-Z]{2,5})\s*(\d{1,3})/(\d{1,2})',  # IND 180/5
+        ]
+        
+        scores_found = []
+        for pattern in score_patterns:
+            matches = re.findall(pattern, page_text)
+            for match in matches:
+                team = match[0]
+                if len(match) >= 4:
+                    score = f"{match[1]}/{match[2]} ({match[3]})"
+                else:
+                    score = f"{match[1]}/{match[2]}"
+                scores_found.append({'team': team, 'score': score})
+            if scores_found:
+                break
+        
+        # Assign scores to teams
+        team1_abbr = result['team1'][:3].upper() if result['team1'] else None
+        team2_abbr = result['team2'][:3].upper() if result['team2'] else None
+        
+        for sf in scores_found[:2]:
+            team_abbr = sf['team']
+            if team1_abbr and team_abbr in ['IND', 'INDIA', team1_abbr]:
+                if not result['team1_score']:
+                    result['team1_score'] = sf['score']
+            elif team2_abbr and team_abbr in ['NZ', 'PAK', 'AUS', 'ENG', 'SA', 'WI', 'SL', 'BAN', 'AFG', 'ZIM', team2_abbr]:
+                if not result['team2_score']:
+                    result['team2_score'] = sf['score']
+            elif not result['team1_score']:
+                result['team1_score'] = sf['score']
+            elif not result['team2_score']:
+                result['team2_score'] = sf['score']
         
         # Check for common status patterns
         status_patterns = [
@@ -218,6 +260,7 @@ def scrape_scorecard(match_id):
             if match:
                 if status == 'Completed':
                     result['match_status'] = match.group()  # e.g., "India won by 5 wickets"
+                    result['result'] = match.group()
                 else:
                     result['match_status'] = status
                 break
