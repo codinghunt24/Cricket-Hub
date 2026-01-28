@@ -17,8 +17,43 @@ HEADERS = {
     'Connection': 'keep-alive',
 }
 
-CATEGORIES = {}
-SERIES_CATEGORIES = {}
+CATEGORIES = {
+    'international': {
+        'name': 'International',
+        'url': 'https://www.cricbuzz.com/cricket-team'
+    },
+    'domestic': {
+        'name': 'Domestic',
+        'url': 'https://www.cricbuzz.com/cricket-team/domestic'
+    },
+    'league': {
+        'name': 'League',
+        'url': 'https://www.cricbuzz.com/cricket-team/league'
+    },
+    'women': {
+        'name': 'Women',
+        'url': 'https://www.cricbuzz.com/cricket-team/women'
+    }
+}
+
+SERIES_CATEGORIES = {
+    'international': {
+        'name': 'International',
+        'url': 'https://www.cricbuzz.com/cricket-schedule/series/international'
+    },
+    'domestic': {
+        'name': 'Domestic',
+        'url': 'https://www.cricbuzz.com/cricket-schedule/series/domestic'
+    },
+    'league': {
+        'name': 'League',
+        'url': 'https://www.cricbuzz.com/cricket-schedule/series/league'
+    },
+    'women': {
+        'name': 'Women',
+        'url': 'https://www.cricbuzz.com/cricket-schedule/series/women'
+    }
+}
 
 
 def fetch_page(url, retries=3):
