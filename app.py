@@ -310,7 +310,7 @@ def index():
                     match_flags[f"{m.get('match_id')}_1"] = m.get('team1_flag', '')
                     match_flags[f"{m.get('match_id')}_2"] = m.get('team2_flag', '')
     
-    recent_posts = Post.query.filter_by(is_published=True).order_by(Post.created_at.desc()).limit(5).all()
+    recent_posts = Post.query.filter_by(is_published=True).order_by(Post.created_at.desc()).limit(10).all()
     
     # Get recent series for home page (order by id desc for most recently added)
     recent_series = Series.query.order_by(Series.id.desc()).limit(10).all()
@@ -3195,7 +3195,7 @@ def view_post(slug):
     post.views += 1
     db.session.commit()
     
-    recent_posts = Post.query.filter(Post.is_published==True, Post.id!=post.id).order_by(Post.created_at.desc()).limit(5).all()
+    recent_posts = Post.query.filter(Post.is_published==True, Post.id!=post.id).order_by(Post.created_at.desc()).limit(10).all()
     categories = PostCategory.query.filter_by(show_in_navbar=True).order_by(PostCategory.navbar_order).all()
     
     scorecard_data = None
@@ -3255,7 +3255,7 @@ def view_category(slug):
     category = PostCategory.query.filter_by(slug=slug).first_or_404()
     posts = Post.query.filter_by(category_id=category.id, is_published=True).order_by(Post.created_at.desc()).all()
     categories = PostCategory.query.filter_by(show_in_navbar=True).order_by(PostCategory.navbar_order).all()
-    recent_posts = Post.query.filter_by(is_published=True).order_by(Post.created_at.desc()).limit(5).all()
+    recent_posts = Post.query.filter_by(is_published=True).order_by(Post.created_at.desc()).limit(10).all()
     
     return render_template('category.html', category=category, posts=posts, categories=categories, recent_posts=recent_posts)
 
