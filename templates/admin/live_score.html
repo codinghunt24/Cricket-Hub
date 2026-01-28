@@ -86,18 +86,18 @@
                             {% for m in all_matches %}
                             <tr id="row-{{ m.match_id }}">
                                 <td><a href="https://www.cricbuzz.com/cricket-series/{{ m.series_id }}" target="_blank">{{ m.series_id or '-' }}</a></td>
-                                <td>{{ m.series.name if m.series else '-' }}</td>
+                                <td>{{ m.series_name or '-' }}</td>
                                 <td><a href="https://www.cricbuzz.com/live-cricket-scores/{{ m.match_id }}" target="_blank">{{ m.match_id }}</a></td>
-                                <td>{{ m.match_format or '-' }}</td>
+                                <td>{{ m.match_title or '-' }}</td>
                                 <td class="score-cell">{{ m.team1_score or '-' }}</td>
                                 <td class="score-cell">{{ m.team2_score or '-' }}</td>
-                                <td class="status-cell {% if m.state == 'Live' or m.state == 'In Progress' %}status-live{% elif m.state == 'Complete' %}status-completed{% elif m.state in ['Innings Break', 'Stumps', 'Lunch', 'Tea', 'Drinks'] %}status-break{% endif %}">{{ m.state or '-' }}</td>
+                                <td class="status-cell {% if m.status == 'Live' %}status-live{% elif m.status == 'Completed' %}status-completed{% endif %}">{{ m.status or '-' }}</td>
                                 <td class="result-cell">{{ m.result or '-' }}</td>
-                                <td><button class="scrape-btn" onclick="scrapeScorecard('{{ m.match_id }}', '{{ m.series_id }}', '{{ m.series.name if m.series else "" }}', this)">Scrape</button></td>
+                                <td><button class="scrape-btn" onclick="scrapeScorecard('{{ m.match_id }}', '{{ m.series_id }}', '{{ m.series_name|e }}', this)">Scrape</button></td>
                             </tr>
                             {% endfor %}
                         {% else %}
-                            <tr><td colspan="9" class="no-data">No matches in database. Click "Fetch Data" to load.</td></tr>
+                            <tr><td colspan="9" class="no-data">No live matches available</td></tr>
                         {% endif %}
                     </tbody>
                 </table>

@@ -548,20 +548,37 @@ def admin_live_score():
         db.session.add(setting)
         db.session.commit()
     
-    # Don't load from database - start empty, fetch will populate
-    # This ensures only container matches are shown
-    live_matches = []
-    break_matches = []
-    upcoming_matches = []
-    complete_matches = []
+    # Auto-fetch from container on page load
+    scrape_result = scraper.scrape_series_from_live_page()
+    
     all_sorted = []
+    live_count = 0
+    complete_count = 0
+    
+    if scrape_result.get('success'):
+        for s in scrape_result.get('series', []):
+            for m in s.get('matches', []):
+                all_sorted.append({
+                    'match_id': m.get('match_id'),
+                    'series_id': s.get('series_id'),
+                    'series_name': s.get('series_name'),
+                    'match_title': m.get('match_title', '-'),
+                    'team1_score': m.get('team1_score', '-'),
+                    'team2_score': m.get('team2_score', '-'),
+                    'status': m.get('match_status', '-'),
+                    'result': m.get('match_result', '-')
+                })
+                if m.get('match_status') == 'Live':
+                    live_count += 1
+                elif m.get('match_status') == 'Completed':
+                    complete_count += 1
     
     return render_template('admin/live_score.html', 
                          setting=setting,
-                         live_matches=live_matches,
-                         break_matches=break_matches,
-                         upcoming_matches=upcoming_matches,
-                         complete_matches=complete_matches,
+                         live_matches=[None] * live_count,
+                         break_matches=[],
+                         upcoming_matches=[],
+                         complete_matches=[None] * complete_count,
                          all_matches=all_sorted)
 
 @app.route('/admin/live-score/settings', methods=['POST'])
