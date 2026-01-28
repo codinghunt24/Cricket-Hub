@@ -136,8 +136,30 @@ def scrape_series_from_live_page():
                     seen_match_ids.add(mid)
                     match_title = m_link.get_text(strip=True)
                     
-                    # Get status from pre-built status_map (from nav bar)
-                    match_status = status_map.get(mid, '-')
+                    # Get status from pre-built status_map (from nav bar) first
+                    match_status = status_map.get(mid, '')
+                    
+                    # If not in nav bar, check the title attribute for status
+                    if not match_status:
+                        title_attr = m_link.get('title', '').lower()
+                        if 'won' in title_attr or 'result' in title_attr or 'tied' in title_attr or 'drawn' in title_attr or 'no result' in title_attr:
+                            match_status = 'Completed'
+                        elif 'live' in title_attr or 'need' in title_attr or 'trail' in title_attr or 'lead' in title_attr:
+                            match_status = 'Live'
+                        elif 'preview' in title_attr or 'upcoming' in title_attr:
+                            match_status = 'Upcoming'
+                        elif 'break' in title_attr or 'innings' in title_attr or 'stumps' in title_attr or 'tea' in title_attr or 'lunch' in title_attr:
+                            match_status = 'Break'
+                    
+                    # Fallback: check the link text itself
+                    if not match_status:
+                        text_lower = match_title.lower() if match_title else ''
+                        if 'live' in text_lower:
+                            match_status = 'Live'
+                        elif 'preview' in text_lower:
+                            match_status = 'Upcoming'
+                        else:
+                            match_status = '-'
                     
                     matches.append({
                         'match_id': mid,
