@@ -283,36 +283,32 @@ def get_team_flag(team_name, teams_list):
 
 @app.route('/')
 def index():
-    all_matches = Match.query.order_by(Match.updated_at.desc()).limit(100).all()
+    # Scrape live data from Cricbuzz (same as admin Live Score page)
+    scrape_result = scraper.scrape_series_from_live_page()
     
-    # Unique matches by match_id to avoid duplicates
-    seen_ids = set()
-    unique_matches = []
-    for m in all_matches:
-        if m.match_id and m.match_id not in seen_ids:
-            seen_ids.add(m.match_id)
-            unique_matches.append(m)
-    
-    # Order: Live > In Progress > Innings Break > Stumps > Lunch > Tea > Drinks > Preview > Upcoming > Complete > Abandon
-    live = [m for m in unique_matches if m.state == 'Live']
-    in_progress = [m for m in unique_matches if m.state == 'In Progress']
-    innings = [m for m in unique_matches if m.state == 'Innings Break']
-    stumps = [m for m in unique_matches if m.state == 'Stumps']
-    lunch = [m for m in unique_matches if m.state == 'Lunch']
-    tea = [m for m in unique_matches if m.state == 'Tea']
-    drinks = [m for m in unique_matches if m.state == 'Drinks']
-    preview = [m for m in unique_matches if m.state == 'Preview']
-    upcoming = [m for m in unique_matches if m.state == 'Upcoming']
-    complete = [m for m in unique_matches if m.state == 'Complete']
-    abandon = [m for m in unique_matches if m.state == 'Abandon']
-    
-    matches = live + in_progress + innings + stumps + lunch + tea + drinks + preview + upcoming + complete + abandon
-    
+    matches = []
     match_flags = {}
-    for m in matches:
-        if m.match_id:
-            match_flags[f"{m.match_id}_1"] = m.team1_flag or ''
-            match_flags[f"{m.match_id}_2"] = m.team2_flag or ''
+    
+    if scrape_result.get('success'):
+        # Convert scraped data to match format for template
+        for s in scrape_result.get('series', []):
+            for m in s.get('matches', []):
+                match_data = {
+                    'match_id': m.get('match_id'),
+                    'match_format': s.get('series_name', 'Match'),
+                    'team1_name': m.get('team1_name', 'Team 1'),
+                    'team2_name': m.get('team2_name', 'Team 2'),
+                    'team1_score': m.get('team1_score', ''),
+                    'team2_score': m.get('team2_score', ''),
+                    'state': m.get('match_status', 'Live'),
+                    'result': m.get('match_result', '')
+                }
+                matches.append(type('Match', (), match_data)())
+                
+                # Set flags
+                if m.get('match_id'):
+                    match_flags[f"{m.get('match_id')}_1"] = m.get('team1_flag', '')
+                    match_flags[f"{m.get('match_id')}_2"] = m.get('team2_flag', '')
     
     recent_posts = Post.query.filter_by(is_published=True).order_by(Post.created_at.desc()).limit(5).all()
     
