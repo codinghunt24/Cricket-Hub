@@ -10,6 +10,75 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://www.cricbuzz.com"
 
+
+def validate_team2_score(team1_score, team2_score, result, state):
+    """
+    Validate if team2 has actually batted.
+    Returns team2_score if valid, empty string if team2 hasn't batted yet.
+    """
+    if not team2_score:
+        return ''
+    
+    if not result:
+        return team2_score
+    
+    result_lower = result.lower()
+    
+    # If result shows toss and team opted to bowl, team1 is batting first
+    # Check if team2's score might be incorrect (very low runs indicating they haven't batted)
+    if 'opt to bowl' in result_lower or 'elected to bowl' in result_lower or 'opted to field' in result_lower:
+        # Team1 is batting first - check if team2 has a suspicious score
+        try:
+            # Parse team2 score - format: runs/wickets (overs) or runs/wickets
+            score_match = re.match(r'(\d+)/(\d+)', team2_score)
+            if score_match:
+                runs = int(score_match.group(1))
+                wickets = int(score_match.group(2))
+                
+                # If runs are very low (< 30) and wickets are high (> 3), might be first innings still
+                # Also check if state is Live/In Progress
+                if state in ['Live', 'In Progress'] and runs < 30 and wickets >= 4:
+                    # Check team1's score - if they have a big score, team2 might have started poorly
+                    if team1_score:
+                        t1_match = re.match(r'(\d+)/(\d+)', team1_score)
+                        if t1_match:
+                            t1_runs = int(t1_match.group(1))
+                            # If team1 has high score and team2 has very low, might be valid 2nd innings collapse
+                            if t1_runs > 100:
+                                return team2_score  # Valid - 2nd innings started but bad start
+                    
+                    # If team1 is still batting with a big score and team2 shows low runs, likely error
+                    # This is still valid though - could be 2nd innings collapse
+                    return team2_score
+        except:
+            pass
+    
+    # If result shows "opt to bat", team that won toss is batting first
+    # team2 might not have batted yet
+    if 'opt to bat' in result_lower or 'elected to bat' in result_lower:
+        try:
+            score_match = re.match(r'(\d+)/(\d+)', team2_score)
+            if score_match:
+                runs = int(score_match.group(1))
+                wickets = int(score_match.group(2))
+                
+                # Very suspicious - low runs could mean team2 hasn't batted
+                # But if runs is 0, definitely hasn't batted
+                if runs == 0:
+                    return ''
+                
+                # If less than 10 runs and match is live, could be parsing error
+                if state in ['Live', 'In Progress'] and runs < 10:
+                    # Check if it looks like overs (X.Y format as X/Y)
+                    if runs < 10 and wickets < 10:
+                        # Could be overs mistaken as score - clear it
+                        logger.info(f"Clearing suspicious team2_score: {team2_score}")
+                        return ''
+        except:
+            pass
+    
+    return team2_score
+
 def extract_json_from_page(html):
     """Extract embedded JSON data from Cricbuzz page (Next.js __next_f data)"""
     if not html:
