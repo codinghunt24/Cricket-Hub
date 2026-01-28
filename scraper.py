@@ -538,15 +538,25 @@ def scrape_scorecard(match_id):
             
             # If no result element, check patterns in page text
             if not result['match_status']:
+                # Determine if this is a Test match (multi-day) based on match format
+                match_title = result.get('match_title', '').lower()
+                is_test_match = 'test' in match_title or 'day ' in match_title
+                
+                # Base patterns for all match types
                 status_patterns = [
                     (r'Match\s+drawn', 'Completed'),
                     (r'Match\s+tied', 'Completed'),
                     (r'No\s+result', 'No Result'),
                     (r'Innings\s+Break', 'Break'),
-                    (r'Stumps', 'Stumps'),
-                    (r'Tea', 'Tea'),
-                    (r'Lunch', 'Lunch'),
                 ]
+                
+                # Test-specific breaks (only for multi-day matches)
+                if is_test_match:
+                    status_patterns.extend([
+                        (r'Stumps', 'Stumps'),
+                        (r'Tea', 'Tea'),
+                        (r'Lunch', 'Lunch'),
+                    ])
                 
                 for pattern, status in status_patterns:
                     match = re.search(pattern, page_text, re.IGNORECASE)
