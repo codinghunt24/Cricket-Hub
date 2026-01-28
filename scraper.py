@@ -577,6 +577,55 @@ def scrape_live_scores():
                 if score_resp.status_code == 200:
                     html_text = score_resp.text
                     
+                    # Extract CORRECT series_id from page title and series links
+                    # Page title format: "... | Team1 vs Team2, Match Format, SERIES NAME"
+                    # Example: "Cricket commentary | South Africa vs West Indies, 1st T20I, West Indies tour of South Africa, 2026"
+                    title_match = re.search(r'<title>([^<]+)</title>', html_text)
+                    if title_match:
+                        page_title = title_match.group(1)
+                        # Remove "Cricket commentary | " prefix if present
+                        if '|' in page_title:
+                            page_title = page_title.split('|', 1)[-1].strip()
+                        
+                        # Extract series name - it's after the match format
+                        # Format pattern: Team1 vs Team2, Match Format, Series Name
+                        format_pattern = r'vs\s+[^,]+,\s*(?:\d+(?:st|nd|rd|th)\s+(?:T20I?|ODI|Test|Match|T20))?\s*[^,]*,\s*(.+)$'
+                        format_match = re.search(format_pattern, page_title, re.IGNORECASE)
+                        if format_match:
+                            series_from_title = format_match.group(1).strip()
+                        else:
+                            # Fallback: get everything after last match format indicator
+                            title_parts = page_title.split(',')
+                            if len(title_parts) >= 3:
+                                # Series is usually the 3rd part onwards
+                                series_from_title = ', '.join(title_parts[2:]).strip()
+                            else:
+                                series_from_title = title_parts[-1].strip()
+                        
+                        # Clean up series name
+                        series_from_title = series_from_title.split('|')[0].strip()
+                        
+                        # Handle stage/group names like "Super Six Group 1 (A,D), ICC Under 19 World Cup 2026"
+                        # Try both full name and last part after comma
+                        series_candidates = [series_from_title]
+                        if ', ' in series_from_title:
+                            # Add the main series name (usually last part)
+                            series_candidates.append(series_from_title.split(', ')[-1].strip())
+                        
+                        # Find series ID matching this name
+                        series_links = re.findall(r'/cricket-series/(\d+)/([^"]+)"[^>]*>([^<]+)</a>', html_text)
+                        found = False
+                        for series_name_try in series_candidates:
+                            if found:
+                                break
+                            for sid, slug, sname in series_links:
+                                # Match by first 15 chars of series name
+                                if series_name_try.lower()[:15] in sname.lower() or series_name_try.lower()[:15] in slug.lower().replace('-', ' '):
+                                    match['series_id'] = sid
+                                    match['series_name'] = sname
+                                    found = True
+                                    break
+                    
                     # Only extract scores for active matches (Live/Innings Break/Complete)
                     # NOT for toss-only matches (match hasn't started yet)
                     if is_active_match:
