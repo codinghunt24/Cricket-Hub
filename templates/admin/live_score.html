@@ -233,11 +233,11 @@
 }
 
 .scrape-section {
-    background: #fff;
+    background: var(--admin-card, #1f2937);
     border-radius: 8px;
     padding: 15px 20px;
     margin-bottom: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid var(--admin-border, #374151);
 }
 
 .scrape-header {
@@ -252,10 +252,11 @@
 .scrape-header h2 {
     margin: 0;
     font-size: 1.25rem;
+    color: var(--admin-text, #e4e4e7);
 }
 
 .last-update {
-    color: #888;
+    color: var(--admin-text-muted, #9ca3af);
     font-size: 0.8rem;
     margin: 5px 0 0;
 }
@@ -275,14 +276,16 @@
 
 .form-group label {
     font-size: 0.85rem;
-    color: #666;
+    color: var(--admin-text-muted, #9ca3af);
 }
 
 .form-control {
     padding: 6px 10px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--admin-border, #374151);
     border-radius: 4px;
     width: 80px;
+    background: var(--admin-input-bg, #374151);
+    color: var(--admin-text, #e4e4e7);
 }
 
 .toggle-label {
@@ -291,12 +294,13 @@
     gap: 8px;
     cursor: pointer;
     font-size: 0.85rem;
+    color: var(--admin-text, #e4e4e7);
 }
 
 .toggle-slider {
     width: 36px;
     height: 18px;
-    background: #ccc;
+    background: #555;
     border-radius: 18px;
     position: relative;
     transition: 0.3s;
@@ -315,7 +319,7 @@
 }
 
 input:checked + .toggle-slider {
-    background: #28a745;
+    background: #10b981;
 }
 
 input:checked + .toggle-slider::after {
@@ -331,12 +335,12 @@ input:checked + .toggle-slider::after {
 }
 
 .btn-primary {
-    background: #007bff;
+    background: #3b82f6;
     color: #fff;
 }
 
 .btn-success {
-    background: #28a745;
+    background: #10b981;
     color: #fff;
 }
 
@@ -354,30 +358,30 @@ input:checked + .toggle-slider::after {
 }
 
 .count-box {
-    background: #fff;
+    background: var(--admin-card, #1f2937);
     padding: 12px 20px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid var(--admin-border, #374151);
     min-width: 120px;
 }
 
 .count-box.live {
-    border-left: 4px solid #dc3545;
+    border-left: 4px solid #ef4444;
 }
 
 .count-box.break {
-    border-left: 4px solid #ffc107;
+    border-left: 4px solid #f59e0b;
 }
 
 .count-box.upcoming {
-    border-left: 4px solid #17a2b8;
+    border-left: 4px solid #06b6d4;
 }
 
 .count-box.complete {
-    border-left: 4px solid #28a745;
+    border-left: 4px solid #10b981;
 }
 
 .count-icon {
@@ -386,13 +390,14 @@ input:checked + .toggle-slider::after {
 
 .count-label {
     font-size: 0.85rem;
-    color: #666;
+    color: var(--admin-text-muted, #9ca3af);
 }
 
 .count-number {
     font-size: 1.25rem;
     font-weight: 700;
     margin-left: auto;
+    color: var(--admin-text, #e4e4e7);
 }
 
 .tables-container {
@@ -402,10 +407,10 @@ input:checked + .toggle-slider::after {
 }
 
 .table-section {
-    background: #fff;
+    background: var(--admin-card, #1f2937);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid var(--admin-border, #374151);
 }
 
 .table-header {
@@ -416,20 +421,19 @@ input:checked + .toggle-slider::after {
 }
 
 .table-header.live {
-    background: linear-gradient(135deg, #dc3545, #c82333);
+    background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 
 .table-header.break {
-    background: linear-gradient(135deg, #ffc107, #e0a800);
-    color: #000;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
 }
 
 .table-header.upcoming {
-    background: linear-gradient(135deg, #17a2b8, #138496);
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
 }
 
 .table-header.complete {
-    background: linear-gradient(135deg, #28a745, #218838);
+    background: linear-gradient(135deg, #10b981, #059669);
 }
 
 .table-wrapper {
@@ -443,30 +447,33 @@ input:checked + .toggle-slider::after {
 }
 
 .excel-table th {
-    background: #f1f3f4;
+    background: var(--admin-table-header, #111827);
     padding: 10px 8px;
     text-align: left;
     font-weight: 600;
-    border: 1px solid #ddd;
+    border: 1px solid var(--admin-border, #374151);
     white-space: nowrap;
+    color: var(--admin-text, #e4e4e7);
 }
 
 .excel-table td {
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--admin-border, #374151);
     vertical-align: middle;
+    color: var(--admin-text, #e4e4e7);
+    background: var(--admin-table-row, #1f2937);
 }
 
-.excel-table tbody tr:nth-child(even) {
-    background: #f9f9f9;
+.excel-table tbody tr:nth-child(even) td {
+    background: var(--admin-table-row-alt, #111827);
 }
 
-.excel-table tbody tr:hover {
-    background: #e8f4ff;
+.excel-table tbody tr:hover td {
+    background: var(--admin-hover, #374151);
 }
 
 .excel-table td a {
-    color: #007bff;
+    color: #3b82f6;
     text-decoration: none;
     font-weight: 600;
 }
@@ -477,7 +484,7 @@ input:checked + .toggle-slider::after {
 
 .excel-table td.score {
     font-weight: 600;
-    color: #28a745;
+    color: #10b981;
 }
 
 .state-badge {
@@ -490,28 +497,28 @@ input:checked + .toggle-slider::after {
 }
 
 .state-badge.live {
-    background: #dc3545;
+    background: #ef4444;
     color: #fff;
 }
 
 .state-badge.break {
-    background: #ffc107;
+    background: #f59e0b;
     color: #000;
 }
 
 .state-badge.upcoming {
-    background: #17a2b8;
+    background: #06b6d4;
     color: #fff;
 }
 
 .state-badge.complete {
-    background: #28a745;
+    background: #10b981;
     color: #fff;
 }
 
 .no-data {
     text-align: center;
-    color: #999;
+    color: var(--admin-text-muted, #9ca3af);
     padding: 20px;
     font-style: italic;
 }
