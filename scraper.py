@@ -59,6 +59,7 @@ def scrape_series_from_live_page():
     # Build status map from CSS classes (text-cbLive, text-cbComplete)
     status_map = {}
     result_map = {}
+    score_map = {}  # Store team scores
     
     # Find all spans with status classes
     status_spans = soup.find_all('span', class_=re.compile(r'text-cb(Live|Complete)'))
@@ -93,6 +94,37 @@ def scrape_series_from_live_page():
                             result_map[mid] = result_text
                         break
                 parent = parent.parent
+    
+    # Extract scores (format: 215-7 (20))
+    score_pattern = re.compile(r'\d{1,3}[-/]\d{1,2}\s*\(\d+\.?\d*\)')
+    score_elements = soup.find_all(string=score_pattern)
+    
+    for elem in score_elements:
+        parent = elem.parent
+        if parent:
+            score_text = elem.strip()
+            classes = parent.get('class', [])
+            class_str = ' '.join(classes) if classes else ''
+            
+            # Find match_id
+            grandparent = parent.parent
+            for _ in range(6):
+                if grandparent:
+                    link = grandparent.find('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+                    if link:
+                        m = re.search(r'/live-cricket-scores/(\d+)/', link.get('href', ''))
+                        if m:
+                            mid = m.group(1)
+                            if mid not in score_map:
+                                score_map[mid] = {'team1_score': None, 'team2_score': None}
+                            
+                            # text-cbTxtPrim = Team 1, text-cbTxtSec = Team 2
+                            if 'cbTxtPrim' in class_str and not score_map[mid]['team1_score']:
+                                score_map[mid]['team1_score'] = score_text
+                            elif 'cbTxtSec' in class_str and not score_map[mid]['team2_score']:
+                                score_map[mid]['team2_score'] = score_text
+                            break
+                    grandparent = grandparent.parent
     
     # Also check title attributes for Upcoming matches (Preview)
     preview_links = soup.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
@@ -170,11 +202,18 @@ def scrape_series_from_live_page():
                         match_status = status_map.get(mid)
                         match_result = result_map.get(mid, '')
                         
+                        # Get scores
+                        scores = score_map.get(mid, {})
+                        team1_score = scores.get('team1_score', '-')
+                        team2_score = scores.get('team2_score', '-')
+                        
                         matches.append({
                             'match_id': mid,
                             'match_title': match_title if match_title else '-',
                             'match_status': match_status,
-                            'match_result': match_result
+                            'match_result': match_result,
+                            'team1_score': team1_score,
+                            'team2_score': team2_score
                         })
         
         # Only add series if it has matches with status

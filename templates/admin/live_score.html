@@ -74,13 +74,15 @@
                             <th>Series Name</th>
                             <th>Match ID</th>
                             <th>Match Title</th>
+                            <th>Team 1</th>
+                            <th>Team 2</th>
                             <th>Status</th>
-                            <th>Result/Info</th>
+                            <th>Result</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="series-tbody">
-                        <tr><td colspan="7" class="no-data">Click "Fetch Data" to load series and matches</td></tr>
+                        <tr><td colspan="9" class="no-data">Click "Fetch Data" to load series and matches</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -474,6 +476,12 @@ input:checked + .toggle-slider::after {
     color: #ef4444 !important;
     font-weight: bold;
 }
+
+.score-cell {
+    font-weight: 600;
+    color: #2196F3;
+    white-space: nowrap;
+}
 .status-upcoming {
     color: #f59e0b !important;
 }
@@ -656,10 +664,14 @@ function scrapeSeries() {
                         }
                         
                         const resultText = match.match_result || '-';
+                        const team1Score = match.team1_score || '-';
+                        const team2Score = match.team2_score || '-';
                         row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
                             '<td>' + s.series_name + '</td>' +
                             '<td><a href="https://www.cricbuzz.com/live-cricket-scores/' + match.match_id + '" target="_blank">' + match.match_id + '</a></td>' +
                             '<td>' + match.match_title + '</td>' +
+                            '<td class="score-cell">' + team1Score + '</td>' +
+                            '<td class="score-cell">' + team2Score + '</td>' +
                             '<td class="status-cell ' + statusClass + '" id="status-' + match.match_id + '">' + statusText + '</td>' +
                             '<td class="result-cell">' + resultText + '</td>' +
                             '<td><button class="scrape-btn" onclick="scrapeScorecard(\'' + match.match_id + '\', \'' + s.series_id + '\', \'' + escapedSeriesName + '\', this)">Scrape</button></td>';
