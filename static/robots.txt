@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://cricbuzz-live-score.com/sitemap.xml
+
+# Cricbuzz Live Score - Live Cricket Scores
+# https://cricbuzz-live-score.com

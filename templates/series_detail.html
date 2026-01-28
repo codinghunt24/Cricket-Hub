@@ -1,6 +1,30 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ series.name }} - CricLive{% endblock %}
+{% block title %}{{ series.name }} - Schedule, Results, Live Score | Cricbuzz Live Score{% endblock %}
+
+{% block meta_description %}{{ series.name }} schedule, fixtures, results, live scores, points table. Get all match updates, ball by ball commentary for {{ series.name }} on Cricbuzz Live Score.{% endblock %}
+
+{% block meta_keywords %}{{ series.name }}, {{ series.name }} schedule, {{ series.name }} live score, {{ series.name }} results, {{ series.name }} points table, {{ series.name }} matches, cricket series{% endblock %}
+
+{% block og_title %}{{ series.name }} - Schedule & Live Score{% endblock %}
+{% block og_description %}{{ series.name }} schedule, results and live cricket scores{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    "name": "{{ series.name }}",
+    "description": "{{ series.name }} cricket series schedule, results and live scores",
+    "sport": "Cricket",
+    {% if series.date_range %}
+    "startDate": "{{ series.start_date }}",
+    "endDate": "{{ series.end_date }}",
+    {% endif %}
+    "url": "https://cricbuzz-live-score.com/series/{{ series.id }}"
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="series-detail-page">

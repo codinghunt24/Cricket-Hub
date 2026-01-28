@@ -1,6 +1,41 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ match.team1_name }} vs {{ match.team2_name }}, {{ match.match_format }}{% if series %}, {{ series.name }}{% endif %} - Scorecard - CricLive{% endblock %}
+{% block title %}{{ match.team1_name }} vs {{ match.team2_name }} Live Score, {{ match.match_format }}{% if series %}, {{ series.name }}{% endif %} - Cricbuzz Live Score{% endblock %}
+
+{% block meta_description %}{{ match.team1_name }} vs {{ match.team2_name }} live score, ball by ball commentary, {{ match.match_format }}{% if series %} {{ series.name }}{% endif %}. Get live cricket scorecard, playing 11, dream11 prediction, pitch report on Cricbuzz Live Score.{% endblock %}
+
+{% block meta_keywords %}{{ match.team1_name }} vs {{ match.team2_name }}, {{ match.team1_name }} vs {{ match.team2_name }} live score, {{ match.team1_name }} vs {{ match.team2_name }} scorecard, {{ match.match_format }} live, ball by ball commentary, dream11 prediction, pitch report, playing 11{% endblock %}
+
+{% block og_title %}{{ match.team1_name }} vs {{ match.team2_name }} Live Score - {{ match.match_format }}{% endblock %}
+{% block og_description %}{{ match.team1_name }} vs {{ match.team2_name }} live score and ball by ball commentary{% endblock %}
+{% block og_type %}article{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    "name": "{{ match.team1_name }} vs {{ match.team2_name }} - {{ match.match_format }}",
+    "description": "{{ match.team1_name }} vs {{ match.team2_name }} live cricket score, ball by ball commentary, scorecard",
+    "sport": "Cricket",
+    "homeTeam": {
+        "@type": "SportsTeam",
+        "name": "{{ match.team1_name }}"
+    },
+    "awayTeam": {
+        "@type": "SportsTeam",
+        "name": "{{ match.team2_name }}"
+    },
+    {% if match.venue %}
+    "location": {
+        "@type": "Place",
+        "name": "{{ match.venue }}"
+    },
+    {% endif %}
+    "url": "https://cricbuzz-live-score.com/match/{{ match.id }}"
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="match-detail-page">

@@ -1,12 +1,47 @@
-# CricLive - Cricbuzz-inspired Cricket Website
+# Cricbuzz Live Score - Cricket Website
 
 ## Overview
-A Cricbuzz-inspired cricket website built with Python Flask featuring web scraping for team and player data from Cricbuzz. Includes a responsive frontend with sticky navbar and dropdown submenus, plus an admin panel with sidebar navigation and scraping controls.
+A professional cricket website (Cricbuzz Live Score) built with Python Flask featuring web scraping for team and player data from Cricbuzz. Includes a responsive frontend with sticky navbar and dropdown submenus, plus an admin panel with sidebar navigation and scraping controls.
+
+**Website**: https://cricbuzz-live-score.com
 
 ## Current State
-- **Status**: Professional-grade match scraping with team flags and complete ID verification
+- **Status**: Complete SEO optimization with Schema.org, Open Graph, and high-volume keywords
 - **Last Updated**: January 28, 2026
 - **Note**: All scraping functions now include mandatory ID verification to prevent data contamination
+
+## SEO Implementation (Cricbuzz-Inspired)
+Based on Cricbuzz's SEO strategy (335M monthly traffic, 432K keywords):
+
+### Meta Tags & Keywords
+- High-volume keywords: live cricket score, today match live score, ball by ball commentary
+- Match-specific keywords: ind vs aus, ind vs eng, ipl 2026 live score, t20 world cup
+- Dream11 keywords: dream11 prediction, pitch report, playing 11
+- All pages have unique meta titles, descriptions, and keywords
+
+### Schema.org Structured Data (JSON-LD)
+- WebSite schema on base template
+- SportsEvent schema on match pages
+- Person schema on player profiles
+- CollectionPage schema on listing pages
+
+### Open Graph & Twitter Cards
+- og:title, og:description, og:image on all pages
+- Twitter card support for social sharing
+- Dynamic content based on page type
+
+### Technical SEO
+- robots.txt at /robots.txt
+- Dynamic sitemap.xml at /sitemap.xml (includes all pages, posts, teams, series)
+- Canonical URLs on all pages
+- Cache-control headers
+
+### Page-Specific SEO
+- Homepage: Live cricket score, today match keywords
+- Match pages: Team vs Team live score, scorecard, ball by ball
+- Player pages: Player name stats, profile, batting, bowling
+- Series pages: Series name schedule, results, points table
+- Live scores: Today match live, IPL live, all matches
 
 ## Recent Improvements
 - **Team Flags on Homepage**: Live score cards now display team flags

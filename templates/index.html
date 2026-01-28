@@ -1,6 +1,26 @@
 {% extends 'base.html' %}
 
-{% block title %}CricLive - Live Cricket Scores{% endblock %}
+{% block title %}Cricbuzz Live Score - Live Cricket Score, Today Match Score, Ball by Ball{% endblock %}
+
+{% block meta_description %}Get live cricket scores, today match live score, ball by ball commentary, IPL 2026 live, IND vs AUS live score, T20 World Cup, dream11 prediction, pitch report on Cricbuzz Live Score.{% endblock %}
+
+{% block meta_keywords %}live cricket score, today match live score, cricket live score, live score, ind vs aus, ind vs eng, ipl 2026 live score, t20 world cup live, cricket scorecard, ball by ball commentary, dream11 prediction, pitch report, playing 11, cricket match today{% endblock %}
+
+{% block og_title %}Cricbuzz Live Score - Live Cricket Score, Today Match{% endblock %}
+{% block og_description %}Get live cricket scores, today match live score, ball by ball commentary on Cricbuzz Live Score.{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "SportsOrganization",
+    "name": "Cricbuzz Live Score",
+    "url": "https://cricbuzz-live-score.com",
+    "sport": "Cricket",
+    "description": "Live cricket scores, ball by ball commentary, match updates, schedules, fixtures, points table and results."
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <section class="matches-section">

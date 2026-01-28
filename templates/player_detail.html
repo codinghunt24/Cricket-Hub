@@ -1,6 +1,35 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ player.name }} - CricLive{% endblock %}
+{% block title %}{{ player.name }} - Profile, Stats, Records | Cricbuzz Live Score{% endblock %}
+
+{% block meta_description %}{{ player.name }} cricket profile, career stats, batting and bowling records. {{ player.name }} plays for {{ player.team.name }}{% if player.role %} as {{ player.role }}{% endif %}. Get latest news and stats on Cricbuzz Live Score.{% endblock %}
+
+{% block meta_keywords %}{{ player.name }}, {{ player.name }} stats, {{ player.name }} career, {{ player.name }} batting, {{ player.name }} bowling, {{ player.name }} profile, {{ player.team.name }}, cricket player{% endblock %}
+
+{% block og_title %}{{ player.name }} - Profile & Stats{% endblock %}
+{% block og_description %}{{ player.name }} cricket career stats, batting and bowling records{% endblock %}
+{% block og_type %}profile{% endblock %}
+{% block og_image %}{% if player.photo_url %}{{ player.photo_url }}{% else %}https://cricbuzz-live-score.com/static/og-image.png{% endif %}{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "{{ player.name }}",
+    "url": "https://cricbuzz-live-score.com/player/{{ player.id }}",
+    {% if player.photo_url %}
+    "image": "{{ player.photo_url }}",
+    {% endif %}
+    "jobTitle": "Cricket Player",
+    "memberOf": {
+        "@type": "SportsTeam",
+        "name": "{{ player.team.name }}"
+    },
+    "description": "{{ player.name }} is a cricket player who plays for {{ player.team.name }}{% if player.role %} as {{ player.role }}{% endif %}"
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <section class="player-detail-page">

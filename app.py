@@ -281,6 +281,53 @@ def get_team_flag_from_list(team_name, teams_list):
             return team.flag_url
     return None
 
+@app.route('/robots.txt')
+def robots_txt():
+    return app.send_static_file('robots.txt')
+
+@app.route('/sitemap.xml')
+def sitemap_xml():
+    from flask import Response
+    from datetime import datetime
+    
+    pages = []
+    base_url = "https://cricbuzz-live-score.com"
+    
+    pages.append({'loc': base_url, 'priority': '1.0', 'changefreq': 'hourly'})
+    pages.append({'loc': f"{base_url}/live-scores", 'priority': '1.0', 'changefreq': 'always'})
+    pages.append({'loc': f"{base_url}/teams", 'priority': '0.8', 'changefreq': 'weekly'})
+    pages.append({'loc': f"{base_url}/series", 'priority': '0.8', 'changefreq': 'daily'})
+    
+    categories = PostCategory.query.all()
+    for cat in categories:
+        pages.append({'loc': f"{base_url}/category/{cat.slug}", 'priority': '0.7', 'changefreq': 'daily'})
+    
+    posts = Post.query.filter_by(is_published=True).all()
+    for post in posts:
+        pages.append({'loc': f"{base_url}/post/{post.slug}", 'priority': '0.6', 'changefreq': 'weekly'})
+    
+    teams = Team.query.all()
+    for team in teams:
+        pages.append({'loc': f"{base_url}/team/{team.id}", 'priority': '0.6', 'changefreq': 'weekly'})
+    
+    series_list = Series.query.all()
+    for s in series_list:
+        pages.append({'loc': f"{base_url}/series/{s.id}", 'priority': '0.7', 'changefreq': 'daily'})
+    
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    
+    for page in pages:
+        xml_content += '  <url>\n'
+        xml_content += f'    <loc>{page["loc"]}</loc>\n'
+        xml_content += f'    <changefreq>{page["changefreq"]}</changefreq>\n'
+        xml_content += f'    <priority>{page["priority"]}</priority>\n'
+        xml_content += '  </url>\n'
+    
+    xml_content += '</urlset>'
+    
+    return Response(xml_content, mimetype='application/xml')
+
 @app.route('/')
 def index():
     # Scrape live data from Cricbuzz (same as admin Live Score page)
