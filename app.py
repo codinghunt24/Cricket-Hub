@@ -934,6 +934,8 @@ def get_recent_matches():
             'team1_score': m.team1_score,
             'team2_score': m.team2_score,
             'match_format': m.match_format,
+            'result': m.result,
+            'match_date': m.match_date,
             'team1_flag': get_team_flag(m.team1_name, teams),
             'team2_flag': get_team_flag(m.team2_name, teams)
         })

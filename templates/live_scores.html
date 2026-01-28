@@ -108,9 +108,12 @@
                                 {% if match.team2_score %}<span class="team-score">{{ match.team2_score }}</span>{% endif %}
                             </div>
                         </div>
+                        {% if match.result %}
+                        <div class="recent-match-result">{{ match.result }}</div>
+                        {% endif %}
                         <div class="recent-match-footer">
                             <span class="recent-match-format">{{ match.match_format }}</span>
-                            <span class="recent-match-status complete">Result</span>
+                            {% if match.match_date %}<span class="recent-match-date">{{ match.match_date }}</span>{% endif %}
                         </div>
                     </div>
                     {% endfor %}
@@ -802,18 +805,31 @@
     color: var(--primary-color);
 }
 
+.recent-match-result {
+    font-size: 0.75rem;
+    color: #2e7d32;
+    margin-top: 8px;
+    padding: 4px 0;
+    font-weight: 500;
+}
+
 .recent-match-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
-    padding-top: 8px;
+    margin-top: 6px;
+    padding-top: 6px;
     border-top: 1px solid #eee;
 }
 
 .recent-match-format {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #666;
+}
+
+.recent-match-date {
+    font-size: 0.7rem;
+    color: #999;
 }
 
 .recent-match-status {
@@ -1101,6 +1117,9 @@ function loadMoreMatches() {
                     const t1Flag = match.team1_flag ? `<img src="${match.team1_flag}" alt="" class="recent-team-flag" onerror="this.style.display='none'">` : '';
                     const t2Flag = match.team2_flag ? `<img src="${match.team2_flag}" alt="" class="recent-team-flag" onerror="this.style.display='none'">` : '';
                     
+                    const resultHtml = match.result ? `<div class="recent-match-result">${match.result}</div>` : '';
+                    const dateHtml = match.match_date ? `<span class="recent-match-date">${match.match_date}</span>` : '';
+                    
                     card.innerHTML = `
                         <div class="recent-match-teams vertical">
                             <div class="recent-team-row">
@@ -1118,9 +1137,10 @@ function loadMoreMatches() {
                                 ${t2Score}
                             </div>
                         </div>
+                        ${resultHtml}
                         <div class="recent-match-footer">
                             <span class="recent-match-format">${match.match_format || ''}</span>
-                            <span class="recent-match-status complete">Result</span>
+                            ${dateHtml}
                         </div>
                     `;
                     container.appendChild(card);
