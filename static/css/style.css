@@ -825,9 +825,17 @@ body {
 }
 
 .team-name-text {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-color);
+}
+
+.player-team-info {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
 }
 
 .player-profile-info {

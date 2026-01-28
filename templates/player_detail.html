@@ -20,10 +20,10 @@
             </div>
             <div class="player-profile-info">
                 <h1 class="player-profile-name">{{ player.name }}</h1>
-                {% if player.role %}
-                <span class="player-profile-role">{{ player.role }}</span>
-                {% endif %}
                 <div class="player-team-info">
+                    {% if player.role %}
+                    <span class="player-profile-role">{{ player.role }}</span>
+                    {% endif %}
                     <span class="team-name-text">{{ player.team.name }}</span>
                     <span class="team-category">{{ player.team.category.name }}</span>
                 </div>
