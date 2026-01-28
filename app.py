@@ -927,6 +927,7 @@ def get_recent_matches():
     
     result = []
     for m in matches:
+        series_name = m.series.name if m.series else (m.series_name or '')
         result.append({
             'match_id': m.match_id,
             'team1_name': m.team1_name,
@@ -936,6 +937,7 @@ def get_recent_matches():
             'match_format': m.match_format,
             'result': m.result,
             'match_date': m.match_date,
+            'series_name': series_name,
             'team1_flag': get_team_flag(m.team1_name, teams),
             'team2_flag': get_team_flag(m.team2_name, teams)
         })

@@ -111,6 +111,11 @@
                         {% if match.result %}
                         <div class="recent-match-result">{{ match.result }}</div>
                         {% endif %}
+                        {% if match.series %}
+                        <div class="recent-match-series">{{ match.series.name }}</div>
+                        {% elif match.series_name %}
+                        <div class="recent-match-series">{{ match.series_name }}</div>
+                        {% endif %}
                         <div class="recent-match-footer">
                             <span class="recent-match-format">{{ match.match_format }}</span>
                             {% if match.match_date %}<span class="recent-match-date">{{ match.match_date }}</span>{% endif %}
@@ -809,8 +814,16 @@
     font-size: 0.75rem;
     color: #2e7d32;
     margin-top: 8px;
-    padding: 4px 0;
     font-weight: 500;
+}
+
+.recent-match-series {
+    font-size: 0.7rem;
+    color: #666;
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .recent-match-footer {
@@ -1118,6 +1131,7 @@ function loadMoreMatches() {
                     const t2Flag = match.team2_flag ? `<img src="${match.team2_flag}" alt="" class="recent-team-flag" onerror="this.style.display='none'">` : '';
                     
                     const resultHtml = match.result ? `<div class="recent-match-result">${match.result}</div>` : '';
+                    const seriesHtml = match.series_name ? `<div class="recent-match-series">${match.series_name}</div>` : '';
                     const dateHtml = match.match_date ? `<span class="recent-match-date">${match.match_date}</span>` : '';
                     
                     card.innerHTML = `
@@ -1138,6 +1152,7 @@ function loadMoreMatches() {
                             </div>
                         </div>
                         ${resultHtml}
+                        ${seriesHtml}
                         <div class="recent-match-footer">
                             <span class="recent-match-format">${match.match_format || ''}</span>
                             ${dateHtml}
