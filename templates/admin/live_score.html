@@ -5,6 +5,33 @@
 
 {% block content %}
 <div class="live-score-admin">
+    <!-- Series Section -->
+    <div class="admin-section series-section" style="margin-bottom: 20px;">
+        <div class="scrape-header">
+            <div class="scrape-info">
+                <h2>Series (from Live Scores Page)</h2>
+                <p class="last-update" id="series-count">Click to fetch series</p>
+            </div>
+            <button type="button" class="btn btn-primary btn-large" id="scrape-series-btn" onclick="scrapeSeries()">Fetch Series</button>
+        </div>
+        <div id="series-table-container" style="margin-top: 15px; display: none;">
+            <div class="table-wrapper">
+                <table class="excel-table" id="series-table">
+                    <thead>
+                        <tr>
+                            <th>Series ID</th>
+                            <th>Series Name</th>
+                            <th>Series Slug</th>
+                            <th>URL</th>
+                        </tr>
+                    </thead>
+                    <tbody id="series-tbody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div class="admin-section scrape-section">
         <div class="scrape-header">
             <div class="scrape-info">
@@ -522,5 +549,56 @@ input:checked + .toggle-slider::after {
     padding: 20px;
     font-style: italic;
 }
+
+.series-section {
+    background: var(--admin-card-bg, #1e293b);
+    border-radius: 8px;
+    padding: 20px;
+}
 </style>
+
+<script>
+function scrapeSeries() {
+    const btn = document.getElementById('scrape-series-btn');
+    const countEl = document.getElementById('series-count');
+    const container = document.getElementById('series-table-container');
+    const tbody = document.getElementById('series-tbody');
+    
+    btn.disabled = true;
+    btn.textContent = 'Fetching...';
+    countEl.textContent = 'Loading...';
+    
+    fetch('/admin/live-score/scrape-series', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(response => response.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.textContent = 'Fetch Series';
+        
+        if (data.success) {
+            countEl.textContent = 'Found ' + data.count + ' unique series';
+            container.style.display = 'block';
+            
+            tbody.innerHTML = '';
+            data.series.forEach(function(s) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td>' + s.series_id + '</td>' +
+                    '<td>' + s.series_name + '</td>' +
+                    '<td>' + s.series_slug + '</td>' +
+                    '<td><a href="' + s.series_url + '" target="_blank">View</a></td>';
+                tbody.appendChild(row);
+            });
+        } else {
+            countEl.textContent = 'Error: ' + data.message;
+        }
+    })
+    .catch(function(err) {
+        btn.disabled = false;
+        btn.textContent = 'Fetch Series';
+        countEl.textContent = 'Error: ' + err.message;
+    });
+}
+</script>
 {% endblock %}

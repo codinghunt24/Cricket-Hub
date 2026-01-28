@@ -610,6 +610,20 @@ def admin_live_score_scrape():
     
     return redirect(url_for('admin_live_score'))
 
+@app.route('/admin/live-score/scrape-series', methods=['POST'])
+@admin_required
+def admin_scrape_series():
+    try:
+        result = scraper.scrape_series_from_live_page()
+        
+        if result.get('success'):
+            series_list = result.get('series', [])
+            return jsonify({'success': True, 'series': series_list, 'count': len(series_list)})
+        else:
+            return jsonify({'success': False, 'message': result.get('message', 'Failed to scrape')})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 @app.route('/admin/automation')
 @admin_required
 def admin_automation():
