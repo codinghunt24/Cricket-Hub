@@ -2057,6 +2057,24 @@ def scrape_scorecard(match_id):
     # Extract match state first to determine if live
     state_match = re.search(r'"state"\s*:\s*"([^"]*)"', html)
     match_state = state_match.group(1) if state_match else ''
+    
+    # If no state from JSON, check HTML for live indicators
+    if not match_state:
+        # Check for live badge/tag in HTML
+        if 'cb-mat-mnu-itm-live' in html or 'live-match' in html.lower():
+            match_state = 'Live'
+        # Check page title/header for status
+        elif re.search(r'<title>[^<]*Live[^<]*</title>', html, re.IGNORECASE):
+            match_state = 'Live'
+        # Check for toss indicator
+        elif 'opt to bat' in html.lower() or 'opt to bowl' in html.lower():
+            # If toss info present but no complete result, it's still active
+            if 'won by' not in html.lower()[:5000]:  # Check first 5000 chars only (main match area)
+                match_state = 'Toss'
+        # Check for complete status
+        elif re.search(r'cb-text-complete|match\s*complete', html, re.IGNORECASE):
+            match_state = 'Complete'
+    
     # Include all active match states - not just "Live" but also Toss, Innings Break, etc.
     is_live = match_state.lower() in ['live', 'in progress', 'innings break', 'toss', 'stumps', 'lunch', 'tea', 'drinks']
     
