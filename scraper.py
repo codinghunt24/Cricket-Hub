@@ -154,6 +154,8 @@ def scrape_scorecard(match_id):
         'match_title': None,
         'match_status': None,
         'match_time': None,
+        'start_date': None,
+        'end_date': None,
         'team1': None,
         'team2': None,
         'team1_score': None,
@@ -188,6 +190,11 @@ def scrape_scorecard(match_id):
                         result['venue'] = loc.get('name')
                     elif isinstance(loc, str):
                         result['venue'] = loc
+                # Extract start and end dates (ISO format)
+                if data.get('startDate'):
+                    result['start_date'] = data['startDate']
+                if data.get('endDate'):
+                    result['end_date'] = data['endDate']
                 break
         except:
             continue
