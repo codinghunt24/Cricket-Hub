@@ -408,8 +408,9 @@ def scrape_scorecard(match_id):
                             }
                             innings_data['bowling'].append(bowling_entry)
                     
-                    # Extract fall of wickets from scorecard-fow-grid divs
-                    fow_grids = scard_div.find_all('div', class_=re.compile(r'scorecard-fow-grid'))
+                    # Extract fall of wickets from parent container (FOW is outside scard_div)
+                    parent_container = scard_div.parent
+                    fow_grids = parent_container.find_all('div', class_=re.compile(r'scorecard-fow-grid')) if parent_container else []
                     for fow_row in fow_grids:
                         # Skip header row
                         if fow_row.find('div', string=re.compile(r'Fall of Wickets')):
