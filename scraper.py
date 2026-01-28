@@ -1016,35 +1016,63 @@ def scrape_player_profile(player_url):
         if bowling_match:
             profile['bowling_style'] = bowling_match.group(1).strip()
         
-        # Extract batting stats from stats tables
+        # Extract batting and bowling career summary stats
         batting_stats = {}
         bowling_stats = {}
         
-        # Find stats tables
+        # Find all stats tables
         stats_tables = soup.select('table')
+        batting_table_found = False
+        
         for table in stats_tables:
-            headers = [th.get_text(strip=True).lower() for th in table.select('th')]
+            # Get headers from first row
+            header_row = table.select_one('tr')
+            if not header_row:
+                continue
+            
+            headers = [th.get_text(strip=True) for th in header_row.select('th, td')]
+            
+            # Check if this is a career stats table (has Test, ODI, T20, IPL columns)
+            if not any(fmt in headers for fmt in ['Test', 'ODI', 'T20', 'IPL']):
+                continue
+            
+            # Get all data rows
             rows = table.select('tr')[1:]  # Skip header row
             
+            # Build stats dictionary per format
+            format_indices = {}
+            for i, h in enumerate(headers):
+                if h in ['Test', 'ODI', 'T20', 'IPL']:
+                    format_indices[h] = i
+            
+            # Initialize format dicts
+            for fmt in format_indices:
+                if not batting_table_found:
+                    batting_stats[fmt] = {}
+                else:
+                    bowling_stats[fmt] = {}
+            
             for row in rows:
-                cells = row.select('td')
+                cells = [td.get_text(strip=True) for td in row.select('td')]
                 if len(cells) < 2:
                     continue
                 
-                format_type = cells[0].get_text(strip=True)
-                if not format_type:
+                stat_name = cells[0]
+                if not stat_name:
                     continue
                 
-                row_data = {}
-                for i, cell in enumerate(cells):
-                    if i < len(headers):
-                        row_data[headers[i]] = cell.get_text(strip=True)
+                # Map stat names to keys
+                stat_key = stat_name.lower().replace(' ', '_').replace('/', '_')
                 
-                # Check if this is batting or bowling stats based on headers
-                if 'wkts' in headers or 'bbi' in headers:
-                    bowling_stats[format_type] = row_data
-                elif 'runs' in headers or 'avg' in headers:
-                    batting_stats[format_type] = row_data
+                for fmt, idx in format_indices.items():
+                    if idx < len(cells):
+                        value = cells[idx]
+                        if not batting_table_found:
+                            batting_stats[fmt][stat_key] = value
+                        else:
+                            bowling_stats[fmt][stat_key] = value
+            
+            batting_table_found = True
         
         profile['batting_stats'] = batting_stats if batting_stats else None
         profile['bowling_stats'] = bowling_stats if bowling_stats else None
