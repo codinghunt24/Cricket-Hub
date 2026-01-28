@@ -824,18 +824,36 @@ body {
     border-radius: 10px;
 }
 
-.team-name-text {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-color);
-}
-
 .player-team-info {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
     flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.player-team-info .player-profile-role,
+.player-team-info .team-name-text,
+.player-team-info .team-category {
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.player-team-info .player-profile-role {
+    background-color: var(--primary-color);
+}
+
+.player-team-info .team-name-text {
+    background-color: #3498db;
+}
+
+.player-team-info .team-category {
+    background-color: #27ae60;
 }
 
 .player-profile-info {
