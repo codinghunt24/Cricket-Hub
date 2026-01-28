@@ -1,0 +1,246 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ 'Edit Page' if page else 'New Page' }} - Admin{% endblock %}
+{% block page_title %}{{ 'Edit Page' if page else 'New Page' }}{% endblock %}
+
+{% block content %}
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
+<div class="page-editor">
+    <form id="pageForm">
+        <div class="editor-main">
+            <div class="form-group">
+                <label for="title">Page Title *</label>
+                <input type="text" id="title" name="title" required placeholder="Enter page title" value="{{ page.title if page else '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="slug">URL Slug *</label>
+                <div class="slug-preview">
+                    <span class="slug-prefix">/page/</span>
+                    <input type="text" id="slug" name="slug" required placeholder="page-url-slug" value="{{ page.slug if page else '' }}">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Page Content</label>
+                <div id="editor">{{ page.content|safe if page and page.content else '' }}</div>
+                <input type="hidden" id="content" name="content">
+            </div>
+        </div>
+        
+        <div class="editor-sidebar">
+            <div class="sidebar-card">
+                <h4>Publish Settings</h4>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="is_published" name="is_published" {{ 'checked' if page and page.is_published else 'checked' }}>
+                        Published
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="show_in_footer" name="show_in_footer" {{ 'checked' if page and page.show_in_footer else 'checked' }}>
+                        Show in Footer
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="footer_order">Footer Order</label>
+                    <input type="number" id="footer_order" name="footer_order" value="{{ page.footer_order if page else 0 }}" min="0">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-block">{{ 'Update Page' if page else 'Create Page' }}</button>
+                </div>
+            </div>
+            
+            <div class="sidebar-card">
+                <h4>SEO Settings</h4>
+                <div class="form-group">
+                    <label for="meta_title">Meta Title</label>
+                    <input type="text" id="meta_title" name="meta_title" placeholder="SEO title (max 60 chars)" maxlength="60" value="{{ page.meta_title if page else '' }}">
+                    <small class="char-count"><span id="metaTitleCount">0</span>/60</small>
+                </div>
+                <div class="form-group">
+                    <label for="meta_description">Meta Description</label>
+                    <textarea id="meta_description" name="meta_description" rows="3" placeholder="SEO description (max 160 chars)" maxlength="160">{{ page.meta_description if page else '' }}</textarea>
+                    <small class="char-count"><span id="metaDescCount">0</span>/160</small>
+                </div>
+                <div class="form-group">
+                    <label for="meta_keywords">Meta Keywords</label>
+                    <input type="text" id="meta_keywords" name="meta_keywords" placeholder="keyword1, keyword2, keyword3" value="{{ page.meta_keywords if page else '' }}">
+                    <small>Comma separated keywords</small>
+                </div>
+            </div>
+            
+            <div class="sidebar-card">
+                <h4>Quick Templates</h4>
+                <div class="template-buttons">
+                    <button type="button" class="btn btn-template" onclick="loadTemplate('about')">About Us</button>
+                    <button type="button" class="btn btn-template" onclick="loadTemplate('contact')">Contact Us</button>
+                    <button type="button" class="btn btn-template" onclick="loadTemplate('privacy')">Privacy Policy</button>
+                    <button type="button" class="btn btn-template" onclick="loadTemplate('terms')">Terms & Conditions</button>
+                    <button type="button" class="btn btn-template" onclick="loadTemplate('disclaimer')">Disclaimer</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+.page-editor { display: flex; gap: 20px; padding: 20px; }
+.editor-main { flex: 1; min-width: 0; }
+.editor-sidebar { width: 300px; flex-shrink: 0; }
+.sidebar-card { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 15px; margin-bottom: 15px; }
+.sidebar-card h4 { margin: 0 0 15px 0; color: #333; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #333; font-size: 14px; }
+.form-group input[type="text"], .form-group input[type="number"], .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+.form-group input[type="checkbox"] { margin-right: 8px; }
+.form-group small { display: block; margin-top: 4px; color: #888; font-size: 12px; }
+.char-count { text-align: right; }
+.slug-preview { display: flex; align-items: center; }
+.slug-prefix { background: #f8f9fa; padding: 10px; border: 1px solid #ddd; border-right: none; border-radius: 4px 0 0 4px; color: #666; font-size: 14px; }
+.slug-preview input { border-radius: 0 4px 4px 0; }
+.btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+.btn-primary { background: #1a472a; color: #fff; }
+.btn-block { width: 100%; }
+.form-actions { margin-top: 15px; }
+#editor { height: 400px; background: #fff; border-radius: 4px; }
+.ql-toolbar { border-radius: 4px 4px 0 0 !important; }
+.ql-container { border-radius: 0 0 4px 4px !important; font-size: 16px; }
+.template-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn-template { background: #e8f5e9; color: #2e7d32; font-size: 12px; padding: 8px 12px; }
+.btn-template:hover { background: #c8e6c9; }
+@media (max-width: 900px) {
+    .page-editor { flex-direction: column; }
+    .editor-sidebar { width: 100%; }
+}
+</style>
+
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script>
+var quill = new Quill('#editor', {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'align': [] }],
+            ['link', 'image'],
+            ['blockquote', 'code-block'],
+            ['clean']
+        ]
+    }
+});
+
+document.getElementById('title').addEventListener('input', function() {
+    var slug = this.value.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+    document.getElementById('slug').value = slug;
+});
+
+document.getElementById('meta_title').addEventListener('input', function() {
+    document.getElementById('metaTitleCount').textContent = this.value.length;
+});
+document.getElementById('meta_description').addEventListener('input', function() {
+    document.getElementById('metaDescCount').textContent = this.value.length;
+});
+
+document.getElementById('metaTitleCount').textContent = document.getElementById('meta_title').value.length;
+document.getElementById('metaDescCount').textContent = document.getElementById('meta_description').value.length;
+
+var templates = {
+    'about': {
+        title: 'About Us',
+        slug: 'about-us',
+        content: '<h2>About Cricbuzz Live Score</h2><p>Welcome to Cricbuzz Live Score, your ultimate destination for live cricket scores, match updates, and comprehensive cricket coverage.</p><h3>Our Mission</h3><p>We aim to provide cricket fans with accurate, real-time information about their favorite sport. Our platform delivers live scores, detailed statistics, player profiles, and match analysis.</p><h3>What We Offer</h3><ul><li>Live cricket scores from all major tournaments</li><li>Ball-by-ball commentary</li><li>Detailed player profiles and statistics</li><li>Series schedules and results</li><li>Latest cricket news and updates</li></ul><h3>Contact Us</h3><p>If you have any questions or feedback, please feel free to reach out to us through our contact page.</p>',
+        meta_title: 'About Us - Cricbuzz Live Score',
+        meta_description: 'Learn about Cricbuzz Live Score - Your trusted source for live cricket scores, match updates, player profiles, and comprehensive cricket coverage.'
+    },
+    'contact': {
+        title: 'Contact Us',
+        slug: 'contact-us',
+        content: '<h2>Contact Us</h2><p>We would love to hear from you! Whether you have questions, feedback, or suggestions, feel free to reach out to us.</p><h3>Get in Touch</h3><p><strong>Email:</strong> contact@cricbuzz-live-score.com</p><p><strong>Response Time:</strong> We typically respond within 24-48 hours.</p><h3>Feedback</h3><p>Your feedback is valuable to us. It helps us improve our services and provide you with better cricket coverage.</p><h3>Report an Issue</h3><p>If you encounter any technical issues or errors on our website, please let us know so we can fix them promptly.</p>',
+        meta_title: 'Contact Us - Cricbuzz Live Score',
+        meta_description: 'Contact Cricbuzz Live Score for questions, feedback, or support. Get in touch with us for any cricket-related queries.'
+    },
+    'privacy': {
+        title: 'Privacy Policy',
+        slug: 'privacy-policy',
+        content: '<h2>Privacy Policy</h2><p><strong>Last Updated:</strong> January 2026</p><p>This Privacy Policy describes how Cricbuzz Live Score collects, uses, and protects your personal information.</p><h3>Information We Collect</h3><ul><li><strong>Usage Data:</strong> We collect information about how you interact with our website, including pages visited, time spent, and actions taken.</li><li><strong>Device Information:</strong> We collect information about your device, including browser type, operating system, and IP address.</li><li><strong>Cookies:</strong> We use cookies to enhance your browsing experience and analyze website traffic.</li></ul><h3>How We Use Your Information</h3><ul><li>To provide and improve our services</li><li>To analyze website usage and trends</li><li>To communicate with you about updates and features</li></ul><h3>Data Protection</h3><p>We implement appropriate security measures to protect your personal information from unauthorized access, alteration, or disclosure.</p><h3>Third-Party Services</h3><p>We may use third-party services for analytics and advertising. These services may collect information about your use of our website.</p><h3>Your Rights</h3><p>You have the right to access, correct, or delete your personal information. Contact us if you wish to exercise these rights.</p><h3>Changes to This Policy</h3><p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page.</p>',
+        meta_title: 'Privacy Policy - Cricbuzz Live Score',
+        meta_description: 'Read our Privacy Policy to understand how Cricbuzz Live Score collects, uses, and protects your personal information.'
+    },
+    'terms': {
+        title: 'Terms & Conditions',
+        slug: 'terms-and-conditions',
+        content: '<h2>Terms and Conditions</h2><p><strong>Last Updated:</strong> January 2026</p><p>By using Cricbuzz Live Score, you agree to these Terms and Conditions.</p><h3>Use of Website</h3><ul><li>You must be at least 13 years old to use this website.</li><li>You agree to use the website only for lawful purposes.</li><li>You may not attempt to gain unauthorized access to any part of the website.</li></ul><h3>Intellectual Property</h3><p>All content on this website, including text, images, logos, and graphics, is the property of Cricbuzz Live Score and is protected by copyright laws.</p><h3>User Content</h3><p>If you submit any content to our website, you grant us a non-exclusive license to use, reproduce, and display that content.</p><h3>Disclaimer</h3><p>The information provided on this website is for general informational purposes only. We make no warranties about the accuracy or completeness of the information.</p><h3>Limitation of Liability</h3><p>Cricbuzz Live Score shall not be liable for any damages arising from your use of this website.</p><h3>Governing Law</h3><p>These Terms and Conditions are governed by and construed in accordance with applicable laws.</p><h3>Changes to Terms</h3><p>We reserve the right to modify these Terms and Conditions at any time. Continued use of the website constitutes acceptance of the modified terms.</p>',
+        meta_title: 'Terms & Conditions - Cricbuzz Live Score',
+        meta_description: 'Read our Terms and Conditions to understand the rules and guidelines for using Cricbuzz Live Score website.'
+    },
+    'disclaimer': {
+        title: 'Disclaimer',
+        slug: 'disclaimer',
+        content: '<h2>Disclaimer</h2><p><strong>Last Updated:</strong> January 2026</p><h3>General Information</h3><p>The information provided on Cricbuzz Live Score is for general informational purposes only. While we strive to provide accurate and up-to-date information, we make no representations or warranties of any kind about the completeness, accuracy, reliability, or availability of the information.</p><h3>No Professional Advice</h3><p>The content on this website does not constitute professional advice. Any reliance you place on such information is strictly at your own risk.</p><h3>External Links</h3><p>Our website may contain links to external websites. We have no control over the content and nature of these sites and are not responsible for their content or availability.</p><h3>Cricket Data</h3><p>Cricket scores, statistics, and other data are provided for informational purposes only. While we make every effort to ensure accuracy, there may be occasional errors or delays in the information provided.</p><h3>Advertisements</h3><p>This website may display advertisements from third-party advertising networks. We are not responsible for the content or accuracy of these advertisements.</p><h3>Changes to Disclaimer</h3><p>We may update this Disclaimer from time to time. We encourage you to review this page periodically for any changes.</p>',
+        meta_title: 'Disclaimer - Cricbuzz Live Score',
+        meta_description: 'Read our Disclaimer to understand the limitations of the information provided on Cricbuzz Live Score website.'
+    }
+};
+
+function loadTemplate(type) {
+    if (templates[type]) {
+        var t = templates[type];
+        document.getElementById('title').value = t.title;
+        document.getElementById('slug').value = t.slug;
+        quill.root.innerHTML = t.content;
+        document.getElementById('meta_title').value = t.meta_title;
+        document.getElementById('meta_description').value = t.meta_description;
+        document.getElementById('metaTitleCount').textContent = t.meta_title.length;
+        document.getElementById('metaDescCount').textContent = t.meta_description.length;
+    }
+}
+
+document.getElementById('pageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    document.getElementById('content').value = quill.root.innerHTML;
+    
+    var data = {
+        title: document.getElementById('title').value,
+        slug: document.getElementById('slug').value,
+        content: document.getElementById('content').value,
+        meta_title: document.getElementById('meta_title').value,
+        meta_description: document.getElementById('meta_description').value,
+        meta_keywords: document.getElementById('meta_keywords').value,
+        is_published: document.getElementById('is_published').checked,
+        show_in_footer: document.getElementById('show_in_footer').checked,
+        footer_order: parseInt(document.getElementById('footer_order').value) || 0
+    };
+    
+    var isEdit = {{ 'true' if page else 'false' }};
+    var url = isEdit ? '/api/pages/{{ page.id if page else 0 }}' : '/api/pages';
+    var method = isEdit ? 'PUT' : 'POST';
+    
+    fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(result => {
+        if (result.success) {
+            window.location.href = '/admin/pages';
+        } else {
+            alert('Error: ' + result.message);
+        }
+    })
+    .catch(err => {
+        alert('Error saving page');
+    });
+});
+</script>
+{% endblock %}

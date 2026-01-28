@@ -274,4 +274,20 @@ def init_models(db):
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
         last_login = db.Column(db.DateTime, nullable=True)
     
-    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser
+    class Page(db.Model):
+        __tablename__ = 'pages'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        title = db.Column(db.String(200), nullable=False)
+        slug = db.Column(db.String(200), unique=True, nullable=False)
+        content = db.Column(db.Text, nullable=True)
+        meta_title = db.Column(db.String(200), nullable=True)
+        meta_description = db.Column(db.Text, nullable=True)
+        meta_keywords = db.Column(db.String(500), nullable=True)
+        is_published = db.Column(db.Boolean, default=True)
+        show_in_footer = db.Column(db.Boolean, default=True)
+        footer_order = db.Column(db.Integer, default=0)
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+        updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page

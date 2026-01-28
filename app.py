@@ -88,7 +88,7 @@ def utility_processor():
     return dict(get_team_flag=get_team_flag)
 
 from models import init_models
-TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser = init_models(db)
+TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page = init_models(db)
 
 import scraper
 from scheduler import init_scheduler, update_schedule, update_player_schedule, update_category_profile_schedule, update_category_series_schedule, update_category_matches_schedule
@@ -3349,9 +3349,10 @@ def view_category(slug):
 def inject_navbar_categories():
     try:
         nav_categories = PostCategory.query.filter_by(show_in_navbar=True).order_by(PostCategory.navbar_order).all()
-        return dict(nav_categories=nav_categories)
+        footer_pages = Page.query.filter_by(is_published=True, show_in_footer=True).order_by(Page.footer_order).all()
+        return dict(nav_categories=nav_categories, footer_pages=footer_pages)
     except:
-        return dict(nav_categories=[])
+        return dict(nav_categories=[], footer_pages=[])
 
 @app.route('/api/scorecard/<match_id>')
 def api_get_scorecard(match_id):
@@ -3459,6 +3460,101 @@ def generate_all_slugs():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/admin/pages')
+@admin_required
+def admin_pages():
+    pages = Page.query.order_by(Page.footer_order).all()
+    return render_template('admin/pages.html', pages=pages)
+
+@app.route('/admin/pages/new')
+@admin_required
+def admin_page_new():
+    return render_template('admin/page_edit.html', page=None)
+
+@app.route('/admin/pages/<int:page_id>')
+@admin_required
+def admin_page_edit(page_id):
+    page = Page.query.get_or_404(page_id)
+    return render_template('admin/page_edit.html', page=page)
+
+@app.route('/api/pages', methods=['POST'])
+@admin_required
+def api_create_page():
+    try:
+        data = request.json
+        
+        slug = data.get('slug', '').strip()
+        if not slug:
+            slug = data.get('title', '').lower().replace(' ', '-')
+        
+        existing = Page.query.filter_by(slug=slug).first()
+        if existing:
+            return jsonify({'success': False, 'message': 'Slug already exists'}), 400
+        
+        page = Page(
+            title=data.get('title', ''),
+            slug=slug,
+            content=data.get('content', ''),
+            meta_title=data.get('meta_title', ''),
+            meta_description=data.get('meta_description', ''),
+            meta_keywords=data.get('meta_keywords', ''),
+            is_published=data.get('is_published', True),
+            show_in_footer=data.get('show_in_footer', True),
+            footer_order=data.get('footer_order', 0)
+        )
+        
+        db.session.add(page)
+        db.session.commit()
+        return jsonify({'success': True, 'id': page.id})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/pages/<int:page_id>', methods=['PUT'])
+@admin_required
+def api_update_page(page_id):
+    try:
+        page = Page.query.get_or_404(page_id)
+        data = request.json
+        
+        if data.get('slug') and data['slug'] != page.slug:
+            existing = Page.query.filter_by(slug=data['slug']).first()
+            if existing:
+                return jsonify({'success': False, 'message': 'Slug already exists'}), 400
+        
+        page.title = data.get('title', page.title)
+        page.slug = data.get('slug', page.slug)
+        page.content = data.get('content', page.content)
+        page.meta_title = data.get('meta_title', page.meta_title)
+        page.meta_description = data.get('meta_description', page.meta_description)
+        page.meta_keywords = data.get('meta_keywords', page.meta_keywords)
+        page.is_published = data.get('is_published', page.is_published)
+        page.show_in_footer = data.get('show_in_footer', page.show_in_footer)
+        page.footer_order = data.get('footer_order', page.footer_order)
+        
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/pages/<int:page_id>', methods=['DELETE'])
+@admin_required
+def api_delete_page(page_id):
+    try:
+        page = Page.query.get_or_404(page_id)
+        db.session.delete(page)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/page/<slug>')
+def view_page(slug):
+    page = Page.query.filter_by(slug=slug, is_published=True).first_or_404()
+    return render_template('page.html', page=page)
 
 if __name__ == '__main__':
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'

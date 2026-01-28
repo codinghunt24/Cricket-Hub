@@ -1293,10 +1293,29 @@ body {
 }
 
 .footer-links h4,
+.footer-pages h4,
 .footer-keywords h4 {
     color: var(--accent-color);
     font-size: 1.1rem;
     margin-bottom: 15px;
+}
+
+.footer-pages ul {
+    list-style: none;
+}
+
+.footer-pages li {
+    margin-bottom: 8px;
+}
+
+.footer-pages a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer-pages a:hover {
+    color: var(--accent-color);
 }
 
 .footer-links ul {

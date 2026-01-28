@@ -127,6 +127,14 @@
                         <li><a href="/series">Series</a></li>
                     </ul>
                 </div>
+                <div class="footer-pages">
+                    <h4>Important Links</h4>
+                    <ul>
+                        {% for page in footer_pages %}
+                        <li><a href="/page/{{ page.slug }}">{{ page.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
                 <div class="footer-keywords">
                     <h4>Popular Searches</h4>
                     <p>Live Cricket Score | IND vs AUS Live | IPL 2026 Live | T20 World Cup | Dream11 Prediction | Today Match Live Score | Cricket Scorecard | Ball by Ball Commentary</p>

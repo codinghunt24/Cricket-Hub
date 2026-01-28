@@ -62,6 +62,12 @@
                             <span class="sidebar-text">Categories</span>
                         </a>
                     </li>
+                    <li class="sidebar-item {% if '/admin/pages' in request.path %}active{% endif %}">
+                        <a href="/admin/pages" class="sidebar-link">
+                            <span class="sidebar-icon">&#128196;</span>
+                            <span class="sidebar-text">Pages</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             
