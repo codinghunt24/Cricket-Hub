@@ -137,12 +137,16 @@ def scrape_series_from_live_page():
                             break
                     grandparent = grandparent.parent
     
-    # Extract team flag URLs
-    flag_map = {}  # match_id -> {team1_flag, team2_flag}
+    # Extract team flag URLs and team names
+    flag_map = {}  # match_id -> {team1_flag, team2_flag, team1_name, team2_name}
     all_imgs = search_scope.find_all('img')
     for img in all_imgs:
         src = img.get('src', '')
+        alt = img.get('alt', '')
         if 'static.cricbuzz.com' in src and '.jpg' in src:
+            # Extract team name from alt attribute (e.g., "new-zealand" -> "New Zealand")
+            team_name = alt.replace('-', ' ').title() if alt else ''
+            
             # Find match_id from nearby link
             parent = img.parent
             for _ in range(8):
@@ -153,13 +157,15 @@ def scrape_series_from_live_page():
                         if m:
                             mid = m.group(1)
                             if mid not in flag_map:
-                                flag_map[mid] = {'team1_flag': None, 'team2_flag': None}
+                                flag_map[mid] = {'team1_flag': None, 'team2_flag': None, 'team1_name': None, 'team2_name': None}
                             
                             # First flag = Team 1, Second flag = Team 2
                             if not flag_map[mid]['team1_flag']:
                                 flag_map[mid]['team1_flag'] = src
+                                flag_map[mid]['team1_name'] = team_name
                             elif not flag_map[mid]['team2_flag']:
                                 flag_map[mid]['team2_flag'] = src
+                                flag_map[mid]['team2_name'] = team_name
                             break
                     parent = parent.parent
     
@@ -244,10 +250,12 @@ def scrape_series_from_live_page():
                         team1_score = scores.get('team1_score', '-')
                         team2_score = scores.get('team2_score', '-')
                         
-                        # Get flags
+                        # Get flags and team names
                         flags = flag_map.get(mid, {})
                         team1_flag = flags.get('team1_flag', '')
                         team2_flag = flags.get('team2_flag', '')
+                        team1_name = flags.get('team1_name', '')
+                        team2_name = flags.get('team2_name', '')
                         
                         matches.append({
                             'match_id': mid,
@@ -257,7 +265,9 @@ def scrape_series_from_live_page():
                             'team1_score': team1_score,
                             'team2_score': team2_score,
                             'team1_flag': team1_flag,
-                            'team2_flag': team2_flag
+                            'team2_flag': team2_flag,
+                            'team1_name': team1_name,
+                            'team2_name': team2_name
                         })
         
         # Only add series if it has matches with status

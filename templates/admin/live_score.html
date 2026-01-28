@@ -63,6 +63,7 @@
                 <span>📋 Matches (<span id="match-count">{{ all_matches|length if all_matches else 0 }}</span>)</span>
                 <div style="display: flex; gap: 10px; margin-left: 15px;">
                     <button type="button" class="btn btn-sm" onclick="scrapeSeries()" id="scrape-series-btn" style="background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Fetch Data</button>
+                    <button type="button" class="btn btn-sm" onclick="saveAllMatches()" id="save-all-btn" style="background: #10b981; color: #fff; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Save All</button>
                     <button type="button" class="btn btn-sm" onclick="sortMatchesByStatus()" style="background: #ef4444; color: #fff; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">🔴 Live First</button>
                 </div>
             </div>
@@ -93,7 +94,7 @@
                                 <td class="score-cell">{{ m.team2_score or '-' }}</td>
                                 <td class="status-cell {% if m.status == 'Live' %}status-live{% elif m.status == 'Completed' %}status-completed{% endif %}">{{ m.status or '-' }}</td>
                                 <td class="result-cell">{{ m.result or '-' }}</td>
-                                <td><button class="scrape-btn" onclick="scrapeScorecard('{{ m.match_id }}', '{{ m.series_id }}', '{{ m.series_name|e }}', this)">Scrape</button></td>
+                                <td><button class="scrape-btn" data-flag1="{{ m.team1_flag }}" data-flag2="{{ m.team2_flag }}" onclick="scrapeScorecard('{{ m.match_id }}', '{{ m.series_id }}', '{{ m.series_name|e }}', this)">Scrape</button></td>
                             </tr>
                             {% endfor %}
                         {% else %}
@@ -526,70 +527,39 @@ function scrapeScorecard(matchId, seriesId, seriesName, btn) {
     btn.disabled = true;
     btn.textContent = '...';
     
-    // Use same API as Scorecard nav
-    fetch('/api/scrape/scorecard', {
+    // Get flags from data attributes
+    const team1Flag = btn.getAttribute('data-flag1') || '';
+    const team2Flag = btn.getAttribute('data-flag2') || '';
+    
+    // Use admin API with flags
+    fetch('/admin/live-score/scrape-scorecard/' + matchId, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({match_id: matchId})
+        body: JSON.stringify({
+            series_id: seriesId,
+            series_name: seriesName,
+            team1_flag: team1Flag,
+            team2_flag: team2Flag
+        })
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success && data.scorecard) {
-            const scorecard = data.scorecard;
-            btn.textContent = '▼';
+        if (data.success) {
+            btn.textContent = 'Saved';
             btn.style.background = '#10b981';
-            btn.title = 'Click to toggle scorecard';
-            btn.onclick = function() { toggleScorecard(matchId); };
+            btn.disabled = true;
             
-            // Update status cell
-            const statusCell = document.getElementById('status-' + matchId);
-            if (statusCell && scorecard.match_status) {
-                statusCell.textContent = scorecard.match_status;
-                if (scorecard.match_status === 'Live') {
-                    statusCell.style.color = '#ef4444';
-                    statusCell.style.fontWeight = 'bold';
-                } else if (scorecard.match_status.includes('won') || scorecard.match_status === 'Completed') {
-                    statusCell.style.color = '#10b981';
-                } else {
-                    statusCell.style.color = '#f59e0b';
-                }
+            // Show action type
+            if (data.action) {
+                btn.textContent = data.action === 'updated' ? 'Updated' : 'Saved';
             }
             
-            // Create scorecard dropdown row
-            const mainRow = document.getElementById('row-' + matchId);
-            let dropdownRow = document.getElementById('scorecard-' + matchId);
-            if (dropdownRow) {
-                dropdownRow.remove();
-            }
-            
-            dropdownRow = document.createElement('tr');
-            dropdownRow.id = 'scorecard-' + matchId;
-            dropdownRow.className = 'scorecard-row';
-            dropdownRow.innerHTML = '<td colspan="6" class="scorecard-cell">' +
-                '<div class="scorecard-content">' +
-                    '<div class="scorecard-grid">' +
-                        '<div class="score-team">' +
-                            '<span class="team-name">' + (scorecard.team1 || '-') + '</span>' +
-                            '<span class="team-score">' + (scorecard.team1_score || '-') + '</span>' +
-                        '</div>' +
-                        '<div class="score-vs">VS</div>' +
-                        '<div class="score-team">' +
-                            '<span class="team-name">' + (scorecard.team2 || '-') + '</span>' +
-                            '<span class="team-score">' + (scorecard.team2_score || '-') + '</span>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="scorecard-details">' +
-                        '<span><b>Venue:</b> ' + (scorecard.venue || '-') + '</span>' +
-                        '<span><b>Toss:</b> ' + (scorecard.toss || '-') + '</span>' +
-                        '<span><b>Result:</b> ' + (scorecard.result || scorecard.match_status || '-') + '</span>' +
-                    '</div>' +
-                '</div>' +
-            '</td>';
-            
-            mainRow.after(dropdownRow);
-            
-            // Auto-sort matches by status (Live first)
-            sortMatchesByStatus();
+            // Reset button after 2 seconds
+            setTimeout(function() {
+                btn.textContent = 'Scrape';
+                btn.style.background = '';
+                btn.disabled = false;
+            }, 2000);
         } else {
             btn.textContent = '✗';
             btn.style.background = '#ef4444';
@@ -608,6 +578,43 @@ function toggleScorecard(matchId) {
     if (row) {
         row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
     }
+}
+
+function saveAllMatches() {
+    const btn = document.getElementById('save-all-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+    
+    fetch('/admin/live-score/save-all', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(response => response.json())
+    .then(data => {
+        btn.disabled = false;
+        if (data.success) {
+            btn.textContent = 'Saved ' + data.saved;
+            btn.style.background = '#059669';
+            setTimeout(function() {
+                btn.textContent = 'Save All';
+                btn.style.background = '#10b981';
+            }, 2000);
+        } else {
+            btn.textContent = 'Error';
+            btn.style.background = '#ef4444';
+            alert('Error: ' + (data.message || 'Failed to save'));
+            setTimeout(function() {
+                btn.textContent = 'Save All';
+                btn.style.background = '#10b981';
+            }, 2000);
+        }
+    })
+    .catch(function(err) {
+        btn.disabled = false;
+        btn.textContent = 'Error';
+        btn.style.background = '#ef4444';
+        alert('Error: ' + err.message);
+    });
 }
 
 function sortMatchesByStatus() {

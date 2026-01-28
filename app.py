@@ -308,17 +308,11 @@ def index():
     
     matches = live + in_progress + innings + stumps + lunch + tea + drinks + preview + upcoming + complete + abandon
     
-    teams = Team.query.all()
-    
     match_flags = {}
     for m in matches:
         if m.match_id:
-            match_flags[f"{m.match_id}_1"] = get_team_flag(m.team1_name, teams)
-            match_flags[f"{m.match_id}_2"] = get_team_flag(m.team2_name, teams)
-        if m.team1_name:
-            match_flags[m.team1_name] = get_team_flag(m.team1_name, teams)
-        if m.team2_name:
-            match_flags[m.team2_name] = get_team_flag(m.team2_name, teams)
+            match_flags[f"{m.match_id}_1"] = m.team1_flag or ''
+            match_flags[f"{m.match_id}_2"] = m.team2_flag or ''
     
     recent_posts = Post.query.filter_by(is_published=True).order_by(Post.created_at.desc()).limit(5).all()
     
@@ -656,6 +650,9 @@ def admin_scrape_scorecard(match_id):
             # Upsert - update if exists, insert if new
             existing = Match.query.filter_by(match_id=match_id).first()
             
+            team1_flag = data.get('team1_flag', '')
+            team2_flag = data.get('team2_flag', '')
+            
             if existing:
                 # Update existing record
                 existing.match_format = result.get('match_format') or existing.match_format
@@ -666,6 +663,10 @@ def admin_scrape_scorecard(match_id):
                 existing.cricbuzz_series_id = series_id or existing.cricbuzz_series_id
                 existing.state = result.get('match_status') or existing.state
                 existing.match_url = f"https://www.cricbuzz.com/live-cricket-scores/{match_id}"
+                if team1_flag:
+                    existing.team1_flag = team1_flag
+                if team2_flag:
+                    existing.team2_flag = team2_flag
                 db.session.commit()
                 result['action'] = 'updated'
             else:
@@ -676,6 +677,8 @@ def admin_scrape_scorecard(match_id):
                     match_format=result.get('match_format'),
                     team1_name=result.get('team1'),
                     team2_name=result.get('team2'),
+                    team1_flag=team1_flag,
+                    team2_flag=team2_flag,
                     venue=result.get('venue'),
                     series_name=result.get('series_name') or series_name,
                     state=result.get('match_status'),
@@ -689,6 +692,57 @@ def admin_scrape_scorecard(match_id):
                 result['action'] = 'inserted'
         
         return jsonify(result)
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/admin/live-score/save-all', methods=['POST'])
+@admin_required
+def admin_save_all_live_matches():
+    try:
+        result = scraper.scrape_series_from_live_page()
+        
+        if not result.get('success'):
+            return jsonify({'success': False, 'message': result.get('message', 'Failed to scrape')})
+        
+        saved_count = 0
+        for s in result.get('series', []):
+            for m in s.get('matches', []):
+                match_id = m.get('match_id')
+                if not match_id:
+                    continue
+                
+                existing = Match.query.filter_by(match_id=match_id).first()
+                
+                if existing:
+                    existing.team1_flag = m.get('team1_flag') or existing.team1_flag
+                    existing.team2_flag = m.get('team2_flag') or existing.team2_flag
+                    existing.team1_name = m.get('team1_name') or existing.team1_name
+                    existing.team2_name = m.get('team2_name') or existing.team2_name
+                    existing.team1_score = m.get('team1_score') or existing.team1_score
+                    existing.team2_score = m.get('team2_score') or existing.team2_score
+                    existing.series_name = s.get('series_name') or existing.series_name
+                    existing.cricbuzz_series_id = s.get('series_id') or existing.cricbuzz_series_id
+                    existing.state = 'Live' if m.get('match_status') == 'Live' else 'Complete'
+                else:
+                    new_match = Match(
+                        match_id=match_id,
+                        cricbuzz_series_id=s.get('series_id'),
+                        series_name=s.get('series_name'),
+                        team1_name=m.get('team1_name', ''),
+                        team2_name=m.get('team2_name', ''),
+                        team1_flag=m.get('team1_flag', ''),
+                        team2_flag=m.get('team2_flag', ''),
+                        team1_score=m.get('team1_score', ''),
+                        team2_score=m.get('team2_score', ''),
+                        state='Live' if m.get('match_status') == 'Live' else 'Complete',
+                        match_url=f"https://www.cricbuzz.com/live-cricket-scores/{match_id}"
+                    )
+                    db.session.add(new_match)
+                saved_count += 1
+        
+        db.session.commit()
+        return jsonify({'success': True, 'saved': saved_count, 'message': f'Saved {saved_count} matches'})
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)})
