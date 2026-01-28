@@ -775,12 +775,13 @@ body {
 .player-profile-header {
     display: flex;
     gap: 30px;
-    align-items: flex-start;
+    align-items: center;
     background: var(--white);
     padding: 30px;
     border-radius: 15px;
     box-shadow: var(--shadow);
     margin-bottom: 25px;
+    justify-content: space-between;
 }
 
 .player-photo-large {
@@ -808,6 +809,25 @@ body {
     font-size: 4rem;
     font-weight: 700;
     color: var(--white);
+}
+
+.player-flag-large {
+    width: 150px;
+    height: 150px;
+    flex-shrink: 0;
+}
+
+.player-flag-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+.team-name-text {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
 }
 
 .player-profile-info {

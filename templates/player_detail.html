@@ -24,14 +24,14 @@
                 <span class="player-profile-role">{{ player.role }}</span>
                 {% endif %}
                 <div class="player-team-info">
-                    <div class="team-badge">
-                        {% if player.team.flag_url %}
-                        <img src="{{ player.team.flag_url }}" alt="{{ player.team.name }}">
-                        {% endif %}
-                        <span>{{ player.team.name }}</span>
-                    </div>
+                    <span class="team-name-text">{{ player.team.name }}</span>
                     <span class="team-category">{{ player.team.category.name }}</span>
                 </div>
+            </div>
+            <div class="player-flag-large">
+                {% if player.team.flag_url %}
+                <img src="{{ player.team.flag_url }}" alt="{{ player.team.name }}">
+                {% endif %}
             </div>
         </div>
         
