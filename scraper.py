@@ -106,8 +106,8 @@ def scrape_series_from_live_page():
                         break
                 parent = parent.parent
     
-    # Extract scores (format: 215-7 (20)) from the container
-    score_pattern = re.compile(r'\d{1,3}[-/]\d{1,2}\s*\(\d+\.?\d*\)')
+    # Extract scores (format: 215-7 (20) OR 165 (18.4) for all-out) from the container
+    score_pattern = re.compile(r'\d{1,3}(?:[-/]\d{1,2})?\s*\(\d+\.?\d*\)')
     score_elements = search_scope.find_all(string=score_pattern)
     
     for elem in score_elements:
