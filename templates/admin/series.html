@@ -20,6 +20,9 @@
             <button class="btn-scrape" onclick="scrapeSeriesFromUrl()">
                 <i class="fas fa-download"></i> Scrape
             </button>
+            <button class="btn-scrape-all" onclick="scrapeAllSeriesMatches()">
+                <i class="fas fa-sync"></i> Scrape All Matches
+            </button>
         </div>
     </div>
     
@@ -241,6 +244,29 @@ input:checked + .slider:before {
 }
 
 .btn-scrape:disabled {
+    background: #374151;
+    cursor: not-allowed;
+}
+
+.btn-scrape-all {
+    background: #8b5cf6;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.btn-scrape-all:hover {
+    background: #7c3aed;
+}
+
+.btn-scrape-all:disabled {
     background: #374151;
     cursor: not-allowed;
 }
@@ -620,6 +646,38 @@ async function loadSeriesSettings() {
         });
     } catch (e) {
         console.error('Error loading settings:', e);
+    }
+}
+
+async function scrapeAllSeriesMatches() {
+    const btn = document.querySelector('.btn-scrape-all');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scraping...';
+    
+    try {
+        const response = await fetch('/api/scrape/all-series-matches', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            btn.innerHTML = '<i class="fas fa-check"></i> ' + data.total_matches + ' matches';
+            btn.style.background = '#10b981';
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-sync"></i> Scrape All Matches';
+                btn.style.background = '#8b5cf6';
+                btn.disabled = false;
+            }, 3000);
+        } else {
+            alert('Error: ' + data.message);
+            btn.innerHTML = '<i class="fas fa-sync"></i> Scrape All Matches';
+            btn.disabled = false;
+        }
+    } catch (e) {
+        alert('Error: ' + e.message);
+        btn.innerHTML = '<i class="fas fa-sync"></i> Scrape All Matches';
+        btn.disabled = false;
     }
 }
 

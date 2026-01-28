@@ -2534,6 +2534,75 @@ def get_series_matches(series_id):
     except Exception as e:
         return jsonify({'matches': [], 'error': str(e)})
 
+@app.route('/api/scrape/all-series-matches', methods=['POST'])
+def scrape_all_series_matches():
+    """Scrape matches for all series in database"""
+    try:
+        all_series = Series.query.all()
+        if not all_series:
+            return jsonify({'success': False, 'message': 'No series found'}), 404
+        
+        total_matches = 0
+        series_processed = 0
+        
+        for series in all_series:
+            try:
+                matches_list = scraper.scrape_matches_from_series(series.series_url)
+                if matches_list:
+                    for match_data in matches_list:
+                        match_id = match_data.get('match_id')
+                        if not match_id:
+                            continue
+                        
+                        existing = Match.query.filter_by(match_id=match_id).first()
+                        if existing:
+                            existing.match_format = match_data.get('match_format', existing.match_format)
+                            existing.venue = match_data.get('venue', existing.venue)
+                            existing.match_date = match_data.get('match_date', existing.match_date)
+                            existing.team1_name = match_data.get('team1', existing.team1_name)
+                            existing.team2_name = match_data.get('team2', existing.team2_name)
+                            existing.result = match_data.get('result', existing.result)
+                            existing.series_id = series.id
+                            existing.updated_at = datetime.utcnow()
+                        else:
+                            match = Match(
+                                match_id=match_id,
+                                match_format=match_data.get('match_format', ''),
+                                venue=match_data.get('venue', ''),
+                                match_date=match_data.get('match_date', ''),
+                                team1_name=match_data.get('team1', ''),
+                                team2_name=match_data.get('team2', ''),
+                                result=match_data.get('result', ''),
+                                series_id=series.id
+                            )
+                            db.session.add(match)
+                        total_matches += 1
+                    series_processed += 1
+            except Exception as e:
+                app.logger.error(f"Error scraping matches for {series.name}: {e}")
+                continue
+        
+        db.session.commit()
+        
+        log = ScrapeLog(
+            category='all_series_matches',
+            status='success',
+            message=f'Scraped {total_matches} matches from {series_processed} series',
+            teams_scraped=total_matches
+        )
+        db.session.add(log)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Scraped {total_matches} matches from {series_processed} series',
+            'total_matches': total_matches,
+            'series_processed': series_processed
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/scrape/matches/<int:series_id>', methods=['POST'])
 def scrape_matches(series_id):
     try:

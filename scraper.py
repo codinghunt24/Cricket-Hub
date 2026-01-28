@@ -1011,8 +1011,104 @@ def scrape_series_from_category(category_url):
 
 
 def scrape_matches_from_series(series_url):
-    """Scrape matches from a series."""
-    return []
+    """Scrape matches from a series URL."""
+    try:
+        if not series_url:
+            return []
+        
+        if not series_url.startswith('http'):
+            series_url = 'https://www.cricbuzz.com' + series_url
+        
+        if '/matches' not in series_url:
+            series_url = series_url.rstrip('/') + '/matches'
+        
+        response = requests.get(series_url, headers=HEADERS, timeout=30)
+        if response.status_code != 200:
+            return []
+        
+        html = response.text.replace('\\"', '"')
+        matches_data = []
+        seen_ids = set()
+        
+        series_id_from_url = None
+        url_match = re.search(r'/cricket-series/(\d+)/', series_url)
+        if url_match:
+            series_id_from_url = url_match.group(1)
+        
+        match_positions = [(m.start(), m.group(1)) for m in re.finditer(r'"matchInfo"\s*:\s*\{[^}]*"matchId"\s*:\s*(\d+)', html)]
+        
+        for pos, mid in match_positions:
+            if mid in seen_ids:
+                continue
+            seen_ids.add(mid)
+            
+            next_match = html.find('"matchInfo"', pos + 50)
+            if next_match == -1 or next_match > pos + 2000:
+                context_end = pos + 1500
+            else:
+                context_end = next_match
+            context = html[pos:context_end]
+            
+            match_sid = re.search(r'"seriesId"\s*:\s*(\d+)', context)
+            if series_id_from_url and match_sid:
+                if match_sid.group(1) != series_id_from_url:
+                    continue
+            
+            series_name = re.search(r'"seriesName"\s*:\s*"([^"]*)"', context)
+            match_desc = re.search(r'"matchDesc"\s*:\s*"([^"]*)"', context)
+            match_format = re.search(r'"matchFormat"\s*:\s*"([^"]*)"', context)
+            status = re.search(r'"status"\s*:\s*"([^"]*)"', context)
+            state = re.search(r'"state"\s*:\s*"([^"]*)"', context)
+            start_date = re.search(r'"startDate"\s*:\s*"?(\d+)"?', context)
+            
+            team1_name = re.search(r'"team1"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', context)
+            team2_name = re.search(r'"team2"\s*:\s*\{[^}]*"teamName"\s*:\s*"([^"]*)"', context)
+            team1_id = re.search(r'"team1"\s*:\s*\{[^}]*"teamId"\s*:\s*(\d+)', context)
+            team2_id = re.search(r'"team2"\s*:\s*\{[^}]*"teamId"\s*:\s*(\d+)', context)
+            
+            venue_ground = re.search(r'"venueInfo"\s*:\s*\{[^}]*"ground"\s*:\s*"([^"]*)"', context)
+            venue_city = re.search(r'"venueInfo"\s*:\s*\{[^}]*"city"\s*:\s*"([^"]*)"', context)
+            
+            match_date = ''
+            if start_date:
+                try:
+                    from datetime import datetime as dt
+                    ts = int(start_date.group(1)) / 1000
+                    match_date = dt.fromtimestamp(ts).strftime('%a, %d %b %Y')
+                except:
+                    pass
+            
+            venue = ''
+            if venue_ground and venue_city:
+                venue = f"{venue_ground.group(1)}, {venue_city.group(1)}"
+            elif venue_ground:
+                venue = venue_ground.group(1)
+            
+            team1_short = team1_name.group(1) if team1_name else ''
+            team2_short = team2_name.group(1) if team2_name else ''
+            
+            matches_data.append({
+                'match_id': mid,
+                'series_id': match_sid.group(1) if match_sid else series_id_from_url or '',
+                'team1_id': team1_id.group(1) if team1_id else '',
+                'team2_id': team2_id.group(1) if team2_id else '',
+                'match_format': match_desc.group(1) if match_desc else '',
+                'format_type': match_format.group(1) if match_format else '',
+                'series_name': series_name.group(1) if series_name else '',
+                'match_date': match_date,
+                'state': state.group(1) if state else '',
+                'team1': team1_short,
+                'team2': team2_short,
+                'venue': venue,
+                'result': status.group(1) if status else ''
+            })
+        
+        logger.info(f"Scraped {len(matches_data)} matches from {series_url}")
+        return matches_data
+        
+    except Exception as e:
+        logger.error(f"Error scraping matches from series: {e}")
+        return []
 
 
 def scrape_player_profile(player_url):
