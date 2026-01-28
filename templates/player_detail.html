@@ -87,9 +87,9 @@
         
         {% if player.batting_stats %}
         {% set bat = player.batting_stats %}
-        {% if bat.test or bat.odi or bat.t20 or bat.ipl %}
+        {% if bat.Test or bat.ODI or bat.T20 or bat.IPL %}
         <div class="player-stats-card">
-            <h3>Batting Career</h3>
+            <h3>Batting Career Summary</h3>
             <div class="stats-table-wrapper">
                 <table class="format-stats-table">
                     <thead>
@@ -104,101 +104,101 @@
                     <tbody>
                         <tr>
                             <td class="stat-label">Matches</td>
-                            <td>{{ bat.test.matches or '-' }}</td>
-                            <td>{{ bat.odi.matches or '-' }}</td>
-                            <td>{{ bat.t20.matches or '-' }}</td>
-                            <td>{{ bat.ipl.matches or '-' }}</td>
+                            <td>{{ bat.Test.matches if bat.Test else '-' }}</td>
+                            <td>{{ bat.ODI.matches if bat.ODI else '-' }}</td>
+                            <td>{{ bat.T20.matches if bat.T20 else '-' }}</td>
+                            <td>{{ bat.IPL.matches if bat.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Innings</td>
-                            <td>{{ bat.test.innings or '-' }}</td>
-                            <td>{{ bat.odi.innings or '-' }}</td>
-                            <td>{{ bat.t20.innings or '-' }}</td>
-                            <td>{{ bat.ipl.innings or '-' }}</td>
+                            <td>{{ bat.Test.innings if bat.Test else '-' }}</td>
+                            <td>{{ bat.ODI.innings if bat.ODI else '-' }}</td>
+                            <td>{{ bat.T20.innings if bat.T20 else '-' }}</td>
+                            <td>{{ bat.IPL.innings if bat.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Runs</td>
-                            <td>{{ bat.test.runs or '-' }}</td>
-                            <td>{{ bat.odi.runs or '-' }}</td>
-                            <td>{{ bat.t20.runs or '-' }}</td>
-                            <td>{{ bat.ipl.runs or '-' }}</td>
+                            <td>{{ bat.Test.runs if bat.Test else '-' }}</td>
+                            <td>{{ bat.ODI.runs if bat.ODI else '-' }}</td>
+                            <td>{{ bat.T20.runs if bat.T20 else '-' }}</td>
+                            <td>{{ bat.IPL.runs if bat.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Balls</td>
-                            <td>{{ bat.test.balls or '-' }}</td>
-                            <td>{{ bat.odi.balls or '-' }}</td>
-                            <td>{{ bat.t20.balls or '-' }}</td>
-                            <td>{{ bat.ipl.balls or '-' }}</td>
+                            <td>{{ bat.Test.balls if bat.Test else '-' }}</td>
+                            <td>{{ bat.ODI.balls if bat.ODI else '-' }}</td>
+                            <td>{{ bat.T20.balls if bat.T20 else '-' }}</td>
+                            <td>{{ bat.IPL.balls if bat.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Highest</td>
-                            <td>{{ bat.test.highest or '-' }}</td>
-                            <td>{{ bat.odi.highest or '-' }}</td>
-                            <td>{{ bat.t20.highest or '-' }}</td>
-                            <td>{{ bat.ipl.highest or '-' }}</td>
+                            <td>{{ bat.Test.highest if bat.Test else '-' }}</td>
+                            <td>{{ bat.ODI.highest if bat.ODI else '-' }}</td>
+                            <td>{{ bat.T20.highest if bat.T20 else '-' }}</td>
+                            <td>{{ bat.IPL.highest if bat.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Average</td>
-                            <td>{{ bat.test.average or '-' }}</td>
-                            <td>{{ bat.odi.average or '-' }}</td>
-                            <td>{{ bat.t20.average or '-' }}</td>
-                            <td>{{ bat.ipl.average or '-' }}</td>
+                            <td>{{ bat.Test.average if bat.Test else '-' }}</td>
+                            <td>{{ bat.ODI.average if bat.ODI else '-' }}</td>
+                            <td>{{ bat.T20.average if bat.T20 else '-' }}</td>
+                            <td>{{ bat.IPL.average if bat.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Strike Rate</td>
-                            <td>{{ bat.test['strike rate'] or '-' }}</td>
-                            <td>{{ bat.odi['strike rate'] or '-' }}</td>
-                            <td>{{ bat.t20['strike rate'] or '-' }}</td>
-                            <td>{{ bat.ipl['strike rate'] or '-' }}</td>
+                            <td>{{ bat.Test.sr if bat.Test else '-' }}</td>
+                            <td>{{ bat.ODI.sr if bat.ODI else '-' }}</td>
+                            <td>{{ bat.T20.sr if bat.T20 else '-' }}</td>
+                            <td>{{ bat.IPL.sr if bat.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Not Outs</td>
-                            <td>{{ bat.test['not outs'] or '-' }}</td>
-                            <td>{{ bat.odi['not outs'] or '-' }}</td>
-                            <td>{{ bat.t20['not outs'] or '-' }}</td>
-                            <td>{{ bat.ipl['not outs'] or '-' }}</td>
+                            <td>{{ bat.Test.not_out if bat.Test else '-' }}</td>
+                            <td>{{ bat.ODI.not_out if bat.ODI else '-' }}</td>
+                            <td>{{ bat.T20.not_out if bat.T20 else '-' }}</td>
+                            <td>{{ bat.IPL.not_out if bat.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">4s</td>
-                            <td>{{ bat.test['4s'] or '-' }}</td>
-                            <td>{{ bat.odi['4s'] or '-' }}</td>
-                            <td>{{ bat.t20['4s'] or '-' }}</td>
-                            <td>{{ bat.ipl['4s'] or '-' }}</td>
+                            <td>{{ bat.Test.fours if bat.Test else '-' }}</td>
+                            <td>{{ bat.ODI.fours if bat.ODI else '-' }}</td>
+                            <td>{{ bat.T20.fours if bat.T20 else '-' }}</td>
+                            <td>{{ bat.IPL.fours if bat.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">6s</td>
-                            <td>{{ bat.test['6s'] or '-' }}</td>
-                            <td>{{ bat.odi['6s'] or '-' }}</td>
-                            <td>{{ bat.t20['6s'] or '-' }}</td>
-                            <td>{{ bat.ipl['6s'] or '-' }}</td>
+                            <td>{{ bat.Test.sixes if bat.Test else '-' }}</td>
+                            <td>{{ bat.ODI.sixes if bat.ODI else '-' }}</td>
+                            <td>{{ bat.T20.sixes if bat.T20 else '-' }}</td>
+                            <td>{{ bat.IPL.sixes if bat.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Ducks</td>
-                            <td>{{ bat.test.ducks or '-' }}</td>
-                            <td>{{ bat.odi.ducks or '-' }}</td>
-                            <td>{{ bat.t20.ducks or '-' }}</td>
-                            <td>{{ bat.ipl.ducks or '-' }}</td>
+                            <td>{{ bat.Test.ducks if bat.Test else '-' }}</td>
+                            <td>{{ bat.ODI.ducks if bat.ODI else '-' }}</td>
+                            <td>{{ bat.T20.ducks if bat.T20 else '-' }}</td>
+                            <td>{{ bat.IPL.ducks if bat.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">50s</td>
-                            <td>{{ bat.test['50s'] or '-' }}</td>
-                            <td>{{ bat.odi['50s'] or '-' }}</td>
-                            <td>{{ bat.t20['50s'] or '-' }}</td>
-                            <td>{{ bat.ipl['50s'] or '-' }}</td>
+                            <td>{{ bat.Test['50s'] if bat.Test else '-' }}</td>
+                            <td>{{ bat.ODI['50s'] if bat.ODI else '-' }}</td>
+                            <td>{{ bat.T20['50s'] if bat.T20 else '-' }}</td>
+                            <td>{{ bat.IPL['50s'] if bat.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">100s</td>
-                            <td>{{ bat.test['100s'] or '-' }}</td>
-                            <td>{{ bat.odi['100s'] or '-' }}</td>
-                            <td>{{ bat.t20['100s'] or '-' }}</td>
-                            <td>{{ bat.ipl['100s'] or '-' }}</td>
+                            <td>{{ bat.Test['100s'] if bat.Test else '-' }}</td>
+                            <td>{{ bat.ODI['100s'] if bat.ODI else '-' }}</td>
+                            <td>{{ bat.T20['100s'] if bat.T20 else '-' }}</td>
+                            <td>{{ bat.IPL['100s'] if bat.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">200s</td>
-                            <td>{{ bat.test['200s'] or '-' }}</td>
-                            <td>{{ bat.odi['200s'] or '-' }}</td>
-                            <td>{{ bat.t20['200s'] or '-' }}</td>
-                            <td>{{ bat.ipl['200s'] or '-' }}</td>
+                            <td>{{ bat.Test['200s'] if bat.Test else '-' }}</td>
+                            <td>{{ bat.ODI['200s'] if bat.ODI else '-' }}</td>
+                            <td>{{ bat.T20['200s'] if bat.T20 else '-' }}</td>
+                            <td>{{ bat.IPL['200s'] if bat.IPL else '-' }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -209,9 +209,9 @@
         
         {% if player.bowling_stats %}
         {% set bowl = player.bowling_stats %}
-        {% if bowl.test or bowl.odi or bowl.t20 or bowl.ipl %}
+        {% if bowl.Test or bowl.ODI or bowl.T20 or bowl.IPL %}
         <div class="player-stats-card">
-            <h3>Bowling Career</h3>
+            <h3>Bowling Career Summary</h3>
             <div class="stats-table-wrapper">
                 <table class="format-stats-table">
                     <thead>
@@ -226,101 +226,101 @@
                     <tbody>
                         <tr>
                             <td class="stat-label">Matches</td>
-                            <td>{{ bowl.test.matches or '-' }}</td>
-                            <td>{{ bowl.odi.matches or '-' }}</td>
-                            <td>{{ bowl.t20.matches or '-' }}</td>
-                            <td>{{ bowl.ipl.matches or '-' }}</td>
+                            <td>{{ bowl.Test.matches if bowl.Test else '-' }}</td>
+                            <td>{{ bowl.ODI.matches if bowl.ODI else '-' }}</td>
+                            <td>{{ bowl.T20.matches if bowl.T20 else '-' }}</td>
+                            <td>{{ bowl.IPL.matches if bowl.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Innings</td>
-                            <td>{{ bowl.test.innings or '-' }}</td>
-                            <td>{{ bowl.odi.innings or '-' }}</td>
-                            <td>{{ bowl.t20.innings or '-' }}</td>
-                            <td>{{ bowl.ipl.innings or '-' }}</td>
+                            <td>{{ bowl.Test.innings if bowl.Test else '-' }}</td>
+                            <td>{{ bowl.ODI.innings if bowl.ODI else '-' }}</td>
+                            <td>{{ bowl.T20.innings if bowl.T20 else '-' }}</td>
+                            <td>{{ bowl.IPL.innings if bowl.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Balls</td>
-                            <td>{{ bowl.test.balls or '-' }}</td>
-                            <td>{{ bowl.odi.balls or '-' }}</td>
-                            <td>{{ bowl.t20.balls or '-' }}</td>
-                            <td>{{ bowl.ipl.balls or '-' }}</td>
+                            <td>{{ bowl.Test.balls if bowl.Test else '-' }}</td>
+                            <td>{{ bowl.ODI.balls if bowl.ODI else '-' }}</td>
+                            <td>{{ bowl.T20.balls if bowl.T20 else '-' }}</td>
+                            <td>{{ bowl.IPL.balls if bowl.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Runs</td>
-                            <td>{{ bowl.test.runs or '-' }}</td>
-                            <td>{{ bowl.odi.runs or '-' }}</td>
-                            <td>{{ bowl.t20.runs or '-' }}</td>
-                            <td>{{ bowl.ipl.runs or '-' }}</td>
+                            <td>{{ bowl.Test.runs if bowl.Test else '-' }}</td>
+                            <td>{{ bowl.ODI.runs if bowl.ODI else '-' }}</td>
+                            <td>{{ bowl.T20.runs if bowl.T20 else '-' }}</td>
+                            <td>{{ bowl.IPL.runs if bowl.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Maidens</td>
-                            <td>{{ bowl.test.maidens or '-' }}</td>
-                            <td>{{ bowl.odi.maidens or '-' }}</td>
-                            <td>{{ bowl.t20.maidens or '-' }}</td>
-                            <td>{{ bowl.ipl.maidens or '-' }}</td>
+                            <td>{{ bowl.Test.maidens if bowl.Test else '-' }}</td>
+                            <td>{{ bowl.ODI.maidens if bowl.ODI else '-' }}</td>
+                            <td>{{ bowl.T20.maidens if bowl.T20 else '-' }}</td>
+                            <td>{{ bowl.IPL.maidens if bowl.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Wickets</td>
-                            <td>{{ bowl.test.wickets or '-' }}</td>
-                            <td>{{ bowl.odi.wickets or '-' }}</td>
-                            <td>{{ bowl.t20.wickets or '-' }}</td>
-                            <td>{{ bowl.ipl.wickets or '-' }}</td>
+                            <td>{{ bowl.Test.wickets if bowl.Test else '-' }}</td>
+                            <td>{{ bowl.ODI.wickets if bowl.ODI else '-' }}</td>
+                            <td>{{ bowl.T20.wickets if bowl.T20 else '-' }}</td>
+                            <td>{{ bowl.IPL.wickets if bowl.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Average</td>
-                            <td>{{ bowl.test.average or '-' }}</td>
-                            <td>{{ bowl.odi.average or '-' }}</td>
-                            <td>{{ bowl.t20.average or '-' }}</td>
-                            <td>{{ bowl.ipl.average or '-' }}</td>
+                            <td>{{ bowl.Test.avg if bowl.Test else '-' }}</td>
+                            <td>{{ bowl.ODI.avg if bowl.ODI else '-' }}</td>
+                            <td>{{ bowl.T20.avg if bowl.T20 else '-' }}</td>
+                            <td>{{ bowl.IPL.avg if bowl.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Economy</td>
-                            <td>{{ bowl.test.economy or '-' }}</td>
-                            <td>{{ bowl.odi.economy or '-' }}</td>
-                            <td>{{ bowl.t20.economy or '-' }}</td>
-                            <td>{{ bowl.ipl.economy or '-' }}</td>
+                            <td>{{ bowl.Test.eco if bowl.Test else '-' }}</td>
+                            <td>{{ bowl.ODI.eco if bowl.ODI else '-' }}</td>
+                            <td>{{ bowl.T20.eco if bowl.T20 else '-' }}</td>
+                            <td>{{ bowl.IPL.eco if bowl.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">Strike Rate</td>
-                            <td>{{ bowl.test['strike rate'] or '-' }}</td>
-                            <td>{{ bowl.odi['strike rate'] or '-' }}</td>
-                            <td>{{ bowl.t20['strike rate'] or '-' }}</td>
-                            <td>{{ bowl.ipl['strike rate'] or '-' }}</td>
+                            <td>{{ bowl.Test.sr if bowl.Test else '-' }}</td>
+                            <td>{{ bowl.ODI.sr if bowl.ODI else '-' }}</td>
+                            <td>{{ bowl.T20.sr if bowl.T20 else '-' }}</td>
+                            <td>{{ bowl.IPL.sr if bowl.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">BBI</td>
-                            <td>{{ bowl.test.bbi or '-' }}</td>
-                            <td>{{ bowl.odi.bbi or '-' }}</td>
-                            <td>{{ bowl.t20.bbi or '-' }}</td>
-                            <td>{{ bowl.ipl.bbi or '-' }}</td>
+                            <td>{{ bowl.Test.bbi if bowl.Test else '-' }}</td>
+                            <td>{{ bowl.ODI.bbi if bowl.ODI else '-' }}</td>
+                            <td>{{ bowl.T20.bbi if bowl.T20 else '-' }}</td>
+                            <td>{{ bowl.IPL.bbi if bowl.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">BBM</td>
-                            <td>{{ bowl.test.bbm or '-' }}</td>
-                            <td>{{ bowl.odi.bbm or '-' }}</td>
-                            <td>{{ bowl.t20.bbm or '-' }}</td>
-                            <td>{{ bowl.ipl.bbm or '-' }}</td>
+                            <td>{{ bowl.Test.bbm if bowl.Test else '-' }}</td>
+                            <td>{{ bowl.ODI.bbm if bowl.ODI else '-' }}</td>
+                            <td>{{ bowl.T20.bbm if bowl.T20 else '-' }}</td>
+                            <td>{{ bowl.IPL.bbm if bowl.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">4W</td>
-                            <td>{{ bowl.test['4w'] or '-' }}</td>
-                            <td>{{ bowl.odi['4w'] or '-' }}</td>
-                            <td>{{ bowl.t20['4w'] or '-' }}</td>
-                            <td>{{ bowl.ipl['4w'] or '-' }}</td>
+                            <td>{{ bowl.Test['4w'] if bowl.Test else '-' }}</td>
+                            <td>{{ bowl.ODI['4w'] if bowl.ODI else '-' }}</td>
+                            <td>{{ bowl.T20['4w'] if bowl.T20 else '-' }}</td>
+                            <td>{{ bowl.IPL['4w'] if bowl.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">5W</td>
-                            <td>{{ bowl.test['5w'] or '-' }}</td>
-                            <td>{{ bowl.odi['5w'] or '-' }}</td>
-                            <td>{{ bowl.t20['5w'] or '-' }}</td>
-                            <td>{{ bowl.ipl['5w'] or '-' }}</td>
+                            <td>{{ bowl.Test['5w'] if bowl.Test else '-' }}</td>
+                            <td>{{ bowl.ODI['5w'] if bowl.ODI else '-' }}</td>
+                            <td>{{ bowl.T20['5w'] if bowl.T20 else '-' }}</td>
+                            <td>{{ bowl.IPL['5w'] if bowl.IPL else '-' }}</td>
                         </tr>
                         <tr>
                             <td class="stat-label">10W</td>
-                            <td>{{ bowl.test['10w'] or '-' }}</td>
-                            <td>{{ bowl.odi['10w'] or '-' }}</td>
-                            <td>{{ bowl.t20['10w'] or '-' }}</td>
-                            <td>{{ bowl.ipl['10w'] or '-' }}</td>
+                            <td>{{ bowl.Test['10w'] if bowl.Test else '-' }}</td>
+                            <td>{{ bowl.ODI['10w'] if bowl.ODI else '-' }}</td>
+                            <td>{{ bowl.T20['10w'] if bowl.T20 else '-' }}</td>
+                            <td>{{ bowl.IPL['10w'] if bowl.IPL else '-' }}</td>
                         </tr>
                     </tbody>
                 </table>
