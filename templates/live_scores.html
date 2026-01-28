@@ -845,6 +845,30 @@
     color: #999;
 }
 
+/* Live indicator for auto-updating scorecard */
+.live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #e53935;
+    margin-left: 10px;
+}
+
+.live-dot {
+    width: 8px;
+    height: 8px;
+    background: #e53935;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+}
+
 .recent-match-status {
     font-size: 0.65rem;
     padding: 2px 8px;
@@ -929,6 +953,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 async function loadScorecard(matchId) {
+    // Stop any existing auto-refresh
+    stopAutoRefresh();
+    currentMatchId = matchId;
+    
     const newsContent = document.getElementById('news-content');
     const scorecardContent = document.getElementById('scorecard-content');
     
@@ -962,6 +990,12 @@ async function loadScorecard(matchId) {
         if (data.success) {
             displayScorecard(data.scorecard);
             
+            // Start auto-refresh for live matches (every 30 seconds)
+            if (data.scorecard.state === 'Live' || data.scorecard.state === 'Innings Break') {
+                isLiveMatch = true;
+                autoRefreshInterval = setInterval(refreshScorecard, 30000);
+            }
+            
             fetch('/api/save/scorecard', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -993,10 +1027,11 @@ async function loadScorecard(matchId) {
 
 function displayScorecard(scorecard) {
     const scorecardContent = document.getElementById('scorecard-content');
+    const isLive = scorecard.state === 'Live' || scorecard.state === 'Innings Break';
     
     let html = `
         <div class="scorecard-header">
-            <h3>Live Scorecard</h3>
+            <h3>Live Scorecard ${isLive ? '<span class="live-indicator"><span class="live-dot"></span> Auto-updating</span>' : ''}</h3>
             <button class="back-to-news" onclick="showNews()">← Back</button>
         </div>
         <div class="scorecard-match-info">
@@ -1097,6 +1132,10 @@ function displayScorecard(scorecard) {
 }
 
 function showNews() {
+    // Stop auto-refresh when going back
+    stopAutoRefresh();
+    currentMatchId = null;
+    
     const newsContent = document.getElementById('news-content');
     const scorecardContent = document.getElementById('scorecard-content');
     
@@ -1109,6 +1148,43 @@ function showNews() {
 }
 
 let recentMatchOffset = 5;
+let currentMatchId = null;
+let autoRefreshInterval = null;
+let isLiveMatch = false;
+
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+    }
+    isLiveMatch = false;
+}
+
+async function refreshScorecard() {
+    if (!currentMatchId || !isLiveMatch) return;
+    
+    try {
+        const response = await fetch('/api/scrape/scorecard', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ match_id: currentMatchId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displayScorecard(data.scorecard);
+            
+            // Check if match is still live
+            if (data.scorecard.state && data.scorecard.state !== 'Live' && data.scorecard.state !== 'Innings Break') {
+                stopAutoRefresh();
+            }
+        }
+    } catch (err) {
+        console.log('Auto-refresh error:', err);
+    }
+}
+
 function loadMoreMatches() {
     const btn = document.getElementById('load-more-matches');
     btn.disabled = true;
