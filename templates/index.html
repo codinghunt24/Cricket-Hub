@@ -91,17 +91,35 @@
         <div class="sidebar-box">
             <div class="section-block">
                 <h4>Top Stories</h4>
-                <ul class="sidebar-list">
+                <div class="top-stories-list">
                     {% if recent_posts %}
                     {% for post in recent_posts[:3] %}
-                    <li><a href="/post/{{ post.slug }}">{{ post.title[:40] }}{% if post.title|length > 40 %}...{% endif %}</a></li>
+                    <a href="/post/{{ post.slug }}" class="top-story-item">
+                        <div class="top-story-thumb">
+                            {% if post.thumbnail %}
+                            <img src="{{ post.thumbnail }}" alt="{{ post.title }}" onerror="this.src='/static/images/default-thumb.png'">
+                            {% else %}
+                            <div class="thumb-placeholder"><i class="fas fa-cricket-bat-ball"></i></div>
+                            {% endif %}
+                        </div>
+                        <div class="top-story-title">{{ post.title[:45] }}{% if post.title|length > 45 %}...{% endif %}</div>
+                    </a>
                     {% endfor %}
                     {% else %}
-                    <li>Latest cricket updates</li>
-                    <li>Player rankings</li>
-                    <li>Team standings</li>
+                    <div class="top-story-item">
+                        <div class="top-story-thumb"><div class="thumb-placeholder"><i class="fas fa-newspaper"></i></div></div>
+                        <div class="top-story-title">Latest cricket updates</div>
+                    </div>
+                    <div class="top-story-item">
+                        <div class="top-story-thumb"><div class="thumb-placeholder"><i class="fas fa-trophy"></i></div></div>
+                        <div class="top-story-title">Player rankings</div>
+                    </div>
+                    <div class="top-story-item">
+                        <div class="top-story-thumb"><div class="thumb-placeholder"><i class="fas fa-list"></i></div></div>
+                        <div class="top-story-title">Team standings</div>
+                    </div>
                     {% endif %}
-                </ul>
+                </div>
             </div>
             <div class="section-block">
                 <h4>Quick Links</h4>
