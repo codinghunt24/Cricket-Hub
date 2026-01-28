@@ -71,11 +71,12 @@
                             <th>Series Name</th>
                             <th>Match ID</th>
                             <th>Match Title</th>
+                            <th>Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="series-tbody">
-                        <tr><td colspan="5" class="no-data">Click "Fetch Data" to load series and matches</td></tr>
+                        <tr><td colspan="6" class="no-data">Click "Fetch Data" to load series and matches</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -584,6 +585,21 @@ function scrapeScorecard(matchId, seriesId, seriesName, btn) {
             btn.textContent = data.action === 'updated' ? '↻' : '✓';
             btn.style.background = '#10b981';
             btn.title = data.action + ': ' + data.match_title;
+            
+            // Update status cell
+            const statusCell = document.getElementById('status-' + matchId);
+            if (statusCell && data.match_status) {
+                statusCell.textContent = data.match_status;
+                // Color code status
+                if (data.match_status === 'Live') {
+                    statusCell.style.color = '#ef4444';
+                    statusCell.style.fontWeight = 'bold';
+                } else if (data.match_status.includes('won') || data.match_status === 'Completed') {
+                    statusCell.style.color = '#10b981';
+                } else {
+                    statusCell.style.color = '#f59e0b';
+                }
+            }
         } else {
             btn.textContent = '✗';
             btn.style.background = '#ef4444';
@@ -631,11 +647,13 @@ function scrapeSeries() {
                 if (s.matches && s.matches.length > 0) {
                     s.matches.forEach(function(match) {
                         const row = document.createElement('tr');
+                        row.id = 'row-' + match.match_id;
                         const escapedSeriesName = s.series_name.replace(/'/g, "\\'");
                         row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
                             '<td>' + s.series_name + '</td>' +
                             '<td><a href="https://www.cricbuzz.com/live-cricket-scores/' + match.match_id + '" target="_blank">' + match.match_id + '</a></td>' +
                             '<td>' + match.match_title + '</td>' +
+                            '<td class="status-cell" id="status-' + match.match_id + '">-</td>' +
                             '<td><button class="scrape-btn" onclick="scrapeScorecard(\'' + match.match_id + '\', \'' + s.series_id + '\', \'' + escapedSeriesName + '\', this)">Scrape</button></td>';
                         tbody.appendChild(row);
                     });
@@ -645,18 +663,19 @@ function scrapeSeries() {
                         '<td>' + s.series_name + '</td>' +
                         '<td>-</td>' +
                         '<td>-</td>' +
+                        '<td>-</td>' +
                         '<td>-</td>';
                     tbody.appendChild(row);
                 }
             });
         } else {
-            tbody.innerHTML = '<tr><td colspan="5" class="no-data">Error: ' + data.message + '</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="no-data">Error: ' + data.message + '</td></tr>';
         }
     })
     .catch(function(err) {
         btn.disabled = false;
         btn.textContent = 'Fetch Data';
-        tbody.innerHTML = '<tr><td colspan="5" class="no-data">Error: ' + err.message + '</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="no-data">Error: ' + err.message + '</td></tr>';
     });
 }
 </script>
