@@ -75,11 +75,12 @@
                             <th>Match ID</th>
                             <th>Match Title</th>
                             <th>Status</th>
+                            <th>Result/Info</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="series-tbody">
-                        <tr><td colspan="6" class="no-data">Click "Fetch Data" to load series and matches</td></tr>
+                        <tr><td colspan="7" class="no-data">Click "Fetch Data" to load series and matches</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -654,11 +655,13 @@ function scrapeSeries() {
                             statusClass = 'status-break';
                         }
                         
+                        const resultText = match.match_result || '-';
                         row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
                             '<td>' + s.series_name + '</td>' +
                             '<td><a href="https://www.cricbuzz.com/live-cricket-scores/' + match.match_id + '" target="_blank">' + match.match_id + '</a></td>' +
                             '<td>' + match.match_title + '</td>' +
                             '<td class="status-cell ' + statusClass + '" id="status-' + match.match_id + '">' + statusText + '</td>' +
+                            '<td class="result-cell">' + resultText + '</td>' +
                             '<td><button class="scrape-btn" onclick="scrapeScorecard(\'' + match.match_id + '\', \'' + s.series_id + '\', \'' + escapedSeriesName + '\', this)">Scrape</button></td>';
                         tbody.appendChild(row);
                     });
@@ -669,18 +672,19 @@ function scrapeSeries() {
                         '<td>-</td>' +
                         '<td>-</td>' +
                         '<td>-</td>' +
+                        '<td>-</td>' +
                         '<td>-</td>';
                     tbody.appendChild(row);
                 }
             });
         } else {
-            tbody.innerHTML = '<tr><td colspan="6" class="no-data">Error: ' + data.message + '</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="no-data">Error: ' + data.message + '</td></tr>';
         }
     })
     .catch(function(err) {
         btn.disabled = false;
         btn.textContent = 'Fetch Data';
-        tbody.innerHTML = '<tr><td colspan="6" class="no-data">Error: ' + err.message + '</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="no-data">Error: ' + err.message + '</td></tr>';
     });
 }
 </script>

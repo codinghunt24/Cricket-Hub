@@ -45,6 +45,7 @@ def scrape_series_from_live_page():
     Scrape unique series from Cricbuzz live-scores page.
     Each series includes its match IDs found on the page.
     Returns list of series with series_id, series_name, series_url, and match_ids
+    Uses CSS classes (text-cbLive, text-cbComplete) for accurate status detection.
     """
     url = "https://www.cricbuzz.com/cricket-match/live-scores"
     html = fetch_page(url)
@@ -55,27 +56,56 @@ def scrape_series_from_live_page():
     from bs4 import BeautifulSoup
     soup = BeautifulSoup(html, 'html.parser')
     
-    # First, build status map from nav bar links (they have status in text like "NZvsIND-NZ won")
+    # Build status map from CSS classes (text-cbLive, text-cbComplete)
     status_map = {}
-    nav_links = soup.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'), class_=re.compile(r'flex'))
-    for nav_link in nav_links:
-        nav_href = nav_link.get('href', '')
-        nav_match = re.search(r'/live-cricket-scores/(\d+)/', nav_href)
-        if nav_match:
-            nav_mid = nav_match.group(1)
-            nav_text = nav_link.get_text(strip=True).lower()
-            
-            # Extract status from nav text
-            if 'preview' in nav_text or 'upcoming' in nav_text:
-                status_map[nav_mid] = 'Upcoming'
-            elif 'need' in nav_text or 'trail' in nav_text or 'lead' in nav_text:
-                status_map[nav_mid] = 'Live'
-            elif 'won' in nav_text or 'drawn' in nav_text or 'tied' in nav_text:
-                status_map[nav_mid] = 'Completed'
-            elif 'break' in nav_text or 'innings' in nav_text:
-                status_map[nav_mid] = 'Break'
-            elif 'stumps' in nav_text or 'tea' in nav_text or 'lunch' in nav_text:
-                status_map[nav_mid] = 'Break'
+    result_map = {}
+    
+    # Find all spans with status classes
+    status_spans = soup.find_all('span', class_=re.compile(r'text-cb(Live|Complete)'))
+    for span in status_spans:
+        classes = span.get('class', [])
+        class_str = ' '.join(classes)
+        result_text = span.get_text(strip=True)
+        
+        # Skip navigation links like "Live Score", "Scorecard", etc.
+        if result_text in ['Live Score', 'Scorecard', 'Full Commentary', 'News', 'Highlights']:
+            continue
+        
+        # Determine status from CSS class
+        if 'cbLive' in class_str:
+            status = 'Live'
+        elif 'cbComplete' in class_str:
+            status = 'Completed'
+        else:
+            continue
+        
+        # Find match_id from nearby link
+        parent = span.parent
+        for _ in range(8):
+            if parent:
+                link = parent.find('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+                if link:
+                    m = re.search(r'/live-cricket-scores/(\d+)/', link.get('href', ''))
+                    if m:
+                        mid = m.group(1)
+                        if mid not in status_map:
+                            status_map[mid] = status
+                            result_map[mid] = result_text
+                        break
+                parent = parent.parent
+    
+    # Also check title attributes for Upcoming matches (Preview)
+    preview_links = soup.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+    for link in preview_links:
+        title_attr = link.get('title', '').lower()
+        href = link.get('href', '')
+        m = re.search(r'/live-cricket-scores/(\d+)/', href)
+        if m:
+            mid = m.group(1)
+            if mid not in status_map:
+                if 'preview' in title_attr or 'upcoming' in title_attr:
+                    status_map[mid] = 'Upcoming'
+                    result_map[mid] = 'Preview'
     
     series_list = []
     seen_series_ids = set()
@@ -136,35 +166,15 @@ def scrape_series_from_live_page():
                     seen_match_ids.add(mid)
                     match_title = m_link.get_text(strip=True)
                     
-                    # Get status from pre-built status_map (from nav bar) first
-                    match_status = status_map.get(mid, '')
-                    
-                    # If not in nav bar, check the title attribute for status
-                    if not match_status:
-                        title_attr = m_link.get('title', '').lower()
-                        if 'won' in title_attr or 'result' in title_attr or 'tied' in title_attr or 'drawn' in title_attr or 'no result' in title_attr:
-                            match_status = 'Completed'
-                        elif 'live' in title_attr or 'need' in title_attr or 'trail' in title_attr or 'lead' in title_attr:
-                            match_status = 'Live'
-                        elif 'preview' in title_attr or 'upcoming' in title_attr:
-                            match_status = 'Upcoming'
-                        elif 'break' in title_attr or 'innings' in title_attr or 'stumps' in title_attr or 'tea' in title_attr or 'lunch' in title_attr:
-                            match_status = 'Break'
-                    
-                    # Fallback: check the link text itself
-                    if not match_status:
-                        text_lower = match_title.lower() if match_title else ''
-                        if 'live' in text_lower:
-                            match_status = 'Live'
-                        elif 'preview' in text_lower:
-                            match_status = 'Upcoming'
-                        else:
-                            match_status = '-'
+                    # Get status from CSS class-based status_map
+                    match_status = status_map.get(mid, '-')
+                    match_result = result_map.get(mid, '')
                     
                     matches.append({
                         'match_id': mid,
                         'match_title': match_title if match_title else '-',
-                        'match_status': match_status
+                        'match_status': match_status,
+                        'match_result': match_result
                     })
         
         series_list.append({
