@@ -20,6 +20,12 @@
             
             <nav class="sidebar-nav">
                 <ul class="sidebar-menu">
+                    <li class="sidebar-item {% if request.path == '/admin/live-score' %}active{% endif %}">
+                        <a href="/admin/live-score" class="sidebar-link">
+                            <span class="sidebar-icon">&#127951;</span>
+                            <span class="sidebar-text">Live Score</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             
