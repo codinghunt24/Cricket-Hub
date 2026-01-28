@@ -191,7 +191,43 @@ def scrape_scorecard(match_id):
     if series_link:
         result['series_name'] = series_link.get_text(strip=True)
     
-    logger.info(f"Scraped match {match_id}: {result['match_title']}")
+    # Try to get match status from live-cricket-scores page
+    live_url = f"{BASE_URL}/live-cricket-scores/{match_id}"
+    live_html = fetch_page(live_url)
+    if live_html:
+        live_soup = BeautifulSoup(live_html, 'html.parser')
+        page_text = live_soup.get_text()
+        
+        # Check for common status patterns
+        status_patterns = [
+            (r'(\w+)\s+won\s+by\s+\d+\s+(runs?|wickets?)', 'Completed'),
+            (r'Match\s+drawn', 'Completed'),
+            (r'Match\s+tied', 'Completed'),
+            (r'No\s+result', 'No Result'),
+            (r'opt\s+to\s+(bat|bowl)', 'Live'),
+            (r'Need\s+\d+\s+to\s+win', 'Live'),
+            (r'Day\s+\d+', 'Live'),
+            (r'Innings\s+Break', 'Break'),
+            (r'Stumps', 'Stumps'),
+            (r'Tea', 'Tea'),
+            (r'Lunch', 'Lunch'),
+        ]
+        
+        for pattern, status in status_patterns:
+            match = re.search(pattern, page_text, re.IGNORECASE)
+            if match:
+                if status == 'Completed':
+                    result['match_status'] = match.group()  # e.g., "India won by 5 wickets"
+                else:
+                    result['match_status'] = status
+                break
+        
+        # If no status found, check if match is upcoming
+        if not result['match_status']:
+            if 'yet to begin' in page_text.lower() or 'preview' in page_text.lower():
+                result['match_status'] = 'Upcoming'
+    
+    logger.info(f"Scraped match {match_id}: {result['match_title']} - Status: {result['match_status']}")
     return {'success': True, **result}
 
 

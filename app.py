@@ -647,6 +647,7 @@ def admin_scrape_scorecard(match_id):
                 existing.venue = result.get('venue') or existing.venue
                 existing.series_name = result.get('series_name') or series_name or existing.series_name
                 existing.cricbuzz_series_id = series_id or existing.cricbuzz_series_id
+                existing.state = result.get('match_status') or existing.state
                 existing.match_url = f"https://www.cricbuzz.com/live-cricket-scores/{match_id}"
                 db.session.commit()
                 result['action'] = 'updated'
@@ -660,6 +661,7 @@ def admin_scrape_scorecard(match_id):
                     team2_name=result.get('team2'),
                     venue=result.get('venue'),
                     series_name=result.get('series_name') or series_name,
+                    state=result.get('match_status'),
                     match_url=f"https://www.cricbuzz.com/live-cricket-scores/{match_id}"
                 )
                 db.session.add(new_match)
