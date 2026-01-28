@@ -39,7 +39,7 @@
                             </div>
                         </div>
                         {% if match.result %}
-                        <div class="match-result {% if 'won' in match.result.lower() or 'win' in match.result.lower() %}result-won{% elif 'need' in match.result.lower() %}result-need{% elif 'match starts' in match.result.lower() or 'start' in match.result.lower() %}result-upcoming{% endif %}">{{ match.result }}</div>
+                        <div class="match-result {% if 'opt to' in match.result.lower() %}result-toss{% elif 'won' in match.result.lower() or 'win' in match.result.lower() %}result-won{% elif 'need' in match.result.lower() %}result-need{% elif 'match starts' in match.result.lower() or 'start' in match.result.lower() %}result-upcoming{% endif %}">{{ match.result }}</div>
                         {% endif %}
                     </div>
                 </div>
@@ -494,6 +494,11 @@
 
 .match-result.result-upcoming {
     color: #FF9800;
+}
+
+.match-result.result-toss {
+    color: #e53935;
+    font-weight: 600;
 }
 
 .match-date {
