@@ -163,7 +163,7 @@
         </div>
         <div class="series-grid">
             {% for s in series %}
-            <a href="/series/{{ s.id }}" class="series-card">
+            <a href="/series/{{ s.slug or s.id }}" class="series-card">
                 <div class="series-name">{{ s.name }}</div>
                 <div class="series-date">{{ s.date_range or '' }}</div>
             </a>

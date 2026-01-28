@@ -23,7 +23,7 @@
         <h2>Squad</h2>
         <div class="players-grid">
             {% for player in players %}
-            <a href="/player/{{ player.id }}" class="player-card-link">
+            <a href="/player/{{ player.slug or player.id }}" class="player-card-link">
                 <div class="player-card">
                     <div class="player-photo">
                         {% if player.photo_url %}

@@ -2,12 +2,29 @@ import os
 import re
 import requests
 import threading
+import unicodedata
 from datetime import datetime
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
+
+def generate_slug(text, existing_slugs=None):
+    """Generate SEO-friendly slug from text"""
+    if not text:
+        return None
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+    text = text.lower().strip()
+    text = re.sub(r'[^\w\s-]', '', text)
+    text = re.sub(r'[-\s]+', '-', text)
+    text = text.strip('-')
+    if existing_slugs and text in existing_slugs:
+        counter = 1
+        while f"{text}-{counter}" in existing_slugs:
+            counter += 1
+        text = f"{text}-{counter}"
+    return text
 
 class Base(DeclarativeBase):
     pass
@@ -308,11 +325,18 @@ def sitemap_xml():
     
     teams = Team.query.all()
     for team in teams:
-        pages.append({'loc': f"{base_url}/team/{team.id}", 'priority': '0.6', 'changefreq': 'weekly'})
+        team_slug = team.slug or str(team.id)
+        pages.append({'loc': f"{base_url}/team/{team_slug}", 'priority': '0.6', 'changefreq': 'weekly'})
+    
+    players = Player.query.all()
+    for player in players:
+        player_slug = player.slug or str(player.id)
+        pages.append({'loc': f"{base_url}/player/{player_slug}", 'priority': '0.5', 'changefreq': 'weekly'})
     
     series_list = Series.query.all()
     for s in series_list:
-        pages.append({'loc': f"{base_url}/series/{s.id}", 'priority': '0.7', 'changefreq': 'daily'})
+        series_slug = s.slug or str(s.id)
+        pages.append({'loc': f"{base_url}/series/{series_slug}", 'priority': '0.7', 'changefreq': 'daily'})
     
     xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -424,15 +448,25 @@ def teams_by_category(category_slug):
     teams = Team.query.filter_by(category_id=category.id).all()
     return render_template('teams_list.html', category=category, teams=teams)
 
-@app.route('/team/<int:team_id>')
-def team_detail(team_id):
-    team = Team.query.get_or_404(team_id)
+@app.route('/team/<slug>')
+def team_detail(slug):
+    if slug.isdigit():
+        team = Team.query.get_or_404(int(slug))
+        if team.slug:
+            return redirect(url_for('team_detail', slug=team.slug), code=301)
+    else:
+        team = Team.query.filter_by(slug=slug).first_or_404()
     players = Player.query.filter_by(team_id=team.id).all()
     return render_template('team_detail.html', team=team, players=players)
 
-@app.route('/player/<int:player_id>')
-def player_detail(player_id):
-    player = Player.query.get_or_404(player_id)
+@app.route('/player/<slug>')
+def player_detail(slug):
+    if slug.isdigit():
+        player = Player.query.get_or_404(int(slug))
+        if player.slug:
+            return redirect(url_for('player_detail', slug=player.slug), code=301)
+    else:
+        player = Player.query.filter_by(slug=slug).first_or_404()
     return render_template('player_detail.html', player=player)
 
 @app.route('/series')
@@ -476,10 +510,15 @@ def series_page():
     
     return render_template('series.html', category_data=category_data, month_data=month_data, categories=categories)
 
-@app.route('/series/<int:series_id>')
-def series_detail(series_id):
-    series = Series.query.get_or_404(series_id)
-    matches = Match.query.filter_by(series_id=series_id).order_by(Match.match_id).all()
+@app.route('/series/<slug>')
+def series_detail(slug):
+    if slug.isdigit():
+        series = Series.query.get_or_404(int(slug))
+        if series.slug:
+            return redirect(url_for('series_detail', slug=series.slug), code=301)
+    else:
+        series = Series.query.filter_by(slug=slug).first_or_404()
+    matches = Match.query.filter_by(series_id=series.id).order_by(Match.match_id).all()
     category = SeriesCategory.query.get(series.category_id)
     return render_template('series_detail.html', series=series, matches=matches, category=category)
 
@@ -3380,6 +3419,45 @@ def api_get_scorecard(match_id):
         })
     except Exception as e:
         logging.error(f"Error fetching scorecard: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/generate-slugs')
+@admin_required
+def generate_all_slugs():
+    """Generate SEO-friendly slugs for all teams, players, and series"""
+    try:
+        team_slugs = set()
+        teams_updated = 0
+        for team in Team.query.all():
+            if not team.slug:
+                team.slug = generate_slug(team.name, team_slugs)
+                team_slugs.add(team.slug)
+                teams_updated += 1
+        
+        player_slugs = set()
+        players_updated = 0
+        for player in Player.query.all():
+            if not player.slug:
+                player.slug = generate_slug(player.name, player_slugs)
+                player_slugs.add(player.slug)
+                players_updated += 1
+        
+        series_slugs = set()
+        series_updated = 0
+        for s in Series.query.all():
+            if not s.slug:
+                s.slug = generate_slug(s.name, series_slugs)
+                series_slugs.add(s.slug)
+                series_updated += 1
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Slugs generated: {teams_updated} teams, {players_updated} players, {series_updated} series'
+        })
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'success': False, 'message': str(e)})
 
 if __name__ == '__main__':

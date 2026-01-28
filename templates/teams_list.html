@@ -12,7 +12,7 @@
     {% if teams %}
     <div class="teams-grid">
         {% for team in teams %}
-        <a href="/team/{{ team.id }}" class="team-card">
+        <a href="/team/{{ team.slug or team.id }}" class="team-card">
             <div class="team-flag">
                 {% if team.flag_url %}
                 <img src="{{ team.flag_url }}" alt="{{ team.name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">

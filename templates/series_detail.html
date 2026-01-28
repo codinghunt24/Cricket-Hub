@@ -21,7 +21,7 @@
     "startDate": "{{ series.start_date }}",
     "endDate": "{{ series.end_date }}",
     {% endif %}
-    "url": "https://cricbuzz-live-score.com/series/{{ series.id }}"
+    "url": "https://cricbuzz-live-score.com/series/{{ series.slug or series.id }}"
 }
 </script>
 {% endblock %}
