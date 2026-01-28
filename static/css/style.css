@@ -199,6 +199,10 @@ body {
     border: none;
     cursor: pointer;
     padding: 10px;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .hamburger {
