@@ -173,6 +173,22 @@ def scrape_scorecard(match_id):
     if live_status_div:
         result['live_status'] = live_status_div.get_text(strip=True)
     
+    # Extract Date & Time (e.g., "Today, 9:30 AM LOCAL")
+    for span in soup.find_all('span', class_='font-bold'):
+        if 'Date' in span.get_text():
+            parent = span.parent
+            if parent:
+                full_text = parent.get_text(strip=True)
+                date_match = re.search(r'Date.*?Time:\s*(.+)', full_text)
+                if date_match:
+                    # Clean up the text (fix spacing issues)
+                    date_time = date_match.group(1).strip()
+                    date_time = re.sub(r',(\S)', r', \1', date_time)  # Add space after comma
+                    date_time = re.sub(r'(\d)(AM|PM)', r'\1 \2', date_time)  # Add space before AM/PM
+                    date_time = re.sub(r'(AM|PM)LOCAL', r'\1 LOCAL', date_time)  # Add space before LOCAL
+                    result['match_datetime'] = date_time
+            break
+    
     # Get title from page
     title_tag = soup.find('title')
     if title_tag:

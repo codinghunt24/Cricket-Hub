@@ -345,7 +345,9 @@ function displayScorecard(scorecard) {
     if (scorecard.venue) {
         infoHtml += '<p><span class="label">Venue:</span> ' + scorecard.venue + '</p>';
     }
-    if (scorecard.match_time) {
+    if (scorecard.match_datetime) {
+        infoHtml += '<p><span class="label">Date & Time:</span> ' + scorecard.match_datetime + '</p>';
+    } else if (scorecard.match_time) {
         infoHtml += '<p><span class="label">Time:</span> ' + scorecard.match_time + '</p>';
     }
     if (scorecard.match_format) {
