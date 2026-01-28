@@ -569,21 +569,21 @@ input:checked + .toggle-slider::after {
 </style>
 
 <script>
-function scrapeScorecard(matchId, btn) {
+function scrapeScorecard(matchId, seriesId, seriesName, btn) {
     btn.disabled = true;
     btn.textContent = '...';
     
     fetch('/admin/live-score/scrape-scorecard/' + matchId, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'}
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({series_id: seriesId, series_name: seriesName})
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            btn.textContent = '✓';
+            btn.textContent = data.action === 'updated' ? '↻' : '✓';
             btn.style.background = '#10b981';
-            // Show result in alert or modal
-            alert('Match: ' + data.match_title + '\nTeam1: ' + data.team1 + '\nTeam2: ' + data.team2 + '\nVenue: ' + data.venue + '\nFormat: ' + data.match_format);
+            btn.title = data.action + ': ' + data.match_title;
         } else {
             btn.textContent = '✗';
             btn.style.background = '#ef4444';
@@ -631,11 +631,12 @@ function scrapeSeries() {
                 if (s.matches && s.matches.length > 0) {
                     s.matches.forEach(function(match) {
                         const row = document.createElement('tr');
+                        const escapedSeriesName = s.series_name.replace(/'/g, "\\'");
                         row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
                             '<td>' + s.series_name + '</td>' +
                             '<td><a href="https://www.cricbuzz.com/live-cricket-scores/' + match.match_id + '" target="_blank">' + match.match_id + '</a></td>' +
                             '<td>' + match.match_title + '</td>' +
-                            '<td><button class="scrape-btn" onclick="scrapeScorecard(\'' + match.match_id + '\', this)">Scrape</button></td>';
+                            '<td><button class="scrape-btn" onclick="scrapeScorecard(\'' + match.match_id + '\', \'' + s.series_id + '\', \'' + escapedSeriesName + '\', this)">Scrape</button></td>';
                         tbody.appendChild(row);
                     });
                 } else {

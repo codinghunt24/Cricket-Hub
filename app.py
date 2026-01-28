@@ -628,9 +628,47 @@ def admin_scrape_series():
 @admin_required
 def admin_scrape_scorecard(match_id):
     try:
+        # Get series_id from request if provided
+        data = request.get_json() or {}
+        series_id = data.get('series_id')
+        series_name = data.get('series_name')
+        
         result = scraper.scrape_scorecard(match_id)
+        
+        if result.get('success'):
+            # Upsert - update if exists, insert if new
+            existing = Match.query.filter_by(match_id=match_id).first()
+            
+            if existing:
+                # Update existing record
+                existing.match_format = result.get('match_format') or existing.match_format
+                existing.team1_name = result.get('team1') or existing.team1_name
+                existing.team2_name = result.get('team2') or existing.team2_name
+                existing.venue = result.get('venue') or existing.venue
+                existing.series_name = result.get('series_name') or series_name or existing.series_name
+                existing.cricbuzz_series_id = series_id or existing.cricbuzz_series_id
+                existing.match_url = f"https://www.cricbuzz.com/live-cricket-scores/{match_id}"
+                db.session.commit()
+                result['action'] = 'updated'
+            else:
+                # Insert new record
+                new_match = Match(
+                    match_id=match_id,
+                    cricbuzz_series_id=series_id,
+                    match_format=result.get('match_format'),
+                    team1_name=result.get('team1'),
+                    team2_name=result.get('team2'),
+                    venue=result.get('venue'),
+                    series_name=result.get('series_name') or series_name,
+                    match_url=f"https://www.cricbuzz.com/live-cricket-scores/{match_id}"
+                )
+                db.session.add(new_match)
+                db.session.commit()
+                result['action'] = 'inserted'
+        
         return jsonify(result)
     except Exception as e:
+        db.session.rollback()
         return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/admin/automation')
