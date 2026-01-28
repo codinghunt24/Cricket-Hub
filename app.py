@@ -530,7 +530,8 @@ def admin_matches():
                     break
         else:
             matches.append(m)
-    live_count = len([m for m in matches if m.state in ['Live', 'In Progress']])
+    live_count = len([m for m in matches if m.state == 'Live'])
+    in_progress_count = len([m for m in matches if m.state == 'In Progress'])
     innings_count = len([m for m in matches if m.state == 'Innings Break'])
     stumps_count = len([m for m in matches if m.state == 'Stumps'])
     lunch_count = len([m for m in matches if m.state == 'Lunch'])
@@ -545,6 +546,7 @@ def admin_matches():
     return render_template('admin/matches.html', 
                            matches=matches,
                            live_count=live_count,
+                           in_progress_count=in_progress_count,
                            innings_count=innings_count,
                            stumps_count=stumps_count,
                            lunch_count=lunch_count,

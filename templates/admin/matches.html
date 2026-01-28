@@ -24,46 +24,21 @@
         <div id="liveScrapingResult" style="display: none; padding: 10px; border-radius: 5px; margin-top: 10px;"></div>
     </div>
     
-    <div class="filter-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-        <button class="filter-tab active" data-filter="all" onclick="filterMatches('all')">
-            All <span class="tab-count">{{ matches|length }}</span>
-        </button>
-        <button class="filter-tab" data-filter="Live" onclick="filterMatches('Live')" style="border-color: #ff4444;">
-            Live <span class="tab-count" style="background: #ff4444;">{{ live_count }}</span>
-        </button>
-        <button class="filter-tab" data-filter="Innings Break" onclick="filterMatches('Innings Break')" style="border-color: #ffaa00;">
-            Innings Break <span class="tab-count" style="background: #ffaa00; color: #333;">{{ innings_count }}</span>
-        </button>
-        <button class="filter-tab" data-filter="Stumps" onclick="filterMatches('Stumps')" style="border-color: #8e44ad;">
-            Stumps <span class="tab-count" style="background: #8e44ad;">{{ stumps_count }}</span>
-        </button>
-        <button class="filter-tab" data-filter="Lunch" onclick="filterMatches('Lunch')" style="border-color: #f39c12;">
-            Lunch <span class="tab-count" style="background: #f39c12; color: #333;">{{ lunch_count }}</span>
-        </button>
-        <button class="filter-tab" data-filter="Tea" onclick="filterMatches('Tea')" style="border-color: #d35400;">
-            Tea <span class="tab-count" style="background: #d35400;">{{ tea_count }}</span>
-        </button>
-        <button class="filter-tab" data-filter="Drinks" onclick="filterMatches('Drinks')" style="border-color: #1abc9c;">
-            Drinks <span class="tab-count" style="background: #1abc9c;">{{ drinks_count }}</span>
-        </button>
-        <button class="filter-tab" data-filter="Complete" onclick="filterMatches('Complete')" style="border-color: #00cc66;">
-            Complete <span class="tab-count" style="background: #00cc66;">{{ complete_count }}</span>
-        </button>
-        <button class="filter-tab" data-filter="Preview" onclick="filterMatches('Preview')" style="border-color: #9b59b6;">
-            Preview <span class="tab-count" style="background: #9b59b6;">{{ preview_count }}</span>
-        </button>
-        <button class="filter-tab" data-filter="Upcoming" onclick="filterMatches('Upcoming')" style="border-color: #3498db;">
-            Upcoming <span class="tab-count" style="background: #3498db;">{{ upcoming_count }}</span>
-        </button>
-        <button class="filter-tab" data-filter="Abandon" onclick="filterMatches('Abandon')" style="border-color: #7f8c8d;">
-            Abandon <span class="tab-count" style="background: #7f8c8d;">{{ abandon_count }}</span>
-        </button>
-        <button class="filter-tab" data-filter="has-result" onclick="filterMatches('has-result')" style="border-color: #2ecc71;">
-            With Result <span class="tab-count" style="background: #2ecc71;">{{ result_count }}</span>
-        </button>
-        <button class="filter-tab" data-filter="has-status" onclick="filterMatches('has-status')" style="border-color: #e67e22;">
-            With Status <span class="tab-count" style="background: #e67e22;">{{ status_count }}</span>
-        </button>
+    <div class="filter-tabs" style="display: flex; gap: 4px; margin-bottom: 15px; flex-wrap: nowrap; overflow-x: auto;">
+        <button class="filter-tab active" data-filter="all" onclick="filterMatches('all')">All<span class="tab-count">{{ matches|length }}</span></button>
+        <button class="filter-tab" data-filter="Live" onclick="filterMatches('Live')" style="border-color: #ff4444;">Live<span class="tab-count" style="background: #ff4444;">{{ live_count }}</span></button>
+        <button class="filter-tab" data-filter="In Progress" onclick="filterMatches('In Progress')" style="border-color: #e74c3c;">Progress<span class="tab-count" style="background: #e74c3c;">{{ in_progress_count }}</span></button>
+        <button class="filter-tab" data-filter="Innings Break" onclick="filterMatches('Innings Break')" style="border-color: #ffaa00;">Break<span class="tab-count" style="background: #ffaa00; color: #333;">{{ innings_count }}</span></button>
+        <button class="filter-tab" data-filter="Stumps" onclick="filterMatches('Stumps')" style="border-color: #8e44ad;">Stumps<span class="tab-count" style="background: #8e44ad;">{{ stumps_count }}</span></button>
+        <button class="filter-tab" data-filter="Lunch" onclick="filterMatches('Lunch')" style="border-color: #f39c12;">Lunch<span class="tab-count" style="background: #f39c12; color: #333;">{{ lunch_count }}</span></button>
+        <button class="filter-tab" data-filter="Tea" onclick="filterMatches('Tea')" style="border-color: #d35400;">Tea<span class="tab-count" style="background: #d35400;">{{ tea_count }}</span></button>
+        <button class="filter-tab" data-filter="Drinks" onclick="filterMatches('Drinks')" style="border-color: #1abc9c;">Drinks<span class="tab-count" style="background: #1abc9c;">{{ drinks_count }}</span></button>
+        <button class="filter-tab" data-filter="Complete" onclick="filterMatches('Complete')" style="border-color: #00cc66;">Done<span class="tab-count" style="background: #00cc66;">{{ complete_count }}</span></button>
+        <button class="filter-tab" data-filter="Preview" onclick="filterMatches('Preview')" style="border-color: #9b59b6;">Preview<span class="tab-count" style="background: #9b59b6;">{{ preview_count }}</span></button>
+        <button class="filter-tab" data-filter="Upcoming" onclick="filterMatches('Upcoming')" style="border-color: #3498db;">Soon<span class="tab-count" style="background: #3498db;">{{ upcoming_count }}</span></button>
+        <button class="filter-tab" data-filter="Abandon" onclick="filterMatches('Abandon')" style="border-color: #7f8c8d;">Abandon<span class="tab-count" style="background: #7f8c8d;">{{ abandon_count }}</span></button>
+        <button class="filter-tab" data-filter="has-result" onclick="filterMatches('has-result')" style="border-color: #2ecc71;">Result<span class="tab-count" style="background: #2ecc71;">{{ result_count }}</span></button>
+        <button class="filter-tab" data-filter="has-status" onclick="filterMatches('has-status')" style="border-color: #e67e22;">Status<span class="tab-count" style="background: #e67e22;">{{ status_count }}</span></button>
     </div>
     
     {% if matches %}
@@ -88,7 +63,7 @@
                     <td class="id-col">{{ match.match_id or '-' }}</td>
                     <td class="id-col">{{ match.cricbuzz_series_id or '-' }}</td>
                     <td class="status-col">
-                        <span class="status-badge {% if match.state in ['Live', 'In Progress'] %}live{% elif match.state == 'Innings Break' %}innings{% elif match.state == 'Stumps' %}stumps{% elif match.state == 'Lunch' %}lunch{% elif match.state == 'Tea' %}tea{% elif match.state == 'Drinks' %}drinks{% elif match.state == 'Complete' %}complete{% elif match.state == 'Preview' %}preview{% elif match.state == 'Abandon' %}abandon{% else %}upcoming{% endif %}">
+                        <span class="status-badge {% if match.state == 'Live' %}live{% elif match.state == 'In Progress' %}inprogress{% elif match.state == 'Innings Break' %}innings{% elif match.state == 'Stumps' %}stumps{% elif match.state == 'Lunch' %}lunch{% elif match.state == 'Tea' %}tea{% elif match.state == 'Drinks' %}drinks{% elif match.state == 'Complete' %}complete{% elif match.state == 'Preview' %}preview{% elif match.state == 'Abandon' %}abandon{% else %}upcoming{% endif %}">
                             {{ match.state or 'Unknown' }}
                         </span>
                     </td>
@@ -170,16 +145,17 @@
 
 .filter-tab {
     background: #2a2a2a;
-    border: 2px solid #444;
+    border: 1px solid #444;
     color: #ccc;
-    padding: 8px 16px;
-    border-radius: 20px;
+    padding: 4px 8px;
+    border-radius: 12px;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.7rem;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 3px;
     transition: all 0.2s;
+    white-space: nowrap;
 }
 
 .filter-tab:hover {
@@ -195,9 +171,9 @@
 .tab-count {
     background: #444;
     color: #fff;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.75rem;
+    padding: 1px 5px;
+    border-radius: 8px;
+    font-size: 0.65rem;
     font-weight: bold;
 }
 
@@ -231,6 +207,11 @@
 
 .status-badge.upcoming {
     background: #3498db;
+    color: white;
+}
+
+.status-badge.inprogress {
+    background: #e74c3c;
     color: white;
 }
 
@@ -462,8 +443,6 @@ function filterMatches(status) {
             row.style.display = row.dataset.hasResult === 'yes' ? '' : 'none';
         } else if (status === 'has-status') {
             row.style.display = row.dataset.hasStatus === 'yes' ? '' : 'none';
-        } else if (status === 'Live') {
-            row.style.display = (row.dataset.state === 'Live' || row.dataset.state === 'In Progress') ? '' : 'none';
         } else {
             row.style.display = row.dataset.state === status ? '' : 'none';
         }
