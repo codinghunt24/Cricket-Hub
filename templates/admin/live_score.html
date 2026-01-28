@@ -33,142 +33,195 @@
         </form>
     </div>
 
-    <div class="matches-grid">
-        <div class="match-column live-column">
-            <div class="column-header live">
-                <span class="column-icon">🔴</span>
-                <h3>Live</h3>
-                <span class="count-badge">{{ live_matches|length }}</span>
+    <div class="category-counts">
+        <div class="count-box live">
+            <span class="count-icon">🔴</span>
+            <span class="count-label">Live</span>
+            <span class="count-number">{{ live_matches|length }}</span>
+        </div>
+        <div class="count-box break">
+            <span class="count-icon">⏸️</span>
+            <span class="count-label">Break</span>
+            <span class="count-number">{{ break_matches|length }}</span>
+        </div>
+        <div class="count-box upcoming">
+            <span class="count-icon">⏰</span>
+            <span class="count-label">Upcoming</span>
+            <span class="count-number">{{ upcoming_matches|length }}</span>
+        </div>
+        <div class="count-box complete">
+            <span class="count-icon">✅</span>
+            <span class="count-label">Complete</span>
+            <span class="count-number">{{ complete_matches|length }}</span>
+        </div>
+    </div>
+
+    <div class="tables-container">
+        <div class="table-section">
+            <div class="table-header live">
+                <span>🔴 Live Matches ({{ live_matches|length }})</span>
             </div>
-            <div class="column-body">
-                {% for match in live_matches %}
-                <div class="match-card live">
-                    <div class="match-id">
-                        <a href="{{ match.match_url }}" target="_blank">#{{ match.match_id }}</a>
-                    </div>
-                    <div class="match-series">{{ match.series_name or '-' }}</div>
-                    <div class="match-format">{{ match.match_format or '-' }}</div>
-                    <div class="match-teams">
-                        <div class="team">
-                            <span class="team-name">{{ match.team1_name }}</span>
-                            <span class="team-score">{{ match.team1_score or '' }}</span>
-                        </div>
-                        <div class="team">
-                            <span class="team-name">{{ match.team2_name }}</span>
-                            <span class="team-score">{{ match.team2_score or '' }}</span>
-                        </div>
-                    </div>
-                    <div class="match-result">{{ match.result or '' }}</div>
-                    <div class="match-state">
-                        <span class="state-badge {{ match.state|lower|replace(' ', '-') if match.state else '' }}">{{ match.state }}</span>
-                    </div>
-                </div>
-                {% else %}
-                <div class="no-matches">No live matches</div>
-                {% endfor %}
+            <div class="table-wrapper">
+                <table class="excel-table">
+                    <thead>
+                        <tr>
+                            <th>Match ID</th>
+                            <th>Series ID</th>
+                            <th>Series Name</th>
+                            <th>Format</th>
+                            <th>Team 1</th>
+                            <th>Score 1</th>
+                            <th>Team 2</th>
+                            <th>Score 2</th>
+                            <th>State</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in live_matches %}
+                        <tr>
+                            <td><a href="{{ m.match_url }}" target="_blank">{{ m.match_id }}</a></td>
+                            <td>{{ m.cricbuzz_series_id or '-' }}</td>
+                            <td>{{ m.series_name or '-' }}</td>
+                            <td>{{ m.match_format or '-' }}</td>
+                            <td>{{ m.team1_name or '-' }}</td>
+                            <td class="score">{{ m.team1_score or '-' }}</td>
+                            <td>{{ m.team2_name or '-' }}</td>
+                            <td class="score">{{ m.team2_score or '-' }}</td>
+                            <td><span class="state-badge live">{{ m.state }}</span></td>
+                            <td>{{ m.result or '-' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="10" class="no-data">No live matches</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <div class="match-column break-column">
-            <div class="column-header break">
-                <span class="column-icon">⏸️</span>
-                <h3>Break</h3>
-                <span class="count-badge">{{ break_matches|length }}</span>
+        <div class="table-section">
+            <div class="table-header break">
+                <span>⏸️ Break Matches ({{ break_matches|length }})</span>
             </div>
-            <div class="column-body">
-                {% for match in break_matches %}
-                <div class="match-card break">
-                    <div class="match-id">
-                        <a href="{{ match.match_url }}" target="_blank">#{{ match.match_id }}</a>
-                    </div>
-                    <div class="match-series">{{ match.series_name or '-' }}</div>
-                    <div class="match-format">{{ match.match_format or '-' }}</div>
-                    <div class="match-teams">
-                        <div class="team">
-                            <span class="team-name">{{ match.team1_name }}</span>
-                            <span class="team-score">{{ match.team1_score or '' }}</span>
-                        </div>
-                        <div class="team">
-                            <span class="team-name">{{ match.team2_name }}</span>
-                            <span class="team-score">{{ match.team2_score or '' }}</span>
-                        </div>
-                    </div>
-                    <div class="match-result">{{ match.result or '' }}</div>
-                    <div class="match-state">
-                        <span class="state-badge {{ match.state|lower|replace(' ', '-') if match.state else '' }}">{{ match.state }}</span>
-                    </div>
-                </div>
-                {% else %}
-                <div class="no-matches">No break matches</div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <div class="match-column upcoming-column">
-            <div class="column-header upcoming">
-                <span class="column-icon">⏰</span>
-                <h3>Upcoming</h3>
-                <span class="count-badge">{{ upcoming_matches|length }}</span>
-            </div>
-            <div class="column-body">
-                {% for match in upcoming_matches %}
-                <div class="match-card upcoming">
-                    <div class="match-id">
-                        <a href="{{ match.match_url }}" target="_blank">#{{ match.match_id }}</a>
-                    </div>
-                    <div class="match-series">{{ match.series_name or '-' }}</div>
-                    <div class="match-format">{{ match.match_format or '-' }}</div>
-                    <div class="match-teams">
-                        <div class="team">
-                            <span class="team-name">{{ match.team1_name }}</span>
-                        </div>
-                        <div class="team">
-                            <span class="team-name">{{ match.team2_name }}</span>
-                        </div>
-                    </div>
-                    <div class="match-result">{{ match.result or '' }}</div>
-                    <div class="match-state">
-                        <span class="state-badge {{ match.state|lower|replace(' ', '-') if match.state else '' }}">{{ match.state }}</span>
-                    </div>
-                </div>
-                {% else %}
-                <div class="no-matches">No upcoming matches</div>
-                {% endfor %}
+            <div class="table-wrapper">
+                <table class="excel-table">
+                    <thead>
+                        <tr>
+                            <th>Match ID</th>
+                            <th>Series ID</th>
+                            <th>Series Name</th>
+                            <th>Format</th>
+                            <th>Team 1</th>
+                            <th>Score 1</th>
+                            <th>Team 2</th>
+                            <th>Score 2</th>
+                            <th>State</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in break_matches %}
+                        <tr>
+                            <td><a href="{{ m.match_url }}" target="_blank">{{ m.match_id }}</a></td>
+                            <td>{{ m.cricbuzz_series_id or '-' }}</td>
+                            <td>{{ m.series_name or '-' }}</td>
+                            <td>{{ m.match_format or '-' }}</td>
+                            <td>{{ m.team1_name or '-' }}</td>
+                            <td class="score">{{ m.team1_score or '-' }}</td>
+                            <td>{{ m.team2_name or '-' }}</td>
+                            <td class="score">{{ m.team2_score or '-' }}</td>
+                            <td><span class="state-badge break">{{ m.state }}</span></td>
+                            <td>{{ m.result or '-' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="10" class="no-data">No break matches</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <div class="match-column complete-column">
-            <div class="column-header complete">
-                <span class="column-icon">✅</span>
-                <h3>Complete</h3>
-                <span class="count-badge">{{ complete_matches|length }}</span>
+        <div class="table-section">
+            <div class="table-header upcoming">
+                <span>⏰ Upcoming Matches ({{ upcoming_matches|length }})</span>
             </div>
-            <div class="column-body">
-                {% for match in complete_matches %}
-                <div class="match-card complete">
-                    <div class="match-id">
-                        <a href="{{ match.match_url }}" target="_blank">#{{ match.match_id }}</a>
-                    </div>
-                    <div class="match-series">{{ match.series_name or '-' }}</div>
-                    <div class="match-format">{{ match.match_format or '-' }}</div>
-                    <div class="match-teams">
-                        <div class="team">
-                            <span class="team-name">{{ match.team1_name }}</span>
-                            <span class="team-score">{{ match.team1_score or '' }}</span>
-                        </div>
-                        <div class="team">
-                            <span class="team-name">{{ match.team2_name }}</span>
-                            <span class="team-score">{{ match.team2_score or '' }}</span>
-                        </div>
-                    </div>
-                    <div class="match-result">{{ match.result or '' }}</div>
-                    <div class="match-state">
-                        <span class="state-badge {{ match.state|lower|replace(' ', '-') if match.state else '' }}">{{ match.state }}</span>
-                    </div>
-                </div>
-                {% else %}
-                <div class="no-matches">No completed matches</div>
-                {% endfor %}
+            <div class="table-wrapper">
+                <table class="excel-table">
+                    <thead>
+                        <tr>
+                            <th>Match ID</th>
+                            <th>Series ID</th>
+                            <th>Series Name</th>
+                            <th>Format</th>
+                            <th>Team 1</th>
+                            <th>Score 1</th>
+                            <th>Team 2</th>
+                            <th>Score 2</th>
+                            <th>State</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in upcoming_matches %}
+                        <tr>
+                            <td><a href="{{ m.match_url }}" target="_blank">{{ m.match_id }}</a></td>
+                            <td>{{ m.cricbuzz_series_id or '-' }}</td>
+                            <td>{{ m.series_name or '-' }}</td>
+                            <td>{{ m.match_format or '-' }}</td>
+                            <td>{{ m.team1_name or '-' }}</td>
+                            <td class="score">{{ m.team1_score or '-' }}</td>
+                            <td>{{ m.team2_name or '-' }}</td>
+                            <td class="score">{{ m.team2_score or '-' }}</td>
+                            <td><span class="state-badge upcoming">{{ m.state }}</span></td>
+                            <td>{{ m.result or '-' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="10" class="no-data">No upcoming matches</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <div class="table-header complete">
+                <span>✅ Completed Matches ({{ complete_matches|length }})</span>
+            </div>
+            <div class="table-wrapper">
+                <table class="excel-table">
+                    <thead>
+                        <tr>
+                            <th>Match ID</th>
+                            <th>Series ID</th>
+                            <th>Series Name</th>
+                            <th>Format</th>
+                            <th>Team 1</th>
+                            <th>Score 1</th>
+                            <th>Team 2</th>
+                            <th>Score 2</th>
+                            <th>State</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in complete_matches %}
+                        <tr>
+                            <td><a href="{{ m.match_url }}" target="_blank">{{ m.match_id }}</a></td>
+                            <td>{{ m.cricbuzz_series_id or '-' }}</td>
+                            <td>{{ m.series_name or '-' }}</td>
+                            <td>{{ m.match_format or '-' }}</td>
+                            <td>{{ m.team1_name or '-' }}</td>
+                            <td class="score">{{ m.team1_score or '-' }}</td>
+                            <td>{{ m.team2_name or '-' }}</td>
+                            <td class="score">{{ m.team2_score or '-' }}</td>
+                            <td><span class="state-badge complete">{{ m.state }}</span></td>
+                            <td>{{ m.result or '-' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="10" class="no-data">No completed matches</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -183,7 +236,7 @@
     background: #fff;
     border-radius: 8px;
     padding: 15px 20px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
@@ -293,164 +346,147 @@ input:checked + .toggle-slider::after {
     font-weight: 600;
 }
 
-.matches-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+.category-counts {
+    display: flex;
     gap: 15px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
 }
 
-@media (max-width: 1200px) {
-    .matches-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 768px) {
-    .matches-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.match-column {
+.count-box {
     background: #fff;
+    padding: 12px 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    overflow: hidden;
-}
-
-.column-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    min-width: 120px;
+}
+
+.count-box.live {
+    border-left: 4px solid #dc3545;
+}
+
+.count-box.break {
+    border-left: 4px solid #ffc107;
+}
+
+.count-box.upcoming {
+    border-left: 4px solid #17a2b8;
+}
+
+.count-box.complete {
+    border-left: 4px solid #28a745;
+}
+
+.count-icon {
+    font-size: 1.2rem;
+}
+
+.count-label {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.count-number {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-left: auto;
+}
+
+.tables-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.table-section {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table-header {
     padding: 12px 15px;
-    color: #fff;
     font-weight: 600;
+    font-size: 0.95rem;
+    color: #fff;
 }
 
-.column-header h3 {
-    margin: 0;
-    flex: 1;
-    font-size: 1rem;
-}
-
-.column-header .count-badge {
-    background: rgba(255,255,255,0.3);
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-}
-
-.column-header.live {
+.table-header.live {
     background: linear-gradient(135deg, #dc3545, #c82333);
 }
 
-.column-header.break {
+.table-header.break {
     background: linear-gradient(135deg, #ffc107, #e0a800);
     color: #000;
 }
 
-.column-header.upcoming {
+.table-header.upcoming {
     background: linear-gradient(135deg, #17a2b8, #138496);
 }
 
-.column-header.complete {
+.table-header.complete {
     background: linear-gradient(135deg, #28a745, #218838);
 }
 
-.column-body {
-    padding: 10px;
-    max-height: 600px;
-    overflow-y: auto;
+.table-wrapper {
+    overflow-x: auto;
 }
 
-.match-card {
-    background: #f8f9fa;
-    border-radius: 6px;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-left: 3px solid #ddd;
+.excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
 }
 
-.match-card.live {
-    border-left-color: #dc3545;
+.excel-table th {
+    background: #f1f3f4;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    border: 1px solid #ddd;
+    white-space: nowrap;
 }
 
-.match-card.break {
-    border-left-color: #ffc107;
+.excel-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    vertical-align: middle;
 }
 
-.match-card.upcoming {
-    border-left-color: #17a2b8;
+.excel-table tbody tr:nth-child(even) {
+    background: #f9f9f9;
 }
 
-.match-card.complete {
-    border-left-color: #28a745;
+.excel-table tbody tr:hover {
+    background: #e8f4ff;
 }
 
-.match-id {
-    font-size: 0.75rem;
-    margin-bottom: 5px;
-}
-
-.match-id a {
+.excel-table td a {
     color: #007bff;
     text-decoration: none;
     font-weight: 600;
 }
 
-.match-series {
-    font-size: 0.7rem;
-    color: #888;
-    margin-bottom: 3px;
+.excel-table td a:hover {
+    text-decoration: underline;
 }
 
-.match-format {
-    font-size: 0.75rem;
-    color: #666;
-    font-weight: 500;
-    margin-bottom: 8px;
-}
-
-.match-teams {
-    margin-bottom: 8px;
-}
-
-.team {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 3px 0;
-}
-
-.team-name {
-    font-size: 0.85rem;
-    font-weight: 500;
-}
-
-.team-score {
-    font-size: 0.85rem;
+.excel-table td.score {
     font-weight: 600;
     color: #28a745;
 }
 
-.match-result {
-    font-size: 0.75rem;
-    color: #666;
-    font-style: italic;
-    margin-bottom: 5px;
-}
-
-.match-state {
-    display: flex;
-    justify-content: flex-end;
-}
-
 .state-badge {
-    font-size: 0.65rem;
-    padding: 2px 6px;
-    border-radius: 10px;
-    text-transform: uppercase;
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
     font-weight: 600;
+    text-transform: uppercase;
 }
 
 .state-badge.live {
@@ -458,22 +494,12 @@ input:checked + .toggle-slider::after {
     color: #fff;
 }
 
-.state-badge.in-progress {
-    background: #fd7e14;
-    color: #fff;
-}
-
-.state-badge.innings-break {
+.state-badge.break {
     background: #ffc107;
     color: #000;
 }
 
-.state-badge.stumps, .state-badge.lunch, .state-badge.tea, .state-badge.drinks {
-    background: #6f42c1;
-    color: #fff;
-}
-
-.state-badge.upcoming, .state-badge.preview, .state-badge.toss {
+.state-badge.upcoming {
     background: #17a2b8;
     color: #fff;
 }
@@ -483,16 +509,11 @@ input:checked + .toggle-slider::after {
     color: #fff;
 }
 
-.state-badge.abandon, .state-badge.no-result {
-    background: #6c757d;
-    color: #fff;
-}
-
-.no-matches {
+.no-data {
     text-align: center;
-    color: #aaa;
-    padding: 30px 10px;
-    font-size: 0.85rem;
+    color: #999;
+    padding: 20px;
+    font-style: italic;
 }
 </style>
 {% endblock %}
