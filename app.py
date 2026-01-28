@@ -2273,6 +2273,7 @@ def scrape_matches(series_id):
                 existing.team2_score = match_data.get('team2_score')
                 existing.result = match_data.get('result')
                 existing.match_url = match_data.get('match_url')
+                existing.series_id = series_id  # Link match to series
                 existing.updated_at = datetime.utcnow()
             else:
                 match = Match(
