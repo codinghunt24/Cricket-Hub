@@ -563,31 +563,17 @@ def admin_live_score():
             seen_ids.add(m.match_id)
             unique_matches.append(m)
     
-    live = [m for m in unique_matches if m.state == 'Live']
-    in_progress = [m for m in unique_matches if m.state == 'In Progress']
-    innings = [m for m in unique_matches if m.state == 'Innings Break']
-    stumps = [m for m in unique_matches if m.state == 'Stumps']
-    lunch = [m for m in unique_matches if m.state == 'Lunch']
-    tea = [m for m in unique_matches if m.state == 'Tea']
-    drinks = [m for m in unique_matches if m.state == 'Drinks']
-    preview = [m for m in unique_matches if m.state == 'Preview']
-    upcoming = [m for m in unique_matches if m.state == 'Upcoming']
-    complete = [m for m in unique_matches if m.state == 'Complete']
-    abandon = [m for m in unique_matches if m.state == 'Abandon']
-    
-    matches = live + in_progress + innings + stumps + lunch + tea + drinks + preview + upcoming + complete + abandon
-    
-    counts = {
-        'live': len(live) + len(in_progress),
-        'innings_break': len(innings) + len(stumps) + len(lunch) + len(tea) + len(drinks),
-        'complete': len(complete) + len(abandon),
-        'upcoming': len(upcoming) + len(preview)
-    }
+    live_matches = [m for m in unique_matches if m.state in ['Live', 'In Progress']]
+    break_matches = [m for m in unique_matches if m.state in ['Innings Break', 'Stumps', 'Lunch', 'Tea', 'Drinks']]
+    upcoming_matches = [m for m in unique_matches if m.state in ['Upcoming', 'Preview', 'Toss']]
+    complete_matches = [m for m in unique_matches if m.state in ['Complete', 'Abandon', 'No Result']]
     
     return render_template('admin/live_score.html', 
                          setting=setting,
-                         matches=matches,
-                         counts=counts)
+                         live_matches=live_matches,
+                         break_matches=break_matches,
+                         upcoming_matches=upcoming_matches,
+                         complete_matches=complete_matches)
 
 @app.route('/admin/live-score/settings', methods=['POST'])
 @admin_required

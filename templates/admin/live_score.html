@@ -5,140 +5,209 @@
 
 {% block content %}
 <div class="live-score-admin">
-    <div class="admin-section">
-        <div class="section-header">
-            <h2>Scrape Settings</h2>
-        </div>
-        <div class="settings-card">
-            <form method="POST" action="/admin/live-score/settings" class="settings-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="toggle-label">
-                            <input type="checkbox" name="auto_enabled" {% if setting and setting.auto_scrape_enabled %}checked{% endif %}>
-                            <span class="toggle-slider"></span>
-                            Auto-Refresh Enabled
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label>Refresh Interval (seconds)</label>
-                        <input type="number" name="interval" value="{{ setting.interval_seconds if setting else 60 }}" min="30" max="600" class="form-control">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Save Settings</button>
-                </div>
+    <div class="admin-section scrape-section">
+        <div class="scrape-header">
+            <div class="scrape-info">
+                <h2>Live Score Scraper</h2>
                 {% if setting and setting.last_scrape %}
-                <p class="last-update">Last Updated: {{ setting.last_scrape.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                <p class="last-update">Last Updated: {{ setting.last_scrape.strftime('%d %b %Y, %H:%M:%S') }}</p>
                 {% endif %}
-            </form>
+            </div>
             <form method="POST" action="/admin/live-score/scrape" class="scrape-form">
-                <button type="submit" class="btn btn-success">Scrape Now</button>
+                <button type="submit" class="btn btn-success btn-large">Scrape Now</button>
             </form>
         </div>
+        <form method="POST" action="/admin/live-score/settings" class="settings-form">
+            <div class="form-row">
+                <label class="toggle-label">
+                    <input type="checkbox" name="auto_enabled" {% if setting and setting.auto_scrape_enabled %}checked{% endif %}>
+                    <span class="toggle-slider"></span>
+                    Auto-Refresh
+                </label>
+                <div class="form-group">
+                    <label>Interval (sec)</label>
+                    <input type="number" name="interval" value="{{ setting.interval_seconds if setting else 60 }}" min="30" max="600" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
     </div>
 
-    <div class="admin-section">
-        <div class="section-header">
-            <h2>Live Matches ({{ matches|length }})</h2>
-            <div class="match-counts">
-                <span class="count-badge live">Live: {{ counts.live }}</span>
-                <span class="count-badge innings">Innings Break: {{ counts.innings_break }}</span>
-                <span class="count-badge complete">Complete: {{ counts.complete }}</span>
-                <span class="count-badge upcoming">Upcoming: {{ counts.upcoming }}</span>
+    <div class="matches-grid">
+        <div class="match-column live-column">
+            <div class="column-header live">
+                <span class="column-icon">🔴</span>
+                <h3>Live</h3>
+                <span class="count-badge">{{ live_matches|length }}</span>
+            </div>
+            <div class="column-body">
+                {% for match in live_matches %}
+                <div class="match-card live">
+                    <div class="match-id">
+                        <a href="{{ match.match_url }}" target="_blank">#{{ match.match_id }}</a>
+                    </div>
+                    <div class="match-series">{{ match.series_name or '-' }}</div>
+                    <div class="match-format">{{ match.match_format or '-' }}</div>
+                    <div class="match-teams">
+                        <div class="team">
+                            <span class="team-name">{{ match.team1_name }}</span>
+                            <span class="team-score">{{ match.team1_score or '' }}</span>
+                        </div>
+                        <div class="team">
+                            <span class="team-name">{{ match.team2_name }}</span>
+                            <span class="team-score">{{ match.team2_score or '' }}</span>
+                        </div>
+                    </div>
+                    <div class="match-result">{{ match.result or '' }}</div>
+                    <div class="match-state">
+                        <span class="state-badge {{ match.state|lower|replace(' ', '-') if match.state else '' }}">{{ match.state }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-matches">No live matches</div>
+                {% endfor %}
             </div>
         </div>
 
-        <div class="matches-table-container">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Match ID</th>
-                        <th>Series</th>
-                        <th>Format</th>
-                        <th>Team 1</th>
-                        <th>Team 2</th>
-                        <th>Status</th>
-                        <th>Result</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for match in matches %}
-                    <tr class="match-row status-{{ match.state|lower|replace(' ', '-') if match.state else 'unknown' }}">
-                        <td class="match-id">
-                            <a href="{{ match.match_url }}" target="_blank" title="View on Cricbuzz">{{ match.match_id }}</a>
-                        </td>
-                        <td class="series-info">
-                            <span class="series-name">{{ match.series_name or '-' }}</span>
-                            <small class="series-id">ID: {{ match.cricbuzz_series_id or '-' }}</small>
-                        </td>
-                        <td>{{ match.match_format or '-' }}</td>
-                        <td class="team-cell">
-                            <span class="team-name">{{ match.team1_name or '-' }}</span>
+        <div class="match-column break-column">
+            <div class="column-header break">
+                <span class="column-icon">⏸️</span>
+                <h3>Break</h3>
+                <span class="count-badge">{{ break_matches|length }}</span>
+            </div>
+            <div class="column-body">
+                {% for match in break_matches %}
+                <div class="match-card break">
+                    <div class="match-id">
+                        <a href="{{ match.match_url }}" target="_blank">#{{ match.match_id }}</a>
+                    </div>
+                    <div class="match-series">{{ match.series_name or '-' }}</div>
+                    <div class="match-format">{{ match.match_format or '-' }}</div>
+                    <div class="match-teams">
+                        <div class="team">
+                            <span class="team-name">{{ match.team1_name }}</span>
                             <span class="team-score">{{ match.team1_score or '' }}</span>
-                        </td>
-                        <td class="team-cell">
-                            <span class="team-name">{{ match.team2_name or '-' }}</span>
+                        </div>
+                        <div class="team">
+                            <span class="team-name">{{ match.team2_name }}</span>
                             <span class="team-score">{{ match.team2_score or '' }}</span>
-                        </td>
-                        <td>
-                            <span class="status-badge {{ match.state|lower|replace(' ', '-') if match.state else 'unknown' }}">
-                                {{ match.state or 'Unknown' }}
-                            </span>
-                        </td>
-                        <td class="result-cell">{{ match.result or '-' }}</td>
-                        <td class="actions-cell">
-                            <a href="/match/{{ match.match_id }}" class="btn btn-sm" title="View Match">View</a>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="8" class="no-data">No matches found. Click "Scrape Now" to fetch live scores.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        </div>
+                    </div>
+                    <div class="match-result">{{ match.result or '' }}</div>
+                    <div class="match-state">
+                        <span class="state-badge {{ match.state|lower|replace(' ', '-') if match.state else '' }}">{{ match.state }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-matches">No break matches</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="match-column upcoming-column">
+            <div class="column-header upcoming">
+                <span class="column-icon">⏰</span>
+                <h3>Upcoming</h3>
+                <span class="count-badge">{{ upcoming_matches|length }}</span>
+            </div>
+            <div class="column-body">
+                {% for match in upcoming_matches %}
+                <div class="match-card upcoming">
+                    <div class="match-id">
+                        <a href="{{ match.match_url }}" target="_blank">#{{ match.match_id }}</a>
+                    </div>
+                    <div class="match-series">{{ match.series_name or '-' }}</div>
+                    <div class="match-format">{{ match.match_format or '-' }}</div>
+                    <div class="match-teams">
+                        <div class="team">
+                            <span class="team-name">{{ match.team1_name }}</span>
+                        </div>
+                        <div class="team">
+                            <span class="team-name">{{ match.team2_name }}</span>
+                        </div>
+                    </div>
+                    <div class="match-result">{{ match.result or '' }}</div>
+                    <div class="match-state">
+                        <span class="state-badge {{ match.state|lower|replace(' ', '-') if match.state else '' }}">{{ match.state }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-matches">No upcoming matches</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="match-column complete-column">
+            <div class="column-header complete">
+                <span class="column-icon">✅</span>
+                <h3>Complete</h3>
+                <span class="count-badge">{{ complete_matches|length }}</span>
+            </div>
+            <div class="column-body">
+                {% for match in complete_matches %}
+                <div class="match-card complete">
+                    <div class="match-id">
+                        <a href="{{ match.match_url }}" target="_blank">#{{ match.match_id }}</a>
+                    </div>
+                    <div class="match-series">{{ match.series_name or '-' }}</div>
+                    <div class="match-format">{{ match.match_format or '-' }}</div>
+                    <div class="match-teams">
+                        <div class="team">
+                            <span class="team-name">{{ match.team1_name }}</span>
+                            <span class="team-score">{{ match.team1_score or '' }}</span>
+                        </div>
+                        <div class="team">
+                            <span class="team-name">{{ match.team2_name }}</span>
+                            <span class="team-score">{{ match.team2_score or '' }}</span>
+                        </div>
+                    </div>
+                    <div class="match-result">{{ match.result or '' }}</div>
+                    <div class="match-state">
+                        <span class="state-badge {{ match.state|lower|replace(' ', '-') if match.state else '' }}">{{ match.state }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-matches">No completed matches</div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div>
 
 <style>
 .live-score-admin {
-    padding: 20px;
+    padding: 15px;
 }
 
-.admin-section {
+.scrape-section {
     background: #fff;
     border-radius: 8px;
-    padding: 20px;
+    padding: 15px 20px;
     margin-bottom: 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.section-header {
+.scrape-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 15px;
 }
 
-.section-header h2 {
+.scrape-header h2 {
     margin: 0;
     font-size: 1.25rem;
 }
 
-.settings-card {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: flex-start;
+.last-update {
+    color: #888;
+    font-size: 0.8rem;
+    margin: 5px 0 0;
 }
 
-.settings-form {
-    flex: 1;
-}
-
-.form-row {
+.settings-form .form-row {
     display: flex;
     gap: 20px;
     align-items: center;
@@ -147,35 +216,35 @@
 
 .form-group {
     display: flex;
-    flex-direction: column;
-    gap: 5px;
+    align-items: center;
+    gap: 8px;
 }
 
 .form-group label {
-    font-size: 0.875rem;
+    font-size: 0.85rem;
     color: #666;
 }
 
 .form-control {
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 0.875rem;
-    width: 100px;
+    width: 80px;
 }
 
 .toggle-label {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     cursor: pointer;
+    font-size: 0.85rem;
 }
 
 .toggle-slider {
-    width: 40px;
-    height: 20px;
+    width: 36px;
+    height: 18px;
     background: #ccc;
-    border-radius: 20px;
+    border-radius: 18px;
     position: relative;
     transition: 0.3s;
 }
@@ -183,8 +252,8 @@
 .toggle-slider::after {
     content: '';
     position: absolute;
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     background: #fff;
     border-radius: 50%;
     top: 2px;
@@ -197,13 +266,7 @@ input:checked + .toggle-slider {
 }
 
 input:checked + .toggle-slider::after {
-    left: 22px;
-}
-
-.last-update {
-    font-size: 0.75rem;
-    color: #888;
-    margin-top: 10px;
+    left: 20px;
 }
 
 .btn {
@@ -211,9 +274,7 @@ input:checked + .toggle-slider::after {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.875rem;
-    text-decoration: none;
-    display: inline-block;
+    font-size: 0.85rem;
 }
 
 .btn-primary {
@@ -226,74 +287,109 @@ input:checked + .toggle-slider::after {
     color: #fff;
 }
 
-.btn-sm {
-    padding: 4px 8px;
-    font-size: 0.75rem;
-    background: #6c757d;
-    color: #fff;
-}
-
-.match-counts {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.count-badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.75rem;
+.btn-large {
+    padding: 12px 24px;
+    font-size: 1rem;
     font-weight: 600;
 }
 
-.count-badge.live {
-    background: #dc3545;
-    color: #fff;
+.matches-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
 }
 
-.count-badge.innings {
-    background: #ffc107;
+@media (max-width: 1200px) {
+    .matches-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .matches-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.match-column {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.column-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 15px;
+    color: #fff;
+    font-weight: 600;
+}
+
+.column-header h3 {
+    margin: 0;
+    flex: 1;
+    font-size: 1rem;
+}
+
+.column-header .count-badge {
+    background: rgba(255,255,255,0.3);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+.column-header.live {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.column-header.break {
+    background: linear-gradient(135deg, #ffc107, #e0a800);
     color: #000;
 }
 
-.count-badge.complete {
-    background: #28a745;
-    color: #fff;
+.column-header.upcoming {
+    background: linear-gradient(135deg, #17a2b8, #138496);
 }
 
-.count-badge.upcoming {
-    background: #17a2b8;
-    color: #fff;
+.column-header.complete {
+    background: linear-gradient(135deg, #28a745, #218838);
 }
 
-.matches-table-container {
-    overflow-x: auto;
-}
-
-.admin-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
-}
-
-.admin-table th,
-.admin-table td {
+.column-body {
     padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
+    max-height: 600px;
+    overflow-y: auto;
 }
 
-.admin-table th {
+.match-card {
     background: #f8f9fa;
-    font-weight: 600;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-left: 3px solid #ddd;
 }
 
-.match-row.status-live {
-    background: rgba(220, 53, 69, 0.05);
+.match-card.live {
+    border-left-color: #dc3545;
 }
 
-.match-row.status-innings-break {
-    background: rgba(255, 193, 7, 0.1);
+.match-card.break {
+    border-left-color: #ffc107;
+}
+
+.match-card.upcoming {
+    border-left-color: #17a2b8;
+}
+
+.match-card.complete {
+    border-left-color: #28a745;
+}
+
+.match-id {
+    font-size: 0.75rem;
+    margin-bottom: 5px;
 }
 
 .match-id a {
@@ -302,106 +398,101 @@ input:checked + .toggle-slider::after {
     font-weight: 600;
 }
 
-.match-id a:hover {
-    text-decoration: underline;
-}
-
-.series-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.series-name {
-    font-weight: 500;
-}
-
-.series-id {
-    color: #888;
+.match-series {
     font-size: 0.7rem;
+    color: #888;
+    margin-bottom: 3px;
 }
 
-.team-cell {
+.match-format {
+    font-size: 0.75rem;
+    color: #666;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.match-teams {
+    margin-bottom: 8px;
+}
+
+.team {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0;
 }
 
 .team-name {
+    font-size: 0.85rem;
     font-weight: 500;
 }
 
 .team-score {
+    font-size: 0.85rem;
+    font-weight: 600;
     color: #28a745;
-    font-weight: 600;
-    font-size: 0.8rem;
 }
 
-.status-badge {
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    font-weight: 600;
+.match-result {
+    font-size: 0.75rem;
+    color: #666;
+    font-style: italic;
+    margin-bottom: 5px;
+}
+
+.match-state {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.state-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 10px;
     text-transform: uppercase;
+    font-weight: 600;
 }
 
-.status-badge.live {
+.state-badge.live {
     background: #dc3545;
     color: #fff;
 }
 
-.status-badge.in-progress {
+.state-badge.in-progress {
     background: #fd7e14;
     color: #fff;
 }
 
-.status-badge.innings-break {
+.state-badge.innings-break {
     background: #ffc107;
     color: #000;
 }
 
-.status-badge.stumps {
+.state-badge.stumps, .state-badge.lunch, .state-badge.tea, .state-badge.drinks {
     background: #6f42c1;
     color: #fff;
 }
 
-.status-badge.lunch,
-.status-badge.tea,
-.status-badge.drinks {
-    background: #20c997;
-    color: #fff;
-}
-
-.status-badge.preview {
+.state-badge.upcoming, .state-badge.preview, .state-badge.toss {
     background: #17a2b8;
     color: #fff;
 }
 
-.status-badge.upcoming {
-    background: #6c757d;
-    color: #fff;
-}
-
-.status-badge.complete {
+.state-badge.complete {
     background: #28a745;
     color: #fff;
 }
 
-.status-badge.abandon {
-    background: #343a40;
+.state-badge.abandon, .state-badge.no-result {
+    background: #6c757d;
     color: #fff;
 }
 
-.result-cell {
-    max-width: 200px;
-    font-size: 0.8rem;
-    color: #666;
-}
-
-.no-data {
+.no-matches {
     text-align: center;
-    padding: 40px;
-    color: #888;
+    color: #aaa;
+    padding: 30px 10px;
+    font-size: 0.85rem;
 }
 </style>
 {% endblock %}
