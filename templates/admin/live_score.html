@@ -400,6 +400,71 @@ input:checked + .toggle-slider::after {
     opacity: 0.7;
 }
 
+.scorecard-row {
+    background: #1e293b !important;
+}
+
+.scorecard-cell {
+    padding: 0 !important;
+}
+
+.scorecard-content {
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border-left: 4px solid #8b5cf6;
+    margin: 5px 10px;
+    border-radius: 8px;
+}
+
+.scorecard-grid {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 15px;
+}
+
+.score-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 120px;
+}
+
+.team-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 5px;
+}
+
+.team-score {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #22d3ee;
+}
+
+.score-vs {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.scorecard-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    font-size: 0.85rem;
+    color: #94a3b8;
+    border-top: 1px solid #334155;
+    padding-top: 12px;
+}
+
+.scorecard-details b {
+    color: #cbd5e1;
+}
+
 </style>
 
 <script>
@@ -415,15 +480,15 @@ function scrapeScorecard(matchId, seriesId, seriesName, btn) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            btn.textContent = data.action === 'updated' ? '↻' : '✓';
+            btn.textContent = '▼';
             btn.style.background = '#10b981';
-            btn.title = data.action + ': ' + data.match_title;
+            btn.title = 'Click to toggle scorecard';
+            btn.onclick = function() { toggleScorecard(matchId); };
             
             // Update status cell
             const statusCell = document.getElementById('status-' + matchId);
             if (statusCell && data.match_status) {
                 statusCell.textContent = data.match_status;
-                // Color code status
                 if (data.match_status === 'Live') {
                     statusCell.style.color = '#ef4444';
                     statusCell.style.fontWeight = 'bold';
@@ -433,6 +498,39 @@ function scrapeScorecard(matchId, seriesId, seriesName, btn) {
                     statusCell.style.color = '#f59e0b';
                 }
             }
+            
+            // Create scorecard dropdown row
+            const mainRow = document.getElementById('row-' + matchId);
+            let dropdownRow = document.getElementById('scorecard-' + matchId);
+            if (dropdownRow) {
+                dropdownRow.remove();
+            }
+            
+            dropdownRow = document.createElement('tr');
+            dropdownRow.id = 'scorecard-' + matchId;
+            dropdownRow.className = 'scorecard-row';
+            dropdownRow.innerHTML = '<td colspan="6" class="scorecard-cell">' +
+                '<div class="scorecard-content">' +
+                    '<div class="scorecard-grid">' +
+                        '<div class="score-team">' +
+                            '<span class="team-name">' + (data.team1 || '-') + '</span>' +
+                            '<span class="team-score">' + (data.team1_score || '-') + '</span>' +
+                        '</div>' +
+                        '<div class="score-vs">VS</div>' +
+                        '<div class="score-team">' +
+                            '<span class="team-name">' + (data.team2 || '-') + '</span>' +
+                            '<span class="team-score">' + (data.team2_score || '-') + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="scorecard-details">' +
+                        '<span><b>Venue:</b> ' + (data.venue || '-') + '</span>' +
+                        '<span><b>Format:</b> ' + (data.match_format || '-') + '</span>' +
+                        '<span><b>Result:</b> ' + (data.result || data.match_status || '-') + '</span>' +
+                    '</div>' +
+                '</div>' +
+            '</td>';
+            
+            mainRow.after(dropdownRow);
         } else {
             btn.textContent = '✗';
             btn.style.background = '#ef4444';
@@ -444,6 +542,13 @@ function scrapeScorecard(matchId, seriesId, seriesName, btn) {
         btn.style.background = '#ef4444';
         alert('Error: ' + err.message);
     });
+}
+
+function toggleScorecard(matchId) {
+    const row = document.getElementById('scorecard-' + matchId);
+    if (row) {
+        row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+    }
 }
 
 function scrapeSeries() {
