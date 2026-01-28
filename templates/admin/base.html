@@ -44,10 +44,16 @@
                             <span class="sidebar-text">Series</span>
                         </a>
                     </li>
-                    <li class="sidebar-item {% if '/admin/posts' in request.path %}active{% endif %}">
+                    <li class="sidebar-item {% if '/admin/posts' in request.path and 'auto' not in request.path %}active{% endif %}">
                         <a href="/admin/posts" class="sidebar-link">
                             <span class="sidebar-icon">&#128240;</span>
                             <span class="sidebar-text">Posts</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% if request.path == '/admin/auto-post' %}active{% endif %}">
+                        <a href="/admin/auto-post" class="sidebar-link">
+                            <span class="sidebar-icon">&#9889;</span>
+                            <span class="sidebar-text">Auto Post</span>
                         </a>
                     </li>
                     <li class="sidebar-item {% if request.path == '/admin/categories' %}active{% endif %}">
