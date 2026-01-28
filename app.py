@@ -319,40 +319,38 @@ def index():
 
 @app.route('/live-scores')
 def live_scores():
-    all_matches = Match.query.order_by(Match.updated_at.desc()).limit(100).all()
+    # Scrape live data from Cricbuzz (same as home page)
+    scrape_result = scraper.scrape_series_from_live_page()
     
-    # Unique matches by match_id to avoid duplicates
-    seen_ids = set()
-    unique_matches = []
-    for m in all_matches:
-        if m.match_id and m.match_id not in seen_ids:
-            seen_ids.add(m.match_id)
-            unique_matches.append(m)
+    matches = []
+    match_flags = {}
     
-    # Order: Live > In Progress > Innings Break > Stumps > Lunch > Tea > Drinks > Preview > Upcoming > Complete > Abandon
-    live = [m for m in unique_matches if m.state == 'Live']
-    in_progress = [m for m in unique_matches if m.state == 'In Progress']
-    innings = [m for m in unique_matches if m.state == 'Innings Break']
-    stumps = [m for m in unique_matches if m.state == 'Stumps']
-    lunch = [m for m in unique_matches if m.state == 'Lunch']
-    tea = [m for m in unique_matches if m.state == 'Tea']
-    drinks = [m for m in unique_matches if m.state == 'Drinks']
-    preview = [m for m in unique_matches if m.state == 'Preview']
-    upcoming = [m for m in unique_matches if m.state == 'Upcoming']
-    complete = [m for m in unique_matches if m.state == 'Complete']
-    abandon = [m for m in unique_matches if m.state == 'Abandon']
+    if scrape_result.get('success'):
+        for s in scrape_result.get('series', []):
+            for m in s.get('matches', []):
+                match_data = {
+                    'match_id': m.get('match_id'),
+                    'match_format': s.get('series_name', 'Match'),
+                    'team1_name': m.get('team1_name', 'Team 1'),
+                    'team2_name': m.get('team2_name', 'Team 2'),
+                    'team1_score': m.get('team1_score', ''),
+                    'team2_score': m.get('team2_score', ''),
+                    'state': m.get('match_status', 'Live'),
+                    'result': m.get('match_result', '')
+                }
+                matches.append(type('Match', (), match_data)())
+                
+                if m.get('team1_flag'):
+                    match_flags[f"{m.get('match_id')}_1"] = m.get('team1_flag')
+                if m.get('team2_flag'):
+                    match_flags[f"{m.get('match_id')}_2"] = m.get('team2_flag')
     
-    matches = live + in_progress + innings + stumps + lunch + tea + drinks + preview + upcoming + complete + abandon
-    
-    # Recent completed matches for sidebar (excluding upcoming)
+    # Recent completed matches for sidebar from database
     recent_matches = Match.query.filter(Match.state == 'Complete').order_by(Match.updated_at.desc()).limit(5).all()
     
     teams = Team.query.all()
-    
-    match_flags = {}
-    for m in matches + recent_matches:
+    for m in recent_matches:
         if m.match_id:
-            # Use match's own flag columns first, fallback to Teams table
             match_flags[f"{m.match_id}_1"] = m.team1_flag if m.team1_flag else get_team_flag(m.team1_name, teams)
             match_flags[f"{m.match_id}_2"] = m.team2_flag if m.team2_flag else get_team_flag(m.team2_name, teams)
         if m.team1_name:
