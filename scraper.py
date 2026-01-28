@@ -202,11 +202,22 @@ def scrape_scorecard(match_id):
         format_match = re.search(r'\d+(?:st|nd|rd|th)?\s+(T20I?|ODI|Test|T20)', result['match_title'])
         if format_match:
             result['match_format'] = format_match.group(1)
+        
+        # Extract series name from match title (e.g., "Australia tour of Pakistan, 2026")
+        series_match = re.search(r',\s*([^,]+tour[^,]+,?\s*\d{4})', result['match_title'], re.IGNORECASE)
+        if series_match:
+            result['series_name'] = series_match.group(1).strip()
+        else:
+            # Try alternate pattern for other series types
+            series_match2 = re.search(r',\s*(\d+(?:st|nd|rd|th)?\s+\w+),\s*(.+)$', result['match_title'])
+            if series_match2:
+                result['series_name'] = series_match2.group(2).strip()
     
-    # Get series name from breadcrumb/link
-    series_link = soup.find('a', href=re.compile(r'/cricket-series/\d+/'))
-    if series_link:
-        result['series_name'] = series_link.get_text(strip=True)
+    # Fallback: Get series name from breadcrumb/link if not found in title
+    if not result['series_name']:
+        series_link = soup.find('a', href=re.compile(r'/cricket-series/\d+/'))
+        if series_link:
+            result['series_name'] = series_link.get_text(strip=True)
     
     # Try to get match status and scores from live-cricket-scores page
     live_url = f"{BASE_URL}/live-cricket-scores/{match_id}"
