@@ -13,8 +13,8 @@
                 <div class="match-card" data-match-id="{{ match.match_id }}" onclick="loadScorecard('{{ match.match_id }}')">
                     <div class="card-header">
                         <span class="series-name">{{ match.match_format or 'Match' }}</span>
-                        <span class="status-badge {% if match.state == 'Live' %}live{% elif match.state == 'Innings Break' %}innings{% elif match.state == 'Complete' %}complete{% else %}upcoming{% endif %}">
-                            {% if match.state == 'Live' %}LIVE{% elif match.state == 'Innings Break' %}BREAK{% elif match.state == 'Complete' %}RESULT{% else %}UPCOMING{% endif %}
+                        <span class="status-badge {% if match.state in ['Live', 'In Progress', 'Toss', 'Stumps', 'Lunch', 'Tea', 'Drinks'] %}live{% elif match.state == 'Innings Break' %}innings{% elif match.state == 'Complete' %}complete{% else %}upcoming{% endif %}">
+                            {% if match.state in ['Live', 'In Progress', 'Toss', 'Stumps', 'Lunch', 'Tea', 'Drinks'] %}LIVE{% elif match.state == 'Innings Break' %}BREAK{% elif match.state == 'Complete' %}RESULT{% else %}UPCOMING{% endif %}
                         </span>
                     </div>
                     <div class="card-body">

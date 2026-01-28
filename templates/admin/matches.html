@@ -70,7 +70,7 @@
                     <td class="id-col">{{ match.match_id or '-' }}</td>
                     <td class="id-col">{{ match.cricbuzz_series_id or '-' }}</td>
                     <td class="status-col">
-                        <span class="status-badge {% if match.state == 'Live' %}live{% elif match.state == 'Innings Break' %}innings{% elif match.state == 'Complete' %}complete{% else %}upcoming{% endif %}">
+                        <span class="status-badge {% if match.state in ['Live', 'In Progress', 'Toss', 'Stumps', 'Lunch', 'Tea', 'Drinks'] %}live{% elif match.state == 'Innings Break' %}innings{% elif match.state == 'Complete' %}complete{% else %}upcoming{% endif %}">
                             {{ match.state or 'Unknown' }}
                         </span>
                     </td>
