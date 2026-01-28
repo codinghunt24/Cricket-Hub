@@ -517,7 +517,7 @@ def run_category_series_scrape(app, db, SeriesCategory, Series, ScrapeLog, Serie
             total_series = 0
             for category in categories:
                 try:
-                    result = scraper.scrape_series(category.url)
+                    result = scraper.scrape_series_from_category(category.url)
                     if result and result.get('series'):
                         for series_data in result['series']:
                             existing = Series.query.filter_by(series_id=series_data.get('id')).first()

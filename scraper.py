@@ -941,8 +941,73 @@ def scrape_players_from_team(team_url):
 
 
 def scrape_series_from_category(category_url):
-    """Scrape series from a category."""
-    return []
+    """Scrape series from a category URL like /cricket-schedule/series/international."""
+    try:
+        if not category_url:
+            return {'success': False, 'series': []}
+        
+        if not category_url.startswith('http'):
+            category_url = 'https://www.cricbuzz.com' + category_url
+        
+        response = requests.get(category_url, headers=HEADERS, timeout=30)
+        if response.status_code != 200:
+            return {'success': False, 'series': []}
+        
+        html = response.text.replace('\\"', '"')
+        series_data = []
+        seen = set()
+        
+        schedule_match = re.search(r'"seriesScheduleData"\s*:\s*(\[.*?\])\s*,\s*"', html, re.DOTALL)
+        
+        if schedule_match:
+            try:
+                import json
+                schedule_json = schedule_match.group(1)
+                schedule_json = schedule_json.replace('\\"', '"')
+                schedule = json.loads(schedule_json)
+                
+                for month_group in schedule:
+                    month_year = month_group.get('date', '')
+                    for series in month_group.get('series', []):
+                        sid = str(series.get('id', ''))
+                        name = series.get('name', '')
+                        
+                        if sid and sid not in seen:
+                            seen.add(sid)
+                            slug = name.lower().replace(' ', '-').replace(',', '').replace("'", '').replace('/', '-')
+                            series_url = f"https://www.cricbuzz.com/cricket-series/{sid}/{slug}/matches"
+                            series_data.append({
+                                'id': sid,
+                                'name': name,
+                                'url': series_url,
+                                'date_range': month_year.title() if month_year else ''
+                            })
+            except Exception as e:
+                logger.error(f"Error parsing series schedule: {e}")
+        
+        if not series_data:
+            match_positions = [(m.start(), m.group(1)) for m in re.finditer(r'"matchInfo"\s*:\s*\{[^}]*"seriesId"\s*:\s*(\d+)', html)]
+            
+            for pos, sid in match_positions:
+                if sid in seen:
+                    continue
+                
+                context = html[pos:pos+2000]
+                series_name_match = re.search(r'"seriesName"\s*:\s*"([^"]+)"', context)
+                
+                if series_name_match:
+                    name = series_name_match.group(1)
+                    seen.add(sid)
+                    slug = name.lower().replace(' ', '-').replace(',', '').replace("'", '')
+                    series_url = f"https://www.cricbuzz.com/cricket-series/{sid}/{slug}/matches"
+                    series_data.append({'id': sid, 'name': name, 'url': series_url, 'date_range': ''})
+        
+        logger.info(f"Scraped {len(series_data)} series from {category_url}")
+        return {'success': True, 'series': series_data}
+        
+    except Exception as e:
+        logger.error(f"Error scraping series from category: {e}")
+        return {'success': False, 'series': []}
 
 
 def scrape_matches_from_series(series_url):
