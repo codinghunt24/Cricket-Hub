@@ -163,7 +163,8 @@ def scrape_scorecard(match_id):
         'venue': None,
         'match_format': None,
         'series_name': None,
-        'result': None
+        'result': None,
+        'innings': []
     }
     
     # Get title from page
@@ -226,6 +227,71 @@ def scrape_scorecard(match_id):
         series_link = soup.find('a', href=re.compile(r'/cricket-series/\d+/'))
         if series_link:
             result['series_name'] = series_link.get_text(strip=True)
+    
+    # Extract innings data from new Cricbuzz structure (id="team-XXX-innings-X")
+    innings_divs = soup.find_all('div', id=re.compile(r'^team-\d+-innings-\d+$'))
+    seen_innings = set()
+    for inn_div in innings_divs:
+        inn_id = inn_div.get('id')
+        if inn_id in seen_innings:
+            continue
+        seen_innings.add(inn_id)
+        
+        # Parse innings number from id
+        inn_match = re.search(r'innings-(\d+)', inn_id)
+        innings_num = int(inn_match.group(1)) if inn_match else len(result['innings']) + 1
+        
+        # Get team name and score from the div text
+        inn_text = inn_div.get_text(strip=True)
+        # Pattern: "AUSU19Australia U19314-7(50 Ov)" or "WIU19West Indies U19185-3(30.5 Ov)"
+        # Extract score first: runs-wickets(overs Ov)
+        score_match = re.search(r'(\d{1,3})-(\d{1,2})\((\d+(?:\.\d+)?)\s*Ov\)', inn_text)
+        
+        if score_match:
+            runs = score_match.group(1)
+            wickets = score_match.group(2)
+            overs = score_match.group(3)
+            
+            # Extract team name from text before score
+            text_before_score = inn_text[:score_match.start()].strip()
+            # Remove abbreviation prefix (usually uppercase letters at start)
+            # Pattern: AUSU19Australia U19 -> Australia U19, WIU19West Indies U19 -> West Indies U19
+            # Find where lowercase letter starts (that's where full team name begins)
+            lower_match = re.search(r'[a-z]', text_before_score)
+            if lower_match:
+                # Abbreviation is from start to just before first lowercase
+                first_lower_idx = lower_match.start()
+                team_abbr = text_before_score[:first_lower_idx]
+                # Include the uppercase letter before the lowercase
+                if first_lower_idx > 0:
+                    team_name = text_before_score[first_lower_idx - 1:]
+                else:
+                    team_name = text_before_score
+            else:
+                # All uppercase, use as is
+                team_abbr = text_before_score[:5]
+                team_name = text_before_score
+            
+            innings_data = {
+                'innings_num': innings_num,
+                'team_name': team_name,
+                'team_abbr': team_abbr,
+                'total_score': f"{runs}/{wickets}",
+                'overs': overs,
+                'batting': [],
+                'bowling': []
+            }
+            result['innings'].append(innings_data)
+            
+            # Set team scores
+            if innings_num == 1 and not result['team1_score']:
+                result['team1_score'] = f"{runs}/{wickets} ({overs} Ov)"
+                if not result['team1']:
+                    result['team1'] = team_name
+            elif innings_num == 2 and not result['team2_score']:
+                result['team2_score'] = f"{runs}/{wickets} ({overs} Ov)"
+                if not result['team2']:
+                    result['team2'] = team_name
     
     # Try to get match status and scores from live-cricket-scores page
     live_url = f"{BASE_URL}/live-cricket-scores/{match_id}"
