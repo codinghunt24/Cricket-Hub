@@ -171,6 +171,17 @@
     color: #333;
 }
 
+.toss-text {
+    background: #e3f2fd;
+    padding: 10px 15px;
+    border-radius: 6px;
+    color: #1565c0;
+    font-weight: 500;
+    margin-bottom: 10px;
+    font-size: 14px;
+    border-left: 4px solid #1565c0;
+}
+
 .live-status-text {
     background: linear-gradient(135deg, #ff5722, #ff9800);
     padding: 12px 15px;
@@ -360,6 +371,10 @@ function displayScorecard(scorecard) {
     
     // Content
     let html = '';
+    
+    if (scorecard.toss) {
+        html += '<div class="toss-text">' + scorecard.toss + '</div>';
+    }
     
     if (scorecard.live_status) {
         html += '<div class="live-status-text">' + scorecard.live_status + '</div>';

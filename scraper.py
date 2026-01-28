@@ -165,6 +165,7 @@ def scrape_scorecard(match_id):
         'match_format': None,
         'series_name': None,
         'result': None,
+        'toss': None,  # e.g., "West Indies U19 won the toss and opt to Bowl"
         'innings': []
     }
     
@@ -188,6 +189,16 @@ def scrape_scorecard(match_id):
                     date_time = re.sub(r'(AM|PM)LOCAL', r'\1 LOCAL', date_time)  # Add space before LOCAL
                     result['match_datetime'] = date_time
             break
+    
+    # Extract toss result (e.g., "West Indies U19 won the toss and opt to Bowl")
+    for div in soup.find_all('div'):
+        text = div.get_text(strip=True)
+        if ('opt to bat' in text.lower() or 'opt to bowl' in text.lower()) and 'won the toss' in text.lower():
+            if len(text) < 100:
+                # Remove "Toss" prefix if present
+                toss_text = re.sub(r'^Toss', '', text).strip()
+                result['toss'] = toss_text
+                break
     
     # Get title from page
     title_tag = soup.find('title')
