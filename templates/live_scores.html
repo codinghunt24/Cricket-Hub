@@ -94,13 +94,17 @@
                     <div class="recent-match-card" onclick="loadScorecard('{{ match.match_id }}')" data-match-item>
                         <div class="recent-match-teams vertical">
                             <div class="recent-team-row">
-                                <img src="{{ match_flags.get(match.team1_name, '') }}" alt="" class="recent-team-flag" onerror="this.style.display='none'">
-                                <span class="team-name">{{ match.team1_name }}</span>
+                                <div class="recent-team-left">
+                                    <img src="{{ match_flags.get(match.team1_name, '') }}" alt="" class="recent-team-flag" onerror="this.style.display='none'">
+                                    <span class="team-name">{{ match.team1_name }}</span>
+                                </div>
                                 {% if match.team1_score %}<span class="team-score">{{ match.team1_score }}</span>{% endif %}
                             </div>
                             <div class="recent-team-row">
-                                <img src="{{ match_flags.get(match.team2_name, '') }}" alt="" class="recent-team-flag" onerror="this.style.display='none'">
-                                <span class="team-name">{{ match.team2_name }}</span>
+                                <div class="recent-team-left">
+                                    <img src="{{ match_flags.get(match.team2_name, '') }}" alt="" class="recent-team-flag" onerror="this.style.display='none'">
+                                    <span class="team-name">{{ match.team2_name }}</span>
+                                </div>
                                 {% if match.team2_score %}<span class="team-score">{{ match.team2_score }}</span>{% endif %}
                             </div>
                         </div>
@@ -764,7 +768,14 @@
 .recent-team-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.recent-team-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .recent-team-flag {
@@ -776,10 +787,10 @@
 }
 
 .recent-team-row .team-name {
-    flex: 1;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 500;
     color: #333;
+    max-width: 130px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -787,7 +798,7 @@
 
 .recent-team-row .team-score {
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--primary-color);
 }
 
@@ -1093,13 +1104,17 @@ function loadMoreMatches() {
                     card.innerHTML = `
                         <div class="recent-match-teams vertical">
                             <div class="recent-team-row">
-                                ${t1Flag}
-                                <span class="team-name">${match.team1_name}</span>
+                                <div class="recent-team-left">
+                                    ${t1Flag}
+                                    <span class="team-name">${match.team1_name}</span>
+                                </div>
                                 ${t1Score}
                             </div>
                             <div class="recent-team-row">
-                                ${t2Flag}
-                                <span class="team-name">${match.team2_name}</span>
+                                <div class="recent-team-left">
+                                    ${t2Flag}
+                                    <span class="team-name">${match.team2_name}</span>
+                                </div>
                                 ${t2Score}
                             </div>
                         </div>
