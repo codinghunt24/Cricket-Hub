@@ -448,6 +448,7 @@ dependencies = [
     { name = "psycopg2-binary" },
     { name = "requests" },
     { name = "sqlalchemy" },
+    { name = "werkzeug" },
 ]
 
 [package.metadata]
@@ -462,6 +463,7 @@ requires-dist = [
     { name = "psycopg2-binary", specifier = ">=2.9.11" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "sqlalchemy", specifier = ">=2.0.46" },
+    { name = "werkzeug", specifier = ">=3.1.5" },
 ]
 
 [[package]]
