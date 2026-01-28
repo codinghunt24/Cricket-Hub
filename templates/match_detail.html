@@ -72,7 +72,7 @@
                         <tbody>
                             {% for batter in innings.batting %}
                             <tr>
-                                <td class="batter-name">{{ batter.name }}</td>
+                                <td class="batter-name">{{ batter.player }}</td>
                                 <td class="dismissal">{{ batter.dismissal }}</td>
                                 <td class="runs">{{ batter.runs }}</td>
                                 <td>{{ batter.balls }}</td>
@@ -109,7 +109,7 @@
                         <tbody>
                             {% for bowler in innings.bowling %}
                             <tr>
-                                <td class="bowler-name">{{ bowler.name }}</td>
+                                <td class="bowler-name">{{ bowler.bowler }}</td>
                                 <td>{{ bowler.overs }}</td>
                                 <td>{{ bowler.maidens }}</td>
                                 <td>{{ bowler.runs }}</td>
