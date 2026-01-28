@@ -23,6 +23,27 @@
         </div>
     </div>
     
+    <div class="auto-scrape-section">
+        <h4><i class="fas fa-clock"></i> Auto Scheduler</h4>
+        <div class="auto-scrape-grid">
+            {% for cat in ['all', 'international', 'domestic', 'league', 'women'] %}
+            <div class="auto-scrape-card" id="card-{{ cat }}">
+                <div class="card-header">
+                    <span class="cat-name">{{ cat|title }}</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-{{ cat }}" onchange="toggleAutoScrape('{{ cat }}')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="card-body">
+                    <input type="time" id="time-{{ cat }}" value="08:00" class="time-input">
+                    <span class="last-scrape" id="last-{{ cat }}">Never</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
     <div class="data-preview" id="data-preview">
         <div class="preview-header">
             <h3>JSON Data Preview</h3>
@@ -44,6 +65,123 @@
     border-radius: 6px;
     margin-bottom: 15px;
     border: 1px solid #374151;
+}
+
+.auto-scrape-section {
+    background: #1f2937;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    border: 1px solid #374151;
+}
+
+.auto-scrape-section h4 {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.auto-scrape-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.auto-scrape-card {
+    background: #111827;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.auto-scrape-card.active {
+    border-color: #10b981;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.cat-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #e4e4e7;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 36px;
+    height: 18px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #374151;
+    border-radius: 18px;
+    transition: 0.3s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+input:checked + .slider {
+    background-color: #10b981;
+}
+
+input:checked + .slider:before {
+    transform: translateX(18px);
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.time-input {
+    width: 100%;
+    padding: 6px 8px;
+    background: #1f2937;
+    border: 1px solid #374151;
+    border-radius: 4px;
+    color: #e4e4e7;
+    font-size: 11px;
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: #10b981;
+}
+
+.last-scrape {
+    font-size: 9px;
+    color: #9ca3af;
 }
 
 .url-input-group {
@@ -458,6 +596,64 @@
 let seriesData = [];
 let matchesData = {};
 let currentSeriesUrl = '';
+
+document.addEventListener('DOMContentLoaded', loadSeriesSettings);
+
+async function loadSeriesSettings() {
+    try {
+        const response = await fetch('/api/settings/series-scrape');
+        const data = await response.json();
+        
+        ['all', 'international', 'domestic', 'league', 'women'].forEach(cat => {
+            const setting = data[cat];
+            if (setting) {
+                document.getElementById(`toggle-${cat}`).checked = setting.enabled;
+                document.getElementById(`time-${cat}`).value = setting.time || '08:00';
+                if (setting.last_scrape) {
+                    const date = new Date(setting.last_scrape);
+                    document.getElementById(`last-${cat}`).textContent = date.toLocaleString();
+                }
+                if (setting.enabled) {
+                    document.getElementById(`card-${cat}`).classList.add('active');
+                }
+            }
+        });
+    } catch (e) {
+        console.error('Error loading settings:', e);
+    }
+}
+
+async function toggleAutoScrape(category) {
+    const toggle = document.getElementById(`toggle-${category}`);
+    const timeInput = document.getElementById(`time-${category}`);
+    const card = document.getElementById(`card-${category}`);
+    
+    const enabled = toggle.checked;
+    const scrapeTime = timeInput.value || '08:00';
+    
+    try {
+        const response = await fetch('/api/settings/series-auto-scrape', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ category, enabled, scrape_time: scrapeTime })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            if (enabled) {
+                card.classList.add('active');
+            } else {
+                card.classList.remove('active');
+            }
+        } else {
+            alert('Error: ' + data.message);
+            toggle.checked = !enabled;
+        }
+    } catch (e) {
+        alert('Error: ' + e.message);
+        toggle.checked = !enabled;
+    }
+}
 
 function updateSeriesUrl() {
     const select = document.getElementById('series-type');
