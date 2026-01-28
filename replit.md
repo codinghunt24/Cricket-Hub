@@ -32,9 +32,10 @@ Based on Cricbuzz's SEO strategy (335M monthly traffic, 432K keywords):
 
 ### Technical SEO
 - robots.txt at /robots.txt
-- Dynamic sitemap.xml at /sitemap.xml (includes all pages, posts, teams, series)
+- Dynamic sitemap.xml at /sitemap.xml (includes all pages, posts, teams, players, series with SEO-friendly slugs)
 - Canonical URLs on all pages
 - Cache-control headers
+- SEO-friendly URLs: /team/india-1871, /player/virat-kohli-123, /series/ipl-2026-5
 
 ### Page-Specific SEO
 - Homepage: Live cricket score, today match keywords
