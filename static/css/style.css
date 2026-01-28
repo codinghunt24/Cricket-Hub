@@ -944,27 +944,43 @@ body {
 
 @media (max-width: 768px) {
     .player-profile-header {
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        text-align: center;
+        padding: 15px;
+        gap: 10px;
     }
     
     .player-photo-large {
-        width: 150px;
-        height: 150px;
+        width: 70px;
+        height: 70px;
+    }
+    
+    .player-profile-info {
+        flex: 1;
+    }
+    
+    .player-profile-name {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
     }
     
     .player-info-badge {
         flex-direction: row;
-        padding: 8px 16px;
+        padding: 5px 10px;
+        margin-top: 6px;
     }
     
     .player-info-badge .badge-item {
-        font-size: 0.85rem;
+        font-size: 0.7rem;
     }
     
     .player-info-badge .badge-divider {
-        margin: 0 8px;
+        margin: 0 6px;
+    }
+    
+    .player-flag-large {
+        width: 50px;
+        height: 50px;
     }
     
     .info-grid {
