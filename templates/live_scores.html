@@ -88,18 +88,34 @@
         
         <div class="sidebar-box">
             <div class="section-block">
-                <h4>Top Stories</h4>
-                <ul class="sidebar-list">
-                    {% if today_live_posts %}
-                    {% for post in today_live_posts[:3] %}
-                    <li><a href="/post/{{ post.slug }}">{{ post.title[:40] }}{% if post.title|length > 40 %}...{% endif %}</a></li>
+                <h4>Recent Match</h4>
+                <div class="recent-matches-list">
+                    {% for match in matches[:5] %}
+                    <div class="recent-match-card" onclick="loadScorecard('{{ match.match_id }}')">
+                        <div class="recent-match-teams">
+                            <div class="recent-team">
+                                <img src="{{ match_flags.get(match.team1_name, '') }}" alt="" class="recent-team-flag" onerror="this.style.display='none'">
+                                <span>{{ match.team1_name[:15] }}{% if match.team1_name|length > 15 %}...{% endif %}</span>
+                            </div>
+                            <span class="vs-text">vs</span>
+                            <div class="recent-team">
+                                <img src="{{ match_flags.get(match.team2_name, '') }}" alt="" class="recent-team-flag" onerror="this.style.display='none'">
+                                <span>{{ match.team2_name[:15] }}{% if match.team2_name|length > 15 %}...{% endif %}</span>
+                            </div>
+                        </div>
+                        <div class="recent-match-info">
+                            <span class="recent-match-format">{{ match.match_format }}</span>
+                            {% if match.state == 'Live' %}
+                            <span class="recent-match-status live">LIVE</span>
+                            {% elif match.state == 'Complete' %}
+                            <span class="recent-match-status complete">Result</span>
+                            {% else %}
+                            <span class="recent-match-status upcoming">Upcoming</span>
+                            {% endif %}
+                        </div>
+                    </div>
                     {% endfor %}
-                    {% else %}
-                    <li>Latest cricket updates</li>
-                    <li>Player rankings</li>
-                    <li>Team standings</li>
-                    {% endif %}
-                </ul>
+                </div>
             </div>
             <div class="section-block">
                 <h4>Quick Links</h4>
@@ -443,6 +459,97 @@
 
 .sidebar-list a:hover {
     text-decoration: underline;
+}
+
+/* Recent Match Cards in Sidebar */
+.recent-matches-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.recent-match-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #e9ecef;
+}
+
+.recent-match-card:hover {
+    background: #e9ecef;
+    border-color: var(--primary-color);
+}
+
+.recent-match-teams {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.recent-team {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    flex: 1;
+}
+
+.recent-team:last-child {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.recent-team-flag {
+    width: 18px;
+    height: 12px;
+    object-fit: cover;
+    border-radius: 2px;
+}
+
+.vs-text {
+    font-size: 0.7rem;
+    color: #999;
+    font-weight: 400;
+}
+
+.recent-match-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.recent-match-format {
+    font-size: 0.7rem;
+    color: #666;
+}
+
+.recent-match-status {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.recent-match-status.live {
+    background: #e53935;
+    color: white;
+}
+
+.recent-match-status.complete {
+    background: var(--primary-color);
+    color: white;
+}
+
+.recent-match-status.upcoming {
+    background: #ff9800;
+    color: white;
 }
 
 .placeholder-text {
