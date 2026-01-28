@@ -163,29 +163,31 @@ def scrape_series_from_live_page():
             if m_match:
                 mid = m_match.group(1)
                 if mid not in seen_match_ids:
-                    seen_match_ids.add(mid)
-                    match_title = m_link.get_text(strip=True)
-                    
-                    # Get status from CSS class-based status_map
-                    match_status = status_map.get(mid, '-')
-                    match_result = result_map.get(mid, '')
-                    
-                    matches.append({
-                        'match_id': mid,
-                        'match_title': match_title if match_title else '-',
-                        'match_status': match_status,
-                        'match_result': match_result
-                    })
+                    # Only include matches that have Live or Completed status (not Upcoming)
+                    if mid in status_map and status_map[mid] in ['Live', 'Completed']:
+                        seen_match_ids.add(mid)
+                        match_title = m_link.get_text(strip=True)
+                        match_status = status_map.get(mid)
+                        match_result = result_map.get(mid, '')
+                        
+                        matches.append({
+                            'match_id': mid,
+                            'match_title': match_title if match_title else '-',
+                            'match_status': match_status,
+                            'match_result': match_result
+                        })
         
-        series_list.append({
-            'series_id': series_id,
-            'series_name': series_name,
-            'series_slug': series_slug,
-            'series_url': BASE_URL + href,
-            'matches': matches,
-            'match_ids': [m['match_id'] for m in matches],
-            'match_count': len(matches)
-        })
+        # Only add series if it has matches with status
+        if matches:
+            series_list.append({
+                'series_id': series_id,
+                'series_name': series_name,
+                'series_slug': series_slug,
+                'series_url': BASE_URL + href,
+                'matches': matches,
+                'match_ids': [m['match_id'] for m in matches],
+                'match_count': len(matches)
+            })
     
     total_matches = sum(s['match_count'] for s in series_list)
     logger.info(f"Found {len(series_list)} series with {total_matches} total matches")
