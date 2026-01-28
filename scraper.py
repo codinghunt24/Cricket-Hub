@@ -2057,7 +2057,8 @@ def scrape_scorecard(match_id):
     # Extract match state first to determine if live
     state_match = re.search(r'"state"\s*:\s*"([^"]*)"', html)
     match_state = state_match.group(1) if state_match else ''
-    is_live = match_state.lower() in ['live', 'in progress', 'innings break']
+    # Include all active match states - not just "Live" but also Toss, Innings Break, etc.
+    is_live = match_state.lower() in ['live', 'in progress', 'innings break', 'toss', 'stumps', 'lunch', 'tea', 'drinks']
     
     scorecard = {
         # PRIMARY IDs - Required for verification

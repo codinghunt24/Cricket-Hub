@@ -991,7 +991,8 @@ async function loadScorecard(matchId) {
             displayScorecard(data.scorecard);
             
             // Start auto-refresh for live matches (every 30 seconds)
-            if (data.scorecard.state === 'Live' || data.scorecard.state === 'Innings Break') {
+            const liveStates = ['Live', 'In Progress', 'Innings Break', 'Toss', 'Stumps', 'Lunch', 'Tea', 'Drinks'];
+            if (liveStates.includes(data.scorecard.state)) {
                 isLiveMatch = true;
                 autoRefreshInterval = setInterval(refreshScorecard, 30000);
             }
@@ -1027,7 +1028,8 @@ async function loadScorecard(matchId) {
 
 function displayScorecard(scorecard) {
     const scorecardContent = document.getElementById('scorecard-content');
-    const isLive = scorecard.state === 'Live' || scorecard.state === 'Innings Break';
+    const liveStates = ['Live', 'In Progress', 'Innings Break', 'Toss', 'Stumps', 'Lunch', 'Tea', 'Drinks'];
+    const isLive = liveStates.includes(scorecard.state);
     
     let html = `
         <div class="scorecard-header">
@@ -1176,7 +1178,8 @@ async function refreshScorecard() {
             displayScorecard(data.scorecard);
             
             // Check if match is still live
-            if (data.scorecard.state && data.scorecard.state !== 'Live' && data.scorecard.state !== 'Innings Break') {
+            const liveStates = ['Live', 'In Progress', 'Innings Break', 'Toss', 'Stumps', 'Lunch', 'Tea', 'Drinks'];
+            if (data.scorecard.state && !liveStates.includes(data.scorecard.state)) {
                 stopAutoRefresh();
             }
         }
