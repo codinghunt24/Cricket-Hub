@@ -648,6 +648,52 @@
     color: #90EE90;
 }
 
+.scorecard-match-info .match-format {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-top: 4px;
+}
+
+.scorecard-match-info .match-datetime {
+    font-size: 0.85rem;
+    color: #888;
+    margin-top: 4px;
+}
+
+.scorecard-match-info .match-toss {
+    font-size: 0.85rem;
+    color: #4CAF50;
+    margin-top: 8px;
+    font-style: italic;
+}
+
+.scorecard-match-info .match-live-status {
+    font-size: 0.95rem;
+    color: #FF5722;
+    margin-top: 8px;
+    font-weight: 600;
+}
+
+.fow-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 0.85rem;
+}
+
+.fow-table th {
+    background: #f5f5f5;
+    padding: 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+}
+
+.fow-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #eee;
+}
+
 .innings-card {
     background: #f8f9fa;
     border-radius: 8px;
@@ -1073,6 +1119,10 @@ function displayScorecard(scorecard) {
         statusClass = 'abandon';
     }
     
+    // Get team names from correct fields
+    const team1 = scorecard.team1 || scorecard.team1_name || 'Team 1';
+    const team2 = scorecard.team2 || scorecard.team2_name || 'Team 2';
+    
     let html = `
         <div class="scorecard-header">
             <h3>Live Scorecard ${isLive ? '<span class="live-indicator"><span class="live-dot"></span> Auto-updating</span>' : ''}</h3>
@@ -1080,13 +1130,13 @@ function displayScorecard(scorecard) {
             <button class="back-to-news" onclick="showNews()">← Back</button>
         </div>
         <div class="scorecard-match-info">
-            <div class="match-title">${scorecard.team1_name || 'Team 1'} vs ${scorecard.team2_name || 'Team 2'}</div>
+            <div class="match-title">${team1} vs ${team2}</div>
+            ${scorecard.match_short ? `<div class="match-format">${scorecard.match_short}</div>` : ''}
             <div class="match-venue">${scorecard.venue || ''}</div>
-            <div class="match-scores-summary">
-                ${scorecard.team1_score ? `<span>${scorecard.team1_name}: ${scorecard.team1_score}</span>` : ''}
-                ${scorecard.team2_score ? `<span>${scorecard.team2_name}: ${scorecard.team2_score}</span>` : ''}
-            </div>
-            ${scorecard.result && !(isLive && scorecard.result.toLowerCase().includes('won')) ? `<div class="match-result-text">${scorecard.result}</div>` : ''}
+            ${scorecard.match_datetime ? `<div class="match-datetime">${scorecard.match_datetime}</div>` : ''}
+            ${scorecard.toss ? `<div class="match-toss">${scorecard.toss}</div>` : ''}
+            ${scorecard.live_status ? `<div class="match-live-status">${scorecard.live_status}</div>` : ''}
+            ${scorecard.result ? `<div class="match-result-text">${scorecard.result}</div>` : ''}
         </div>
     `;
     
@@ -1121,7 +1171,7 @@ function displayScorecard(scorecard) {
                     html += `
                         <tr>
                             <td>
-                                <span class="player-name">${batter.name || ''}</span>
+                                <span class="player-name">${batter.player || batter.name || ''}</span>
                                 <div class="dismissal">${batter.dismissal || ''}</div>
                             </td>
                             <td class="runs">${batter.runs || '0'}</td>
@@ -1159,12 +1209,38 @@ function displayScorecard(scorecard) {
                 inning.bowling.forEach(bowler => {
                     html += `
                         <tr>
-                            <td class="player-name">${bowler.name || ''}</td>
+                            <td class="player-name">${bowler.bowler || bowler.name || ''}</td>
                             <td>${bowler.overs || '0'}</td>
                             <td>${bowler.maidens || '0'}</td>
                             <td>${bowler.runs || '0'}</td>
                             <td class="wickets">${bowler.wickets || '0'}</td>
                             <td>${bowler.economy || '0'}</td>
+                        </tr>
+                    `;
+                });
+                html += `</tbody></table>`;
+            }
+            
+            // Fall of Wickets
+            if (inning.fall_of_wickets && inning.fall_of_wickets.length > 0) {
+                html += `
+                    <div class="section-title">Fall of Wickets</div>
+                    <table class="fow-table">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>Score</th>
+                                <th>Over</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                inning.fall_of_wickets.forEach(fow => {
+                    html += `
+                        <tr>
+                            <td>${fow.player || ''}</td>
+                            <td>${fow.score || ''}</td>
+                            <td>${fow.over || ''}</td>
                         </tr>
                     `;
                 });
