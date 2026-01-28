@@ -548,22 +548,13 @@ def admin_live_score():
         db.session.add(setting)
         db.session.commit()
     
-    all_matches = Match.query.order_by(Match.updated_at.desc()).all()
-    
-    seen_ids = set()
-    unique_matches = []
-    for m in all_matches:
-        if m.match_id and m.match_id not in seen_ids:
-            seen_ids.add(m.match_id)
-            unique_matches.append(m)
-    
-    live_matches = [m for m in unique_matches if m.state in ['Live', 'In Progress']]
-    break_matches = [m for m in unique_matches if m.state in ['Innings Break', 'Stumps', 'Lunch', 'Tea', 'Drinks']]
-    upcoming_matches = [m for m in unique_matches if m.state in ['Upcoming', 'Preview', 'Toss']]
-    complete_matches = [m for m in unique_matches if m.state in ['Complete', 'Abandon', 'No Result']]
-    
-    # Only Live + Completed matches (what scraper returns)
-    all_sorted = live_matches + complete_matches
+    # Don't load from database - start empty, fetch will populate
+    # This ensures only container matches are shown
+    live_matches = []
+    break_matches = []
+    upcoming_matches = []
+    complete_matches = []
+    all_sorted = []
     
     return render_template('admin/live_score.html', 
                          setting=setting,
