@@ -263,7 +263,7 @@ def upsert_player(player_data, db_team_id):
         db.session.add(new_player)
         return new_player
 
-def get_team_flag(team_name, teams_list):
+def get_team_flag_from_list(team_name, teams_list):
     """Find team flag by partial name matching"""
     if not team_name:
         return None
