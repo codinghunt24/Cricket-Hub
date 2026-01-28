@@ -468,6 +468,21 @@ input:checked + .toggle-slider::after {
     color: #cbd5e1;
 }
 
+/* Status styling */
+.status-live {
+    color: #ef4444 !important;
+    font-weight: bold;
+}
+.status-upcoming {
+    color: #f59e0b !important;
+}
+.status-completed {
+    color: #10b981 !important;
+}
+.status-break {
+    color: #8b5cf6 !important;
+}
+
 </style>
 
 <script>
@@ -626,11 +641,24 @@ function scrapeSeries() {
                         const row = document.createElement('tr');
                         row.id = 'row-' + match.match_id;
                         const escapedSeriesName = s.series_name.replace(/'/g, "\\'");
+                        // Get status class for styling
+                        let statusClass = '';
+                        let statusText = match.match_status || '-';
+                        if (statusText === 'Live') {
+                            statusClass = 'status-live';
+                        } else if (statusText === 'Upcoming') {
+                            statusClass = 'status-upcoming';
+                        } else if (statusText === 'Completed') {
+                            statusClass = 'status-completed';
+                        } else if (statusText === 'Break') {
+                            statusClass = 'status-break';
+                        }
+                        
                         row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
                             '<td>' + s.series_name + '</td>' +
                             '<td><a href="https://www.cricbuzz.com/live-cricket-scores/' + match.match_id + '" target="_blank">' + match.match_id + '</a></td>' +
                             '<td>' + match.match_title + '</td>' +
-                            '<td class="status-cell" id="status-' + match.match_id + '">-</td>' +
+                            '<td class="status-cell ' + statusClass + '" id="status-' + match.match_id + '">' + statusText + '</td>' +
                             '<td><button class="scrape-btn" onclick="scrapeScorecard(\'' + match.match_id + '\', \'' + s.series_id + '\', \'' + escapedSeriesName + '\', this)">Scrape</button></td>';
                         tbody.appendChild(row);
                     });

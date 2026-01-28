@@ -55,6 +55,28 @@ def scrape_series_from_live_page():
     from bs4 import BeautifulSoup
     soup = BeautifulSoup(html, 'html.parser')
     
+    # First, build status map from nav bar links (they have status in text like "NZvsIND-NZ won")
+    status_map = {}
+    nav_links = soup.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'), class_=re.compile(r'flex'))
+    for nav_link in nav_links:
+        nav_href = nav_link.get('href', '')
+        nav_match = re.search(r'/live-cricket-scores/(\d+)/', nav_href)
+        if nav_match:
+            nav_mid = nav_match.group(1)
+            nav_text = nav_link.get_text(strip=True).lower()
+            
+            # Extract status from nav text
+            if 'preview' in nav_text or 'upcoming' in nav_text:
+                status_map[nav_mid] = 'Upcoming'
+            elif 'need' in nav_text or 'trail' in nav_text or 'lead' in nav_text:
+                status_map[nav_mid] = 'Live'
+            elif 'won' in nav_text or 'drawn' in nav_text or 'tied' in nav_text:
+                status_map[nav_mid] = 'Completed'
+            elif 'break' in nav_text or 'innings' in nav_text:
+                status_map[nav_mid] = 'Break'
+            elif 'stumps' in nav_text or 'tea' in nav_text or 'lunch' in nav_text:
+                status_map[nav_mid] = 'Break'
+    
     series_list = []
     seen_series_ids = set()
     
@@ -113,9 +135,14 @@ def scrape_series_from_live_page():
                 if mid not in seen_match_ids:
                     seen_match_ids.add(mid)
                     match_title = m_link.get_text(strip=True)
+                    
+                    # Get status from pre-built status_map (from nav bar)
+                    match_status = status_map.get(mid, '-')
+                    
                     matches.append({
                         'match_id': mid,
-                        'match_title': match_title if match_title else '-'
+                        'match_title': match_title if match_title else '-',
+                        'match_status': match_status
                     })
         
         series_list.append({
