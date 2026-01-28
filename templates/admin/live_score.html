@@ -69,12 +69,11 @@
                         <tr>
                             <th>Series ID</th>
                             <th>Series Name</th>
-                            <th>Match Count</th>
-                            <th>Match IDs</th>
+                            <th>Match ID</th>
                         </tr>
                     </thead>
                     <tbody id="series-tbody">
-                        <tr><td colspan="4" class="no-data">Click "Fetch Data" to load series and matches</td></tr>
+                        <tr><td colspan="3" class="no-data">Click "Fetch Data" to load series and matches</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -578,23 +577,32 @@ function scrapeSeries() {
             matchCountEl.textContent = totalMatches;
             
             tbody.innerHTML = '';
+            // Create separate row for each match ID
             data.series.forEach(function(s) {
-                const row = document.createElement('tr');
-                const matchIdsStr = s.match_ids ? s.match_ids.join(', ') : '-';
-                row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
-                    '<td>' + s.series_name + '</td>' +
-                    '<td>' + (s.match_count || 0) + '</td>' +
-                    '<td style="font-size: 0.8rem; max-width: 400px; word-wrap: break-word;">' + matchIdsStr + '</td>';
-                tbody.appendChild(row);
+                if (s.match_ids && s.match_ids.length > 0) {
+                    s.match_ids.forEach(function(matchId) {
+                        const row = document.createElement('tr');
+                        row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
+                            '<td>' + s.series_name + '</td>' +
+                            '<td><a href="https://www.cricbuzz.com/live-cricket-scores/' + matchId + '" target="_blank">' + matchId + '</a></td>';
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    const row = document.createElement('tr');
+                    row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
+                        '<td>' + s.series_name + '</td>' +
+                        '<td>-</td>';
+                    tbody.appendChild(row);
+                }
             });
         } else {
-            tbody.innerHTML = '<tr><td colspan="4" class="no-data">Error: ' + data.message + '</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" class="no-data">Error: ' + data.message + '</td></tr>';
         }
     })
     .catch(function(err) {
         btn.disabled = false;
         btn.textContent = 'Fetch Data';
-        tbody.innerHTML = '<tr><td colspan="4" class="no-data">Error: ' + err.message + '</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="no-data">Error: ' + err.message + '</td></tr>';
     });
 }
 </script>
