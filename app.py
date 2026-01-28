@@ -280,20 +280,38 @@ def get_team_flag(team_name, teams_list):
 
 @app.route('/')
 def index():
-    all_matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
-    live = [m for m in all_matches if m.state == 'Live']
-    status = [m for m in all_matches if m.state != 'Live' and m.result and 'opt to' in m.result.lower()]
-    innings = [m for m in all_matches if m.state == 'Innings Break' and m not in status]
-    complete = [m for m in all_matches if m.state == 'Complete' and m not in status]
-    upcoming = [m for m in all_matches if m.state == 'Upcoming' and m not in status]
-    matches = live + status + innings + complete + upcoming
+    all_matches = Match.query.order_by(Match.updated_at.desc()).limit(100).all()
+    
+    # Unique matches by match_id to avoid duplicates
+    seen_ids = set()
+    unique_matches = []
+    for m in all_matches:
+        if m.match_id and m.match_id not in seen_ids:
+            seen_ids.add(m.match_id)
+            unique_matches.append(m)
+    
+    # Order: Live > In Progress > Innings Break > Stumps > Lunch > Tea > Drinks > Preview > Upcoming > Complete > Abandon
+    live = [m for m in unique_matches if m.state == 'Live']
+    in_progress = [m for m in unique_matches if m.state == 'In Progress']
+    innings = [m for m in unique_matches if m.state == 'Innings Break']
+    stumps = [m for m in unique_matches if m.state == 'Stumps']
+    lunch = [m for m in unique_matches if m.state == 'Lunch']
+    tea = [m for m in unique_matches if m.state == 'Tea']
+    drinks = [m for m in unique_matches if m.state == 'Drinks']
+    preview = [m for m in unique_matches if m.state == 'Preview']
+    upcoming = [m for m in unique_matches if m.state == 'Upcoming']
+    complete = [m for m in unique_matches if m.state == 'Complete']
+    abandon = [m for m in unique_matches if m.state == 'Abandon']
+    
+    matches = live + in_progress + innings + stumps + lunch + tea + drinks + preview + upcoming + complete + abandon
     
     teams = Team.query.all()
     
     match_flags = {}
     for m in matches:
-        match_flags[f"{m.match_id}_1"] = get_team_flag(m.team1_name, teams)
-        match_flags[f"{m.match_id}_2"] = get_team_flag(m.team2_name, teams)
+        if m.match_id:
+            match_flags[f"{m.match_id}_1"] = get_team_flag(m.team1_name, teams)
+            match_flags[f"{m.match_id}_2"] = get_team_flag(m.team2_name, teams)
     
     recent_posts = Post.query.filter_by(is_published=True).order_by(Post.created_at.desc()).limit(5).all()
     
@@ -304,13 +322,30 @@ def index():
 
 @app.route('/live-scores')
 def live_scores():
-    all_matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
-    live = [m for m in all_matches if m.state == 'Live']
-    status = [m for m in all_matches if m.state != 'Live' and m.result and 'opt to' in m.result.lower()]
-    innings = [m for m in all_matches if m.state == 'Innings Break' and m not in status]
-    complete = [m for m in all_matches if m.state == 'Complete' and m not in status]
-    upcoming = [m for m in all_matches if m.state == 'Upcoming' and m not in status]
-    matches = live + status + innings + complete + upcoming
+    all_matches = Match.query.order_by(Match.updated_at.desc()).limit(100).all()
+    
+    # Unique matches by match_id to avoid duplicates
+    seen_ids = set()
+    unique_matches = []
+    for m in all_matches:
+        if m.match_id and m.match_id not in seen_ids:
+            seen_ids.add(m.match_id)
+            unique_matches.append(m)
+    
+    # Order: Live > In Progress > Innings Break > Stumps > Lunch > Tea > Drinks > Preview > Upcoming > Complete > Abandon
+    live = [m for m in unique_matches if m.state == 'Live']
+    in_progress = [m for m in unique_matches if m.state == 'In Progress']
+    innings = [m for m in unique_matches if m.state == 'Innings Break']
+    stumps = [m for m in unique_matches if m.state == 'Stumps']
+    lunch = [m for m in unique_matches if m.state == 'Lunch']
+    tea = [m for m in unique_matches if m.state == 'Tea']
+    drinks = [m for m in unique_matches if m.state == 'Drinks']
+    preview = [m for m in unique_matches if m.state == 'Preview']
+    upcoming = [m for m in unique_matches if m.state == 'Upcoming']
+    complete = [m for m in unique_matches if m.state == 'Complete']
+    abandon = [m for m in unique_matches if m.state == 'Abandon']
+    
+    matches = live + in_progress + innings + stumps + lunch + tea + drinks + preview + upcoming + complete + abandon
     
     # Recent completed matches for sidebar (excluding upcoming)
     recent_matches = Match.query.filter(Match.state == 'Complete').order_by(Match.updated_at.desc()).limit(5).all()
@@ -319,8 +354,9 @@ def live_scores():
     
     match_flags = {}
     for m in matches + recent_matches:
-        match_flags[m.team1_name] = get_team_flag(m.team1_name, teams)
-        match_flags[m.team2_name] = get_team_flag(m.team2_name, teams)
+        if m.match_id:
+            match_flags[f"{m.match_id}_1"] = get_team_flag(m.team1_name, teams)
+            match_flags[f"{m.match_id}_2"] = get_team_flag(m.team2_name, teams)
     
     # Get "Today Live Match" category posts
     today_live_category = PostCategory.query.filter_by(slug='today-live-match').first()
