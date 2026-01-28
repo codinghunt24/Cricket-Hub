@@ -312,6 +312,10 @@ def index():
         if m.match_id:
             match_flags[f"{m.match_id}_1"] = get_team_flag(m.team1_name, teams)
             match_flags[f"{m.match_id}_2"] = get_team_flag(m.team2_name, teams)
+        if m.team1_name:
+            match_flags[m.team1_name] = get_team_flag(m.team1_name, teams)
+        if m.team2_name:
+            match_flags[m.team2_name] = get_team_flag(m.team2_name, teams)
     
     recent_posts = Post.query.filter_by(is_published=True).order_by(Post.created_at.desc()).limit(5).all()
     
@@ -357,6 +361,10 @@ def live_scores():
         if m.match_id:
             match_flags[f"{m.match_id}_1"] = get_team_flag(m.team1_name, teams)
             match_flags[f"{m.match_id}_2"] = get_team_flag(m.team2_name, teams)
+        if m.team1_name:
+            match_flags[m.team1_name] = get_team_flag(m.team1_name, teams)
+        if m.team2_name:
+            match_flags[m.team2_name] = get_team_flag(m.team2_name, teams)
     
     # Get "Today Live Match" category posts
     today_live_category = PostCategory.query.filter_by(slug='today-live-match').first()

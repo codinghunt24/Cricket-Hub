@@ -13,8 +13,8 @@
                 <div class="match-card" data-match-id="{{ match.match_id }}" onclick="loadScorecard('{{ match.match_id }}')">
                     <div class="card-header">
                         <span class="series-name">{{ match.match_format or 'Match' }}</span>
-                        <span class="status-badge {% if match.state in ['Live', 'In Progress', 'Toss', 'Stumps', 'Lunch', 'Tea', 'Drinks'] %}live{% elif match.state == 'Innings Break' %}innings{% elif match.state == 'Complete' %}complete{% else %}upcoming{% endif %}">
-                            {% if match.state in ['Live', 'In Progress', 'Toss', 'Stumps', 'Lunch', 'Tea', 'Drinks'] %}LIVE{% elif match.state == 'Innings Break' %}BREAK{% elif match.state == 'Complete' %}RESULT{% else %}UPCOMING{% endif %}
+                        <span class="status-badge {% if match.state in ['Live', 'In Progress'] %}live{% elif match.state in ['Stumps', 'Lunch', 'Tea', 'Drinks'] %}break{% elif match.state == 'Innings Break' %}innings{% elif match.state == 'Complete' %}complete{% elif match.state == 'Preview' %}preview{% elif match.state == 'Abandon' %}abandon{% else %}upcoming{% endif %}">
+                            {{ match.state|upper if match.state else 'UPCOMING' }}
                         </span>
                     </div>
                     <div class="card-body">
@@ -245,7 +245,10 @@
 
 .status-badge.live { background: #ff4444; }
 .status-badge.innings { background: #ffaa00; color: #333; }
+.status-badge.break { background: #ff8800; color: #fff; }
 .status-badge.complete { background: #00cc66; }
+.status-badge.preview { background: #9b59b6; }
+.status-badge.abandon { background: #666; }
 .status-badge.upcoming { background: #3498db; }
 
 .card-body {
@@ -1212,19 +1215,23 @@ async function refreshAllCards() {
                     const badge = card.querySelector('.status-badge');
                     if (badge && match.state) {
                         badge.className = 'status-badge';
-                        if (match.state === 'Live') {
+                        const state = match.state;
+                        if (state === 'Live' || state === 'In Progress') {
                             badge.classList.add('live');
-                            badge.textContent = 'LIVE';
-                        } else if (match.state === 'Innings Break') {
+                        } else if (state === 'Innings Break') {
                             badge.classList.add('innings');
-                            badge.textContent = 'BREAK';
-                        } else if (match.state === 'Complete') {
+                        } else if (state === 'Stumps' || state === 'Lunch' || state === 'Tea' || state === 'Drinks') {
+                            badge.classList.add('break');
+                        } else if (state === 'Complete') {
                             badge.classList.add('complete');
-                            badge.textContent = 'RESULT';
+                        } else if (state === 'Preview') {
+                            badge.classList.add('preview');
+                        } else if (state === 'Abandon') {
+                            badge.classList.add('abandon');
                         } else {
                             badge.classList.add('upcoming');
-                            badge.textContent = 'UPCOMING';
                         }
+                        badge.textContent = state.toUpperCase();
                     }
                 }
             });
