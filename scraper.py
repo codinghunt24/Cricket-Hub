@@ -441,15 +441,34 @@ def scrape_scorecard(match_id):
             
             result['innings'].append(innings_data)
             
-            # Set team scores
-            if innings_num == 1 and not result['team1_score']:
-                result['team1_score'] = f"{runs}/{wickets} ({overs} Ov)"
-                if not result['team1']:
-                    result['team1'] = team_name
-            elif innings_num == 2 and not result['team2_score']:
-                result['team2_score'] = f"{runs}/{wickets} ({overs} Ov)"
-                if not result['team2']:
-                    result['team2'] = team_name
+            # Set team scores based on team name match (not innings order)
+            innings_score = f"{runs}/{wickets} ({overs} Ov)"
+            team_name_lower = team_name.lower() if team_name else ''
+            team1_lower = result.get('team1', '').lower() if result.get('team1') else ''
+            team2_lower = result.get('team2', '').lower() if result.get('team2') else ''
+            
+            # Match by team name to assign correct score
+            if team_name_lower and team1_lower and team_name_lower in team1_lower or team1_lower in team_name_lower:
+                if not result['team1_score']:
+                    result['team1_score'] = innings_score
+            elif team_name_lower and team2_lower and team_name_lower in team2_lower or team2_lower in team_name_lower:
+                if not result['team2_score']:
+                    result['team2_score'] = innings_score
+            else:
+                # Fallback: assign by innings order if no match found
+                if innings_num == 1 and not result['team1_score'] and not result['team2_score']:
+                    # First innings - could be either team, set based on team name extracted
+                    if not result['team1']:
+                        result['team1'] = team_name
+                        result['team1_score'] = innings_score
+                    elif not result['team2']:
+                        result['team2'] = team_name  
+                        result['team2_score'] = innings_score
+                elif innings_num == 2:
+                    if not result['team2_score']:
+                        result['team2_score'] = innings_score
+                        if not result['team2']:
+                            result['team2'] = team_name
     
     # Try to get match status and scores from live-cricket-scores page
     live_url = f"{BASE_URL}/live-cricket-scores/{match_id}"
