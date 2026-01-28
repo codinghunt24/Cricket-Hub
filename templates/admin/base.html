@@ -32,6 +32,12 @@
                             <span class="sidebar-text">Scorecard</span>
                         </a>
                     </li>
+                    <li class="sidebar-item {% if request.path == '/admin/teams' %}active{% endif %}">
+                        <a href="/admin/teams" class="sidebar-link">
+                            <span class="sidebar-icon">&#127942;</span>
+                            <span class="sidebar-text">Teams</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             
