@@ -868,39 +868,40 @@ body {
 
 .player-details-card {
     background: var(--white);
-    padding: 25px;
+    padding: 15px 20px;
     border-radius: 15px;
     box-shadow: var(--shadow);
 }
 
 .player-details-card h3 {
     color: var(--primary-color);
-    margin-bottom: 20px;
-    padding-bottom: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
     border-bottom: 2px solid var(--bg-light);
+    font-size: 1.1rem;
 }
 
 .info-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px 15px;
 }
 
 .info-item {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 2px;
 }
 
 .info-label {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: #888;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .info-value {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--text-color);
 }
