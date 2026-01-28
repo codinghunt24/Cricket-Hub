@@ -1077,6 +1077,47 @@ def scrape_player_profile(player_url):
         profile['batting_stats'] = batting_stats if batting_stats else None
         profile['bowling_stats'] = bowling_stats if bowling_stats else None
         
+        # Also set flat stats for database columns (use Test stats as primary, fallback to ODI/T20/IPL)
+        for fmt in ['Test', 'ODI', 'T20', 'IPL']:
+            if fmt in batting_stats and batting_stats[fmt]:
+                stats = batting_stats[fmt]
+                if not profile.get('bat_matches'):
+                    profile['bat_matches'] = stats.get('matches')
+                    profile['bat_innings'] = stats.get('innings')
+                    profile['bat_runs'] = stats.get('runs')
+                    profile['bat_balls'] = stats.get('balls')
+                    profile['bat_highest'] = stats.get('highest')
+                    profile['bat_average'] = stats.get('average')
+                    profile['bat_strike_rate'] = stats.get('sr')
+                    profile['bat_not_outs'] = stats.get('not_out')
+                    profile['bat_fours'] = stats.get('fours')
+                    profile['bat_sixes'] = stats.get('sixes')
+                    profile['bat_ducks'] = stats.get('ducks')
+                    profile['bat_fifties'] = stats.get('50s')
+                    profile['bat_hundreds'] = stats.get('100s')
+                    profile['bat_two_hundreds'] = stats.get('200s')
+                break
+        
+        for fmt in ['Test', 'ODI', 'T20', 'IPL']:
+            if fmt in bowling_stats and bowling_stats[fmt]:
+                stats = bowling_stats[fmt]
+                if not profile.get('bowl_matches'):
+                    profile['bowl_matches'] = stats.get('matches')
+                    profile['bowl_innings'] = stats.get('innings')
+                    profile['bowl_balls'] = stats.get('balls')
+                    profile['bowl_runs'] = stats.get('runs')
+                    profile['bowl_maidens'] = stats.get('maidens')
+                    profile['bowl_wickets'] = stats.get('wickets')
+                    profile['bowl_average'] = stats.get('avg')
+                    profile['bowl_economy'] = stats.get('eco')
+                    profile['bowl_strike_rate'] = stats.get('sr')
+                    profile['bowl_best_innings'] = stats.get('bbi')
+                    profile['bowl_best_match'] = stats.get('bbm')
+                    profile['bowl_four_wickets'] = stats.get('4w')
+                    profile['bowl_five_wickets'] = stats.get('5w')
+                    profile['bowl_ten_wickets'] = stats.get('10w')
+                break
+        
         logger.info(f"Scraped player profile from {player_url}: Born={profile['born']}, Role={profile['role']}")
         return profile
         
