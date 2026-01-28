@@ -56,13 +56,24 @@ def scrape_series_from_live_page():
     from bs4 import BeautifulSoup
     soup = BeautifulSoup(html, 'html.parser')
     
+    # Find the main match container (flex flex-col gap-3 with match links)
+    main_container = None
+    containers = soup.select('div.flex.flex-col.gap-3')
+    for container in containers:
+        if container.find('a', href=re.compile(r'/live-cricket-scores/\d+/')):
+            main_container = container
+            break
+    
+    # If no container found, use full soup
+    search_scope = main_container if main_container else soup
+    
     # Build status map from CSS classes (text-cbLive, text-cbComplete)
     status_map = {}
     result_map = {}
     score_map = {}  # Store team scores
     
-    # Find all spans with status classes
-    status_spans = soup.find_all('span', class_=re.compile(r'text-cb(Live|Complete)'))
+    # Find all spans with status classes within the container
+    status_spans = search_scope.find_all('span', class_=re.compile(r'text-cb(Live|Complete)'))
     for span in status_spans:
         classes = span.get('class', [])
         class_str = ' '.join(classes)
@@ -95,9 +106,9 @@ def scrape_series_from_live_page():
                         break
                 parent = parent.parent
     
-    # Extract scores (format: 215-7 (20))
+    # Extract scores (format: 215-7 (20)) from the container
     score_pattern = re.compile(r'\d{1,3}[-/]\d{1,2}\s*\(\d+\.?\d*\)')
-    score_elements = soup.find_all(string=score_pattern)
+    score_elements = search_scope.find_all(string=score_pattern)
     
     for elem in score_elements:
         parent = elem.parent
@@ -127,7 +138,7 @@ def scrape_series_from_live_page():
                     grandparent = grandparent.parent
     
     # Also check title attributes for Upcoming matches (Preview)
-    preview_links = soup.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+    preview_links = search_scope.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
     for link in preview_links:
         title_attr = link.get('title', '').lower()
         href = link.get('href', '')
@@ -143,7 +154,7 @@ def scrape_series_from_live_page():
     seen_series_ids = set()
     
     # Find all series links first, then find their correct parent containers
-    series_links = soup.find_all('a', href=re.compile(r'/cricket-series/(\d+)/'))
+    series_links = search_scope.find_all('a', href=re.compile(r'/cricket-series/(\d+)/'))
     
     for s_link in series_links:
         href = s_link.get('href', '')
