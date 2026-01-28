@@ -822,8 +822,6 @@ body {
     height: 100%;
     object-fit: contain;
     border-radius: 10px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    border: 3px solid #fff;
 }
 
 .player-info-badge {
@@ -956,8 +954,17 @@ body {
         height: 150px;
     }
     
-    .player-team-info {
-        flex-direction: column;
+    .player-info-badge {
+        flex-direction: row;
+        padding: 8px 16px;
+    }
+    
+    .player-info-badge .badge-item {
+        font-size: 0.85rem;
+    }
+    
+    .player-info-badge .badge-divider {
+        margin: 0 8px;
     }
     
     .info-grid {
