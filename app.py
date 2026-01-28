@@ -618,6 +618,19 @@ def api_scrape_scorecard():
         if not scorecard:
             return jsonify({'success': False, 'message': 'Failed to scrape scorecard'}), 400
         
+        # Fallback to database values if team names are empty (match not started)
+        if not scorecard.get('team1_name') or not scorecard.get('team2_name'):
+            db_match = Match.query.filter_by(match_id=str(match_id)).first()
+            if db_match:
+                if not scorecard.get('team1_name') and db_match.team1_name:
+                    scorecard['team1_name'] = db_match.team1_name
+                if not scorecard.get('team2_name') and db_match.team2_name:
+                    scorecard['team2_name'] = db_match.team2_name
+                if not scorecard.get('venue') and db_match.venue:
+                    scorecard['venue'] = db_match.venue
+                if not scorecard.get('result') and db_match.result:
+                    scorecard['result'] = db_match.result
+        
         verification = {
             'input_match_id': match_id,
             'page_match_id': scorecard.get('match_id', ''),
