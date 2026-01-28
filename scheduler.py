@@ -125,7 +125,7 @@ def run_daily_player_scrape(app, db, Team, Player, ScrapeLog, ScrapeSetting, scr
             db.session.add(log)
             db.session.commit()
 
-def init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player=None, Match=None, LiveScoreScrapeSetting=None, ProfileScrapeSetting=None):
+def init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player=None, Match=None, LiveScoreScrapeSetting=None, ProfileScrapeSetting=None, SeriesCategory=None, Series=None, SeriesScrapeSetting=None):
     global scheduler_started
     
     if scheduler_started:
@@ -191,6 +191,24 @@ def init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scrape
                     print(f"[SCHEDULER] {ps.category_slug.title()} profile scrape scheduled at {ps.scrape_time}")
                 except Exception as e:
                     print(f"[SCHEDULER] Error scheduling {ps.category_slug} profile scrape: {e}")
+        
+        if SeriesScrapeSetting and Series and SeriesCategory:
+            series_settings = SeriesScrapeSetting.query.filter_by(auto_scrape_enabled=True).all()
+            for ss in series_settings:
+                try:
+                    hour, minute = map(int, ss.scrape_time.split(':'))
+                    job_id = f'{ss.category_slug}_series_scrape'
+                    
+                    scheduler.add_job(
+                        func=lambda cat=ss.category_slug: run_category_series_scrape(app, db, SeriesCategory, Series, ScrapeLog, SeriesScrapeSetting, scraper, cat),
+                        trigger=CronTrigger(hour=hour, minute=minute),
+                        id=job_id,
+                        replace_existing=True
+                    )
+                    
+                    print(f"[SCHEDULER] {ss.category_slug.title()} series scrape scheduled at {ss.scrape_time}")
+                except Exception as e:
+                    print(f"[SCHEDULER] Error scheduling {ss.category_slug} series scrape: {e}")
     
     scheduler.start()
     scheduler_started = True
@@ -486,3 +504,78 @@ def update_category_profile_schedule(app, db, TeamCategory, Team, Player, Scrape
         print(f"[SCHEDULER] {category.title()} profile scrape scheduled at {scrape_time}")
     else:
         print(f"[SCHEDULER] {category.title()} profile scrape disabled")
+
+def run_category_series_scrape(app, db, SeriesCategory, Series, ScrapeLog, SeriesScrapeSetting, scraper, category_slug):
+    with app.app_context():
+        try:
+            if category_slug == 'all':
+                categories = SeriesCategory.query.all()
+            else:
+                cat = SeriesCategory.query.filter_by(slug=category_slug).first()
+                categories = [cat] if cat else []
+            
+            total_series = 0
+            for category in categories:
+                try:
+                    result = scraper.scrape_series(category.url)
+                    if result and result.get('series'):
+                        for series_data in result['series']:
+                            existing = Series.query.filter_by(series_id=series_data.get('id')).first()
+                            if existing:
+                                existing.name = series_data.get('name', existing.name)
+                                existing.series_url = series_data.get('url', existing.series_url)
+                                existing.date_range = series_data.get('date_range', existing.date_range)
+                                existing.updated_at = datetime.utcnow()
+                            else:
+                                new_series = Series(
+                                    series_id=series_data.get('id'),
+                                    name=series_data.get('name', ''),
+                                    series_url=series_data.get('url', ''),
+                                    date_range=series_data.get('date_range'),
+                                    category_id=category.id
+                                )
+                                db.session.add(new_series)
+                            total_series += 1
+                except Exception as e:
+                    print(f"[SCHEDULER] Error scraping series for {category.name}: {e}")
+                    continue
+            
+            db.session.commit()
+            
+            setting = SeriesScrapeSetting.query.filter_by(category_slug=category_slug).first()
+            if setting:
+                setting.last_scrape = datetime.utcnow()
+                db.session.commit()
+            
+            log = ScrapeLog(
+                category=f'auto_{category_slug}_series',
+                status='success',
+                message=f'Auto scraped {total_series} series'
+            )
+            db.session.add(log)
+            db.session.commit()
+            
+            print(f"[SCHEDULER] Auto {category_slug} series scrape completed: {total_series} series")
+            
+        except Exception as e:
+            print(f"[SCHEDULER] Auto {category_slug} series scrape error: {e}")
+
+def update_category_series_schedule(app, db, SeriesCategory, Series, ScrapeLog, SeriesScrapeSetting, scraper, category, enabled, scrape_time):
+    job_id = f'{category}_series_scrape'
+    
+    if job_id in [job.id for job in scheduler.get_jobs()]:
+        scheduler.remove_job(job_id)
+    
+    if enabled:
+        hour, minute = map(int, scrape_time.split(':'))
+        
+        scheduler.add_job(
+            func=lambda cat=category: run_category_series_scrape(app, db, SeriesCategory, Series, ScrapeLog, SeriesScrapeSetting, scraper, cat),
+            trigger=CronTrigger(hour=hour, minute=minute),
+            id=job_id,
+            replace_existing=True
+        )
+        
+        print(f"[SCHEDULER] {category.title()} series scrape scheduled at {scrape_time}")
+    else:
+        print(f"[SCHEDULER] {category.title()} series scrape disabled")
