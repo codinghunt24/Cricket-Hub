@@ -527,27 +527,31 @@ def scrape_scorecard(match_id):
         elif not has_innings and result.get('match_datetime') and 'tomorrow' in result.get('match_datetime', '').lower():
             result['match_status'] = 'Upcoming'
         else:
-            # Check for common status patterns
-            status_patterns = [
-                (r'(\w+)\s+won\s+by\s+\d+\s+(runs?|wickets?)', 'Completed'),
-                (r'Match\s+drawn', 'Completed'),
-                (r'Match\s+tied', 'Completed'),
-                (r'No\s+result', 'No Result'),
-                (r'Innings\s+Break', 'Break'),
-                (r'Stumps', 'Stumps'),
-                (r'Tea', 'Tea'),
-                (r'Lunch', 'Lunch'),
-            ]
+            # First try to find result in specific element
+            result_el = live_soup.find('div', class_='text-cbTextLink')
+            if result_el:
+                result_text = result_el.get_text(strip=True)
+                if 'won by' in result_text.lower() or 'match drawn' in result_text.lower() or 'match tied' in result_text.lower():
+                    result['match_status'] = result_text
+                    result['result'] = result_text
             
-            for pattern, status in status_patterns:
-                match = re.search(pattern, page_text, re.IGNORECASE)
-                if match:
-                    if status == 'Completed':
-                        result['match_status'] = match.group()
-                        result['result'] = match.group()
-                    else:
+            # If no result element, check patterns in page text
+            if not result['match_status']:
+                status_patterns = [
+                    (r'Match\s+drawn', 'Completed'),
+                    (r'Match\s+tied', 'Completed'),
+                    (r'No\s+result', 'No Result'),
+                    (r'Innings\s+Break', 'Break'),
+                    (r'Stumps', 'Stumps'),
+                    (r'Tea', 'Tea'),
+                    (r'Lunch', 'Lunch'),
+                ]
+                
+                for pattern, status in status_patterns:
+                    match = re.search(pattern, page_text, re.IGNORECASE)
+                    if match:
                         result['match_status'] = status
-                    break
+                        break
             
             # If has innings but no specific status, it's Live
             if not result['match_status'] and has_innings:
