@@ -609,6 +609,10 @@ def run_category_matches_scrape(app, db, SeriesCategory, Series, Match, ScrapeLo
                                 existing.match_date = match_data.get('match_date', existing.match_date)
                                 existing.team1_name = match_data.get('team1', existing.team1_name)
                                 existing.team2_name = match_data.get('team2', existing.team2_name)
+                                if match_data.get('team1_score'):
+                                    existing.team1_score = match_data.get('team1_score')
+                                if match_data.get('team2_score'):
+                                    existing.team2_score = match_data.get('team2_score')
                                 existing.result = match_data.get('result', existing.result)
                                 existing.series_id = series.id
                                 existing.updated_at = datetime.utcnow()
@@ -620,6 +624,8 @@ def run_category_matches_scrape(app, db, SeriesCategory, Series, Match, ScrapeLo
                                     match_date=match_data.get('match_date', ''),
                                     team1_name=match_data.get('team1', ''),
                                     team2_name=match_data.get('team2', ''),
+                                    team1_score=match_data.get('team1_score', ''),
+                                    team2_score=match_data.get('team2_score', ''),
                                     result=match_data.get('result', ''),
                                     series_id=series.id
                                 )

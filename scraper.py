@@ -1066,6 +1066,18 @@ def scrape_matches_from_series(series_url):
             team1_id = re.search(r'"team1"\s*:\s*\{[^}]*"teamId"\s*:\s*(\d+)', context)
             team2_id = re.search(r'"team2"\s*:\s*\{[^}]*"teamId"\s*:\s*(\d+)', context)
             
+            team1_score_match = re.search(r'"team1Score"\s*:\s*\{[^}]*"inngs1"\s*:\s*\{[^}]*"runs"\s*:\s*(\d+)[^}]*"wickets"\s*:\s*(\d+)[^}]*"overs"\s*:\s*([\d.]+)', context)
+            team2_score_match = re.search(r'"team2Score"\s*:\s*\{[^}]*"inngs1"\s*:\s*\{[^}]*"runs"\s*:\s*(\d+)[^}]*"wickets"\s*:\s*(\d+)[^}]*"overs"\s*:\s*([\d.]+)', context)
+            
+            team1_score = ''
+            team2_score = ''
+            if team1_score_match:
+                runs, wickets, overs = team1_score_match.groups()
+                team1_score = f"{runs}/{wickets} ({overs})"
+            if team2_score_match:
+                runs, wickets, overs = team2_score_match.groups()
+                team2_score = f"{runs}/{wickets} ({overs})"
+            
             venue_ground = re.search(r'"venueInfo"\s*:\s*\{[^}]*"ground"\s*:\s*"([^"]*)"', context)
             venue_city = re.search(r'"venueInfo"\s*:\s*\{[^}]*"city"\s*:\s*"([^"]*)"', context)
             
@@ -1099,6 +1111,8 @@ def scrape_matches_from_series(series_url):
                 'state': state.group(1) if state else '',
                 'team1': team1_short,
                 'team2': team2_short,
+                'team1_score': team1_score,
+                'team2_score': team2_score,
                 'venue': venue,
                 'result': status.group(1) if status else ''
             })
