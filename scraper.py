@@ -1020,23 +1020,34 @@ def scrape_player_profile(player_url):
         career_timeline = []
         format_map = {'t20': 'T20', 'test': 'Test', 'odi': 'ODI', 'ipl': 'IPL'}
         
-        # Pattern for each format: formatvs opp1, date1, venue1vs opp2, date2, venue2
+        # Two patterns exist on Cricbuzz:
+        # Pattern 1: t20vs opponent, date, venuevs opponent2, date2, venue2
+        # Pattern 2: t20Debutvs opponent, date, venueLast Playedvs opponent2, date2, venue2
+        
         for fmt in ['t20', 'test', 'odi', 'ipl']:
-            # Find the section for this format
-            pattern = fmt + r'vs\s*([^,]+),\s*(\d{4}-\d{2}-\d{2}),\s*(.+?)vs\s*([^,]+),\s*(\d{4}-\d{2}-\d{2}),\s*(.+?)(?=t20vs|testvs|odivs|iplvs|cltvs|$)'
-            match = re.search(pattern, page_text, re.IGNORECASE)
+            # Try Pattern 2 first (with Debut/Last Played)
+            pattern2 = fmt + r'(?:Debut)?vs\s*([^,]+),\s*(\d{4}-\d{2}-\d{2}),\s*(.+?)(?:Last Played|Last Match)?vs\s*([^,]+),\s*(\d{4}-\d{2}-\d{2}),\s*(.+?)(?=t20|test|odi|ipl|clt|Career Info|$)'
+            match = re.search(pattern2, page_text, re.IGNORECASE)
             if match:
+                # Clean up venue text
+                def clean_venue(v):
+                    v = v.strip()
+                    for suffix in ['Last Played', 'Last Match', 'Career Information', 'Career Info']:
+                        if v.endswith(suffix):
+                            v = v[:-len(suffix)].strip()
+                    return v
+                
                 career_timeline.append({
                     'format': format_map.get(fmt, fmt.upper()),
                     'debut': {
                         'opponent': match.group(1).strip(),
                         'date': match.group(2).strip(),
-                        'venue': match.group(3).strip()
+                        'venue': clean_venue(match.group(3))
                     },
                     'last_match': {
                         'opponent': match.group(4).strip(),
                         'date': match.group(5).strip(),
-                        'venue': match.group(6).strip()
+                        'venue': clean_venue(match.group(6))
                     }
                 })
         
