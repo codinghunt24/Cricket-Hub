@@ -913,6 +913,33 @@ def get_server_time():
     now = datetime.now()
     return jsonify({'time': now.strftime('%H:%M:%S')})
 
+@app.route('/api/recent-matches')
+def get_recent_matches():
+    offset = request.args.get('offset', 0, type=int)
+    limit = request.args.get('limit', 5, type=int)
+    
+    matches = Match.query.filter(Match.state == 'Complete').order_by(Match.updated_at.desc()).offset(offset).limit(limit + 1).all()
+    
+    has_more = len(matches) > limit
+    matches = matches[:limit]
+    
+    teams = Team.query.all()
+    
+    result = []
+    for m in matches:
+        result.append({
+            'match_id': m.match_id,
+            'team1_name': m.team1_name,
+            'team2_name': m.team2_name,
+            'team1_score': m.team1_score,
+            'team2_score': m.team2_score,
+            'match_format': m.match_format,
+            'team1_flag': get_team_flag(m.team1_name, teams),
+            'team2_flag': get_team_flag(m.team2_name, teams)
+        })
+    
+    return jsonify({'matches': result, 'has_more': has_more})
+
 @app.route('/api/settings/auto-scrape', methods=['POST'])
 def toggle_auto_scrape():
     try:

@@ -89,27 +89,29 @@
         <div class="sidebar-box">
             <div class="section-block">
                 <h4>Recent Match</h4>
-                <div class="recent-matches-list">
+                <div class="recent-matches-list" id="recent-matches-container">
                     {% for match in recent_matches %}
-                    <div class="recent-match-card" onclick="loadScorecard('{{ match.match_id }}')">
-                        <div class="recent-match-teams">
-                            <div class="recent-team">
+                    <div class="recent-match-card" onclick="loadScorecard('{{ match.match_id }}')" data-match-item>
+                        <div class="recent-match-teams vertical">
+                            <div class="recent-team-row">
                                 <img src="{{ match_flags.get(match.team1_name, '') }}" alt="" class="recent-team-flag" onerror="this.style.display='none'">
-                                <span>{{ match.team1_name[:15] }}{% if match.team1_name|length > 15 %}...{% endif %}</span>
+                                <span class="team-name">{{ match.team1_name }}</span>
+                                {% if match.team1_score %}<span class="team-score">{{ match.team1_score }}</span>{% endif %}
                             </div>
-                            <span class="vs-text">vs</span>
-                            <div class="recent-team">
+                            <div class="recent-team-row">
                                 <img src="{{ match_flags.get(match.team2_name, '') }}" alt="" class="recent-team-flag" onerror="this.style.display='none'">
-                                <span>{{ match.team2_name[:15] }}{% if match.team2_name|length > 15 %}...{% endif %}</span>
+                                <span class="team-name">{{ match.team2_name }}</span>
+                                {% if match.team2_score %}<span class="team-score">{{ match.team2_score }}</span>{% endif %}
                             </div>
                         </div>
-                        <div class="recent-match-info">
+                        <div class="recent-match-footer">
                             <span class="recent-match-format">{{ match.match_format }}</span>
                             <span class="recent-match-status complete">Result</span>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
+                <button class="load-more-btn" id="load-more-matches" onclick="loadMoreMatches()">Load More</button>
             </div>
             <div class="section-block">
                 <h4>Quick Links</h4>
@@ -731,6 +733,113 @@
         padding: 6px 3px;
     }
 }
+
+/* Recent Match Vertical Layout */
+.recent-matches-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.recent-match-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.recent-match-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-color: var(--primary-color);
+}
+
+.recent-match-teams.vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.recent-team-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.recent-team-flag {
+    width: 20px;
+    height: 14px;
+    object-fit: cover;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.recent-team-row .team-name {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.recent-team-row .team-score {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.recent-match-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+}
+
+.recent-match-format {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.recent-match-status {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.recent-match-status.complete {
+    background: #1a472a;
+    color: #fff;
+}
+
+.load-more-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 12px;
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.load-more-btn:hover {
+    background: var(--primary-dark);
+}
+
+.load-more-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
 </style>
 
 <script>
@@ -957,6 +1066,66 @@ function showNews() {
     document.querySelectorAll('.match-card').forEach(card => {
         card.classList.remove('active');
     });
+}
+
+let recentMatchOffset = 5;
+function loadMoreMatches() {
+    const btn = document.getElementById('load-more-matches');
+    btn.disabled = true;
+    btn.textContent = 'Loading...';
+    
+    fetch('/api/recent-matches?offset=' + recentMatchOffset + '&limit=5')
+        .then(res => res.json())
+        .then(data => {
+            if (data.matches && data.matches.length > 0) {
+                const container = document.getElementById('recent-matches-container');
+                data.matches.forEach(match => {
+                    const card = document.createElement('div');
+                    card.className = 'recent-match-card';
+                    card.setAttribute('data-match-item', '');
+                    card.onclick = () => loadScorecard(match.match_id);
+                    
+                    const t1Score = match.team1_score ? `<span class="team-score">${match.team1_score}</span>` : '';
+                    const t2Score = match.team2_score ? `<span class="team-score">${match.team2_score}</span>` : '';
+                    const t1Flag = match.team1_flag ? `<img src="${match.team1_flag}" alt="" class="recent-team-flag" onerror="this.style.display='none'">` : '';
+                    const t2Flag = match.team2_flag ? `<img src="${match.team2_flag}" alt="" class="recent-team-flag" onerror="this.style.display='none'">` : '';
+                    
+                    card.innerHTML = `
+                        <div class="recent-match-teams vertical">
+                            <div class="recent-team-row">
+                                ${t1Flag}
+                                <span class="team-name">${match.team1_name}</span>
+                                ${t1Score}
+                            </div>
+                            <div class="recent-team-row">
+                                ${t2Flag}
+                                <span class="team-name">${match.team2_name}</span>
+                                ${t2Score}
+                            </div>
+                        </div>
+                        <div class="recent-match-footer">
+                            <span class="recent-match-format">${match.match_format || ''}</span>
+                            <span class="recent-match-status complete">Result</span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+                recentMatchOffset += data.matches.length;
+                btn.disabled = false;
+                btn.textContent = 'Load More';
+                
+                if (!data.has_more) {
+                    btn.style.display = 'none';
+                }
+            } else {
+                btn.style.display = 'none';
+            }
+        })
+        .catch(err => {
+            console.error('Error loading matches:', err);
+            btn.disabled = false;
+            btn.textContent = 'Load More';
+        });
 }
 </script>
 {% endblock %}
