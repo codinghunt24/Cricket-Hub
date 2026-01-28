@@ -74,7 +74,7 @@ from models import init_models
 TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser = init_models(db)
 
 import scraper
-from scheduler import init_scheduler, update_schedule, update_player_schedule
+from scheduler import init_scheduler, update_schedule, update_player_schedule, update_category_profile_schedule
 
 with app.app_context():
     db.create_all()
@@ -127,7 +127,7 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player, Match, LiveScoreScrapeSetting)
+init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player, Match, LiveScoreScrapeSetting, ProfileScrapeSetting)
 
 def upsert_series(series_data, category_id):
     """Insert or update series by series_id"""
@@ -1666,6 +1666,8 @@ def toggle_profile_auto_scrape():
             setting.auto_scrape_enabled = enabled
             setting.scrape_time = scrape_time
             db.session.commit()
+        
+        update_category_profile_schedule(app, db, TeamCategory, Team, Player, ScrapeLog, ProfileScrapeSetting, scraper, category, enabled, scrape_time)
         
         return jsonify({
             'success': True,

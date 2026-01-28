@@ -125,7 +125,7 @@ def run_daily_player_scrape(app, db, Team, Player, ScrapeLog, ScrapeSetting, scr
             db.session.add(log)
             db.session.commit()
 
-def init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player=None, Match=None, LiveScoreScrapeSetting=None):
+def init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player=None, Match=None, LiveScoreScrapeSetting=None, ProfileScrapeSetting=None):
     global scheduler_started
     
     if scheduler_started:
@@ -173,6 +173,24 @@ def init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scrape
                 )
                 
                 print(f"[SCHEDULER] Live score auto-scrape scheduled (every {interval_seconds}s)")
+        
+        if ProfileScrapeSetting and Player:
+            profile_settings = ProfileScrapeSetting.query.filter_by(auto_scrape_enabled=True).all()
+            for ps in profile_settings:
+                try:
+                    hour, minute = map(int, ps.scrape_time.split(':'))
+                    job_id = f'{ps.category_slug}_profile_scrape'
+                    
+                    scheduler.add_job(
+                        func=lambda cat=ps.category_slug: run_category_profile_scrape(app, db, TeamCategory, Team, Player, ScrapeLog, ProfileScrapeSetting, scraper, cat),
+                        trigger=CronTrigger(hour=hour, minute=minute),
+                        id=job_id,
+                        replace_existing=True
+                    )
+                    
+                    print(f"[SCHEDULER] {ps.category_slug.title()} profile scrape scheduled at {ps.scrape_time}")
+                except Exception as e:
+                    print(f"[SCHEDULER] Error scheduling {ps.category_slug} profile scrape: {e}")
     
     scheduler.start()
     scheduler_started = True
@@ -386,3 +404,85 @@ def update_live_score_schedule(app, db, Match, ScrapeLog, LiveScoreScrapeSetting
         print(f"[SCHEDULER] Live score auto-scrape enabled (every {interval_seconds}s)")
     else:
         print(f"[SCHEDULER] Live score auto-scrape disabled")
+
+def run_category_profile_scrape(app, db, TeamCategory, Team, Player, ScrapeLog, ProfileScrapeSetting, scraper, category_slug):
+    with app.app_context():
+        try:
+            category = TeamCategory.query.filter_by(slug=category_slug).first()
+            if not category:
+                print(f"[SCHEDULER] Category {category_slug} not found")
+                return
+            
+            players = Player.query.join(Team).filter(
+                Team.category_id == category.id,
+                Player.player_url.isnot(None)
+            ).all()
+            
+            scraped_count = 0
+            for player in players:
+                try:
+                    profile_data = scraper.scrape_player_profile(player.player_url)
+                    if profile_data:
+                        if profile_data.get('born'):
+                            player.born = profile_data['born']
+                        if profile_data.get('birth_place'):
+                            player.birth_place = profile_data['birth_place']
+                        if profile_data.get('nickname'):
+                            player.nickname = profile_data['nickname']
+                        if profile_data.get('role'):
+                            player.role = profile_data['role']
+                        if profile_data.get('batting_style'):
+                            player.batting_style = profile_data['batting_style']
+                        if profile_data.get('bowling_style'):
+                            player.bowling_style = profile_data['bowling_style']
+                        
+                        player.batting_stats = profile_data.get('batting_stats')
+                        player.bowling_stats = profile_data.get('bowling_stats')
+                        player.career_timeline = profile_data.get('career_timeline')
+                        
+                        player.profile_scraped = True
+                        player.profile_scraped_at = datetime.utcnow()
+                        scraped_count += 1
+                        
+                        if scraped_count % 10 == 0:
+                            db.session.commit()
+                            
+                except Exception as e:
+                    print(f"[SCHEDULER] Error scraping profile for {player.name}: {e}")
+                    continue
+            
+            db.session.commit()
+            
+            log = ScrapeLog(
+                category=f'{category_slug}_profiles',
+                status='success',
+                message=f'Auto scraped {scraped_count} player profiles',
+                players_scraped=scraped_count
+            )
+            db.session.add(log)
+            db.session.commit()
+            
+            print(f"[SCHEDULER] Auto {category_slug} profiles scrape completed: {scraped_count} profiles")
+            
+        except Exception as e:
+            print(f"[SCHEDULER] Auto {category_slug} profiles scrape error: {e}")
+
+def update_category_profile_schedule(app, db, TeamCategory, Team, Player, ScrapeLog, ProfileScrapeSetting, scraper, category, enabled, scrape_time):
+    job_id = f'{category}_profile_scrape'
+    
+    if job_id in [job.id for job in scheduler.get_jobs()]:
+        scheduler.remove_job(job_id)
+    
+    if enabled:
+        hour, minute = map(int, scrape_time.split(':'))
+        
+        scheduler.add_job(
+            func=lambda cat=category: run_category_profile_scrape(app, db, TeamCategory, Team, Player, ScrapeLog, ProfileScrapeSetting, scraper, cat),
+            trigger=CronTrigger(hour=hour, minute=minute),
+            id=job_id,
+            replace_existing=True
+        )
+        
+        print(f"[SCHEDULER] {category.title()} profile scrape scheduled at {scrape_time}")
+    else:
+        print(f"[SCHEDULER] {category.title()} profile scrape disabled")
