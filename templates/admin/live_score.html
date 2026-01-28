@@ -5,33 +5,6 @@
 
 {% block content %}
 <div class="live-score-admin">
-    <!-- Series Section -->
-    <div class="admin-section series-section" style="margin-bottom: 20px;">
-        <div class="scrape-header">
-            <div class="scrape-info">
-                <h2>Series (from Live Scores Page)</h2>
-                <p class="last-update" id="series-count">Click to fetch series</p>
-            </div>
-            <button type="button" class="btn btn-primary btn-large" id="scrape-series-btn" onclick="scrapeSeries()">Fetch Series</button>
-        </div>
-        <div id="series-table-container" style="margin-top: 15px; display: none;">
-            <div class="table-wrapper">
-                <table class="excel-table" id="series-table">
-                    <thead>
-                        <tr>
-                            <th>Series ID</th>
-                            <th>Series Name</th>
-                            <th>Series Slug</th>
-                            <th>URL</th>
-                        </tr>
-                    </thead>
-                    <tbody id="series-tbody">
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
     <div class="admin-section scrape-section">
         <div class="scrape-header">
             <div class="scrape-info">
@@ -84,6 +57,29 @@
     </div>
 
     <div class="tables-container">
+        <!-- Series Table -->
+        <div class="table-section">
+            <div class="table-header series" style="background: linear-gradient(135deg, #8b5cf6, #6366f1);">
+                <span>📋 Series (<span id="series-count">0</span>)</span>
+                <button type="button" class="btn btn-sm" onclick="scrapeSeries()" id="scrape-series-btn" style="margin-left: 15px; background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Fetch Series</button>
+            </div>
+            <div class="table-wrapper">
+                <table class="excel-table">
+                    <thead>
+                        <tr>
+                            <th>Series ID</th>
+                            <th>Series Name</th>
+                            <th>Series Slug</th>
+                            <th>URL</th>
+                        </tr>
+                    </thead>
+                    <tbody id="series-tbody">
+                        <tr><td colspan="4" class="no-data">Click "Fetch Series" to load</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <div class="table-section">
             <div class="table-header live">
                 <span>🔴 Live Matches ({{ live_matches|length }})</span>
@@ -550,23 +546,16 @@ input:checked + .toggle-slider::after {
     font-style: italic;
 }
 
-.series-section {
-    background: var(--admin-card-bg, #1e293b);
-    border-radius: 8px;
-    padding: 20px;
-}
 </style>
 
 <script>
 function scrapeSeries() {
     const btn = document.getElementById('scrape-series-btn');
     const countEl = document.getElementById('series-count');
-    const container = document.getElementById('series-table-container');
     const tbody = document.getElementById('series-tbody');
     
     btn.disabled = true;
-    btn.textContent = 'Fetching...';
-    countEl.textContent = 'Loading...';
+    btn.textContent = 'Loading...';
     
     fetch('/admin/live-score/scrape-series', {
         method: 'POST',
@@ -578,8 +567,7 @@ function scrapeSeries() {
         btn.textContent = 'Fetch Series';
         
         if (data.success) {
-            countEl.textContent = 'Found ' + data.count + ' unique series';
-            container.style.display = 'block';
+            countEl.textContent = data.count;
             
             tbody.innerHTML = '';
             data.series.forEach(function(s) {
@@ -591,13 +579,13 @@ function scrapeSeries() {
                 tbody.appendChild(row);
             });
         } else {
-            countEl.textContent = 'Error: ' + data.message;
+            tbody.innerHTML = '<tr><td colspan="4" class="no-data">Error: ' + data.message + '</td></tr>';
         }
     })
     .catch(function(err) {
         btn.disabled = false;
         btn.textContent = 'Fetch Series';
-        countEl.textContent = 'Error: ' + err.message;
+        tbody.innerHTML = '<tr><td colspan="4" class="no-data">Error: ' + err.message + '</td></tr>';
     });
 }
 </script>
