@@ -197,6 +197,9 @@ def upsert_match(match_data, db_series_id=None):
             format_type=match_data.get('format_type', ''),
             venue=match_data.get('venue', ''),
             match_date=match_data.get('match_date', ''),
+            match_time=match_data.get('match_time', ''),
+            start_date=match_data.get('start_date', ''),
+            end_date=match_data.get('end_date', ''),
             state=match_data.get('status') or match_data.get('state', ''),
             team1_name=match_data.get('team1') or match_data.get('team1_name', ''),
             team1_score=match_data.get('team1_score', ''),
@@ -662,6 +665,9 @@ def admin_scrape_scorecard(match_id):
                     venue=result.get('venue'),
                     series_name=result.get('series_name') or series_name,
                     state=result.get('match_status'),
+                    match_time=result.get('match_time'),
+                    start_date=result.get('start_date'),
+                    end_date=result.get('end_date'),
                     match_url=f"https://www.cricbuzz.com/live-cricket-scores/{match_id}"
                 )
                 db.session.add(new_match)
@@ -2322,6 +2328,12 @@ def update_all_matches_accurate():
                         match.team2_score = accurate_data['team2_score']
                     if accurate_data.get('result'):
                         match.result = accurate_data['result']
+                    if accurate_data.get('match_time'):
+                        match.match_time = accurate_data['match_time']
+                    if accurate_data.get('start_date'):
+                        match.start_date = accurate_data['start_date']
+                    if accurate_data.get('end_date'):
+                        match.end_date = accurate_data['end_date']
                     
                     match.updated_at = datetime.utcnow()
                     updated_count += 1
@@ -2381,6 +2393,12 @@ def update_single_match_accurate(match_id):
                 match.team2_score = accurate_data['team2_score']
             if accurate_data.get('result'):
                 match.result = accurate_data['result']
+            if accurate_data.get('match_time'):
+                match.match_time = accurate_data['match_time']
+            if accurate_data.get('start_date'):
+                match.start_date = accurate_data['start_date']
+            if accurate_data.get('end_date'):
+                match.end_date = accurate_data['end_date']
             
             match.updated_at = datetime.utcnow()
             db.session.commit()
