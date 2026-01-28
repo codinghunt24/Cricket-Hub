@@ -6,9 +6,15 @@
 <div class="match-detail-page">
     <div class="match-header">
         <div class="header-content">
+            {% if match.series_id %}
             <a href="{{ url_for('series_detail', series_id=match.series_id) }}" class="back-link">
                 <i class="fas fa-arrow-left"></i> Back to Series
             </a>
+            {% else %}
+            <a href="{{ url_for('index') }}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+            {% endif %}
             <h1 class="match-title">{{ match.team1_name }} vs {{ match.team2_name }}, {{ match.match_format }}{% if series %}, {{ series.name }}{% endif %} - Scorecard</h1>
             <div class="match-info-details">
                 {% if match.venue %}

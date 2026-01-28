@@ -439,15 +439,40 @@ def series_detail(series_id):
 
 @app.route('/match/<match_id>')
 def match_detail(match_id):
-    match = Match.query.filter_by(match_id=match_id).first_or_404()
-    series = Series.query.get(match.series_id)
+    # Scrape scorecard from Cricbuzz
     scorecard = scraper.scrape_scorecard(match_id)
     
-    if scorecard:
-        if not match.venue and scorecard.get('venue'):
-            match.venue = scorecard.get('venue')
-        if not match.match_date and scorecard.get('match_date'):
-            match.match_date = scorecard.get('match_date')
+    # Try to get match from database
+    match = Match.query.filter_by(match_id=match_id).first()
+    series = None
+    
+    if match:
+        series = Series.query.get(match.series_id)
+        if scorecard:
+            if not match.venue and scorecard.get('venue'):
+                match.venue = scorecard.get('venue')
+            if not match.match_date and scorecard.get('match_date'):
+                match.match_date = scorecard.get('match_date')
+    else:
+        # Create a temporary match object from scorecard data
+        if scorecard:
+            match = type('Match', (), {
+                'match_id': match_id,
+                'series_id': scorecard.get('series_id', ''),
+                'team1_name': scorecard.get('team1') or scorecard.get('team1_name', 'Team 1'),
+                'team2_name': scorecard.get('team2') or scorecard.get('team2_name', 'Team 2'),
+                'team1_score': scorecard.get('team1_score', ''),
+                'team2_score': scorecard.get('team2_score', ''),
+                'team1_flag': '',
+                'team2_flag': '',
+                'venue': scorecard.get('venue', ''),
+                'match_date': scorecard.get('match_datetime') or scorecard.get('match_date', ''),
+                'result': scorecard.get('result', ''),
+                'match_format': scorecard.get('match_format') or scorecard.get('match_short', ''),
+                'state': scorecard.get('match_status', '')
+            })()
+        else:
+            return "Scorecard not available", 404
     
     return render_template('match_detail.html', match=match, series=series, scorecard=scorecard)
 

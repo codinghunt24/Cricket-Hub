@@ -1069,68 +1069,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-async function loadScorecard(matchId) {
-    const newsContent = document.getElementById('news-content');
-    const scorecardContent = document.getElementById('scorecard-content');
-    
-    document.querySelectorAll('.match-card').forEach(card => {
-        card.classList.remove('active');
-        if (card.dataset.matchId === matchId) {
-            card.classList.add('active');
-        }
-    });
-    
-    newsContent.style.display = 'none';
-    scorecardContent.style.display = 'block';
-    scorecardContent.innerHTML = `
-        <div class="scorecard-loading">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Loading scorecard...</p>
-        </div>
-    `;
-    
-    document.getElementById('content-box').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    
-    try {
-        const response = await fetch('/api/scrape/scorecard', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ match_id: matchId })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            displayScorecard(data.scorecard);
-            
-            // Auto-save to database
-            fetch('/api/save/scorecard', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data.scorecard)
-            }).catch(e => console.log('Auto-save:', e));
-        } else {
-            scorecardContent.innerHTML = `
-                <div class="scorecard-header">
-                    <h3>Scorecard</h3>
-                    <button class="back-to-news" onclick="showNews()">← Back to News</button>
-                </div>
-                <div class="scorecard-loading">
-                    <p>Unable to load scorecard. Please try again.</p>
-                </div>
-            `;
-        }
-    } catch (err) {
-        scorecardContent.innerHTML = `
-            <div class="scorecard-header">
-                <h3>Scorecard</h3>
-                <button class="back-to-news" onclick="showNews()">← Back to News</button>
-            </div>
-            <div class="scorecard-loading">
-                <p>Error loading scorecard.</p>
-            </div>
-        `;
-    }
+function loadScorecard(matchId) {
+    window.location.href = '/match/' + matchId;
 }
 
 function displayScorecard(scorecard) {
