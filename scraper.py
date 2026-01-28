@@ -515,34 +515,44 @@ def scrape_scorecard(match_id):
                         result['match_time'] = time_match.group(1).strip()
                         break
         
-        # Check for common status patterns
-        status_patterns = [
-            (r'(\w+)\s+won\s+by\s+\d+\s+(runs?|wickets?)', 'Completed'),
-            (r'Match\s+drawn', 'Completed'),
-            (r'Match\s+tied', 'Completed'),
-            (r'No\s+result', 'No Result'),
-            (r'opt\s+to\s+(bat|bowl)', 'Live'),
-            (r'Need\s+\d+\s+to\s+win', 'Live'),
-            (r'Day\s+\d+', 'Live'),
-            (r'Innings\s+Break', 'Break'),
-            (r'Stumps', 'Stumps'),
-            (r'Tea', 'Tea'),
-            (r'Lunch', 'Lunch'),
-        ]
+        # First check if match is upcoming (no innings data)
+        has_innings = len(result.get('innings', [])) > 0
         
-        for pattern, status in status_patterns:
-            match = re.search(pattern, page_text, re.IGNORECASE)
-            if match:
-                if status == 'Completed':
-                    result['match_status'] = match.group()  # e.g., "India won by 5 wickets"
-                    result['result'] = match.group()
-                else:
-                    result['match_status'] = status
-                break
+        # Check for upcoming match indicators
+        upcoming_patterns = ['yet to begin', 'match starts', 'preview', 'tomorrow,', 'starts at']
+        is_upcoming = any(p in page_text.lower() for p in upcoming_patterns)
         
-        # If no status found, check if match is upcoming
-        if not result['match_status']:
-            if 'yet to begin' in page_text.lower() or 'preview' in page_text.lower():
+        if not has_innings and is_upcoming:
+            result['match_status'] = 'Upcoming'
+        elif not has_innings and result.get('match_datetime') and 'tomorrow' in result.get('match_datetime', '').lower():
+            result['match_status'] = 'Upcoming'
+        else:
+            # Check for common status patterns
+            status_patterns = [
+                (r'(\w+)\s+won\s+by\s+\d+\s+(runs?|wickets?)', 'Completed'),
+                (r'Match\s+drawn', 'Completed'),
+                (r'Match\s+tied', 'Completed'),
+                (r'No\s+result', 'No Result'),
+                (r'Innings\s+Break', 'Break'),
+                (r'Stumps', 'Stumps'),
+                (r'Tea', 'Tea'),
+                (r'Lunch', 'Lunch'),
+            ]
+            
+            for pattern, status in status_patterns:
+                match = re.search(pattern, page_text, re.IGNORECASE)
+                if match:
+                    if status == 'Completed':
+                        result['match_status'] = match.group()
+                        result['result'] = match.group()
+                    else:
+                        result['match_status'] = status
+                    break
+            
+            # If has innings but no specific status, it's Live
+            if not result['match_status'] and has_innings:
+                result['match_status'] = 'Live'
+            elif not result['match_status']:
                 result['match_status'] = 'Upcoming'
     
     logger.info(f"Scraped match {match_id}: {result['match_title']} - Status: {result['match_status']}")
