@@ -201,15 +201,6 @@ def scrape_scorecard(match_id):
                 result['toss'] = toss_text
                 break
     
-    # Extract short match description (e.g., "7th Match", "4th T20I", "2nd Test")
-    for div in soup.find_all('div'):
-        text = div.get_text(strip=True)
-        # Look for patterns like "7th Match" or "4th T20I" or "2nd Test" or "1st ODI"
-        match_desc = re.search(r'^(\d+(?:st|nd|rd|th)\s+(?:Match|T20I?|ODI|Test))', text)
-        if match_desc:
-            result['match_short'] = match_desc.group(1)
-            break
-    
     # Get title from page
     title_tag = soup.find('title')
     if title_tag:
@@ -242,6 +233,12 @@ def scrape_scorecard(match_id):
                 break
         except:
             continue
+    
+    # Extract short match description from title (e.g., "7th Match", "4th T20I", "2nd Test")
+    if result.get('match_title'):
+        match_desc = re.search(r'(\d+(?:st|nd|rd|th)\s+(?:Match|T20I?|ODI|Test|One-Day))', result['match_title'], re.IGNORECASE)
+        if match_desc:
+            result['match_short'] = match_desc.group(1)
     
     # Parse team names from title
     if result['match_title']:
