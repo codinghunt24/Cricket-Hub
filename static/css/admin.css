@@ -179,6 +179,7 @@
     font-size: 1.3rem;
     font-weight: 600;
     color: var(--admin-text);
+    order: 1;
 }
 
 .admin-user {
@@ -187,6 +188,7 @@
     gap: 10px;
     color: var(--admin-text-muted);
     font-size: 0.9rem;
+    order: 2;
 }
 
 .mobile-sidebar-toggle {
@@ -195,6 +197,8 @@
     border: none;
     cursor: pointer;
     padding: 10px;
+    order: 3;
+    margin-left: auto;
 }
 
 .mobile-sidebar-toggle .hamburger {
