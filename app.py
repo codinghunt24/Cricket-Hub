@@ -562,8 +562,8 @@ def admin_live_score():
     upcoming_matches = [m for m in unique_matches if m.state in ['Upcoming', 'Preview', 'Toss']]
     complete_matches = [m for m in unique_matches if m.state in ['Complete', 'Abandon', 'No Result']]
     
-    # All matches sorted: Live > Break > Upcoming > Complete
-    all_sorted = live_matches + break_matches + upcoming_matches + complete_matches
+    # Only Live + Completed matches (what scraper returns)
+    all_sorted = live_matches + complete_matches
     
     return render_template('admin/live_score.html', 
                          setting=setting,
