@@ -125,7 +125,7 @@ def run_daily_player_scrape(app, db, Team, Player, ScrapeLog, ScrapeSetting, scr
             db.session.add(log)
             db.session.commit()
 
-def init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player=None):
+def init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player=None, Match=None, LiveScoreScrapeSetting=None):
     global scheduler_started
     
     if scheduler_started:
@@ -158,6 +158,21 @@ def init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scrape
             )
             
             print(f"[SCHEDULER] Daily player scrape scheduled at {player_time}")
+        
+        if LiveScoreScrapeSetting and Match:
+            live_setting = LiveScoreScrapeSetting.query.first()
+            if live_setting and live_setting.auto_scrape_enabled:
+                from apscheduler.triggers.interval import IntervalTrigger
+                interval_seconds = live_setting.interval_seconds or 60
+                
+                scheduler.add_job(
+                    func=lambda: run_live_score_scrape(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scraper),
+                    trigger=IntervalTrigger(seconds=interval_seconds),
+                    id='live_score_auto_scrape',
+                    replace_existing=True
+                )
+                
+                print(f"[SCHEDULER] Live score auto-scrape scheduled (every {interval_seconds}s)")
     
     scheduler.start()
     scheduler_started = True
@@ -282,40 +297,47 @@ def run_live_score_scrape(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scr
             if not setting or not setting.auto_scrape_enabled:
                 return
             
-            all_matches = scraper.scrape_live_scores()
+            result = scraper.scrape_live_scores()
+            
+            if not result or not isinstance(result, dict):
+                print("[SCHEDULER] Live score scrape returned invalid data")
+                return
+            
+            all_matches = result.get('matches', [])
             
             updated_count = 0
             for match_data in all_matches:
+                if not isinstance(match_data, dict):
+                    continue
+                    
                 match_id = match_data.get('match_id')
                 if not match_id:
                     continue
                 
                 existing = Match.query.filter_by(match_id=match_id).first()
                 if existing:
-                    existing.team1_name = match_data.get('team1_name')
-                    existing.team1_score = match_data.get('team1_score')
-                    existing.team2_name = match_data.get('team2_name')
-                    existing.team2_score = match_data.get('team2_score')
-                    existing.result = match_data.get('result')
-                    existing.state = match_data.get('state')
-                    existing.match_format = match_data.get('match_format')
-                    existing.venue = match_data.get('venue')
-                    existing.match_date = match_data.get('match_date')
-                    existing.match_url = match_data.get('match_url')
+                    existing.team1_name = match_data.get('team1', '')
+                    existing.team1_score = match_data.get('team1_score', '')
+                    existing.team2_name = match_data.get('team2', '')
+                    existing.team2_score = match_data.get('team2_score', '')
+                    existing.result = match_data.get('result', '')
+                    existing.state = match_data.get('status', '')
+                    existing.match_format = match_data.get('match_format', '')
+                    existing.match_url = match_data.get('match_url', '')
+                    existing.cricbuzz_series_id = match_data.get('series_id', '')
                     existing.updated_at = datetime.utcnow()
                 else:
                     new_match = Match(
                         match_id=match_id,
-                        team1_name=match_data.get('team1_name'),
-                        team1_score=match_data.get('team1_score'),
-                        team2_name=match_data.get('team2_name'),
-                        team2_score=match_data.get('team2_score'),
-                        result=match_data.get('result'),
-                        state=match_data.get('state'),
-                        match_format=match_data.get('match_format'),
-                        venue=match_data.get('venue'),
-                        match_date=match_data.get('match_date'),
-                        match_url=match_data.get('match_url')
+                        team1_name=match_data.get('team1', ''),
+                        team1_score=match_data.get('team1_score', ''),
+                        team2_name=match_data.get('team2', ''),
+                        team2_score=match_data.get('team2_score', ''),
+                        result=match_data.get('result', ''),
+                        state=match_data.get('status', ''),
+                        match_format=match_data.get('match_format', ''),
+                        match_url=match_data.get('match_url', ''),
+                        cricbuzz_series_id=match_data.get('series_id', '')
                     )
                     db.session.add(new_match)
                 updated_count += 1
