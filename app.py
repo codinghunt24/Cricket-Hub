@@ -530,18 +530,30 @@ def admin_matches():
                     break
         else:
             matches.append(m)
-    live_count = len([m for m in matches if m.state == 'Live'])
+    live_count = len([m for m in matches if m.state in ['Live', 'In Progress']])
     innings_count = len([m for m in matches if m.state == 'Innings Break'])
+    stumps_count = len([m for m in matches if m.state == 'Stumps'])
+    lunch_count = len([m for m in matches if m.state == 'Lunch'])
+    tea_count = len([m for m in matches if m.state == 'Tea'])
+    drinks_count = len([m for m in matches if m.state == 'Drinks'])
     complete_count = len([m for m in matches if m.state == 'Complete'])
+    preview_count = len([m for m in matches if m.state == 'Preview'])
     upcoming_count = len([m for m in matches if m.state == 'Upcoming'])
+    abandon_count = len([m for m in matches if m.state == 'Abandon'])
     result_count = len([m for m in matches if m.result])
     status_count = len([m for m in matches if m.result and 'opt to' in m.result.lower()])
     return render_template('admin/matches.html', 
                            matches=matches,
                            live_count=live_count,
                            innings_count=innings_count,
+                           stumps_count=stumps_count,
+                           lunch_count=lunch_count,
+                           tea_count=tea_count,
+                           drinks_count=drinks_count,
                            complete_count=complete_count,
+                           preview_count=preview_count,
                            upcoming_count=upcoming_count,
+                           abandon_count=abandon_count,
                            result_count=result_count,
                            status_count=status_count,
                            today_date=today.strftime('%d %b, %Y'))
