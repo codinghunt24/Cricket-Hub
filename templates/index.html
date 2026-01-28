@@ -1232,7 +1232,7 @@ function displayScorecard(scorecard) {
                 inning.bowling.forEach(bowler => {
                     html += `
                         <tr>
-                            <td class="player-name">${bowler.name || ''}</td>
+                            <td class="player-name">${bowler.bowler || bowler.name || ''}</td>
                             <td>${bowler.overs || '0'}</td>
                             <td>${bowler.maidens || '0'}</td>
                             <td>${bowler.runs || '0'}</td>
