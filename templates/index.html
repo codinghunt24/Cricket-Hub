@@ -1194,7 +1194,7 @@ function displayScorecard(scorecard) {
                     html += `
                         <tr>
                             <td>
-                                <span class="player-name">${batter.name || ''}</span>
+                                <span class="player-name">${batter.player || batter.name || ''}</span>
                                 <div class="dismissal">${batter.dismissal || ''}</div>
                             </td>
                             <td class="runs">${batter.runs || '0'}</td>
