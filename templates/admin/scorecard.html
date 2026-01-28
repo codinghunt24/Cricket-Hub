@@ -171,6 +171,17 @@
     color: #333;
 }
 
+.live-status-text {
+    background: linear-gradient(135deg, #ff5722, #ff9800);
+    padding: 12px 15px;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 15px;
+    font-size: 15px;
+    text-align: center;
+}
+
 .result-text {
     background: #e8f5e9;
     padding: 12px 15px;
@@ -347,6 +358,10 @@ function displayScorecard(scorecard) {
     
     // Content
     let html = '';
+    
+    if (scorecard.live_status) {
+        html += '<div class="live-status-text">' + scorecard.live_status + '</div>';
+    }
     
     if (scorecard.result) {
         html += '<div class="result-text">' + scorecard.result + '</div>';

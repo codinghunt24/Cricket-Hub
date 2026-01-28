@@ -153,6 +153,7 @@ def scrape_scorecard(match_id):
         'match_id': match_id,
         'match_title': None,
         'match_status': None,
+        'live_status': None,  # e.g., "West Indies U19 need 115 runs in 86 balls"
         'match_time': None,
         'start_date': None,
         'end_date': None,
@@ -166,6 +167,11 @@ def scrape_scorecard(match_id):
         'result': None,
         'innings': []
     }
+    
+    # Extract live match status (e.g., "need X runs in Y balls")
+    live_status_div = soup.find('div', class_='text-cbLive')
+    if live_status_div:
+        result['live_status'] = live_status_div.get_text(strip=True)
     
     # Get title from page
     title_tag = soup.find('title')
