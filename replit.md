@@ -9,6 +9,12 @@ A Cricbuzz-inspired cricket website built with Python Flask featuring web scrapi
 - **Note**: All scraping functions now include mandatory ID verification to prevent data contamination
 
 ## Recent Improvements
+- **Complete Scorecard Extraction**: Full scorecard data from Cricbuzz HTML structure
+  - Batting: Player name, dismissal, runs, balls, 4s, 6s, strike rate
+  - Bowling: Bowler name, overs, maidens, runs, wickets, economy
+  - Fall of Wickets: Player, score, over
+  - Team name extraction with abbreviation removal (AUSU19Australia U19 → Australia U19)
+  - Admin UI with complete innings display
 - **Auto Post with Advanced SEO**: Complete auto-posting system for live match coverage
   - Advanced SEO settings (Meta Title, Meta Description, Focus Keyword)
   - Multiple keywords support with tag-based UI
