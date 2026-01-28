@@ -153,6 +153,7 @@ def scrape_scorecard(match_id):
         'match_id': match_id,
         'match_title': None,
         'match_status': None,
+        'match_time': None,
         'team1': None,
         'team2': None,
         'team1_score': None,
@@ -264,6 +265,25 @@ def scrape_scorecard(match_id):
                 result['team1_score'] = sf['score']
             elif not result['team2_score']:
                 result['team2_score'] = sf['score']
+        
+        # Extract match start time (e.g., "Match starts at Jan 29, 11:00 GMT")
+        time_div = live_soup.find('div', class_='text-cbPreview')
+        if time_div:
+            time_text = time_div.get_text(strip=True)
+            # Extract date and time from "Match starts at Jan 29, 11:00 GMT"
+            time_match = re.search(r'Match starts at\s+(.+)', time_text, re.IGNORECASE)
+            if time_match:
+                result['match_time'] = time_match.group(1).strip()
+        
+        # Also look for date in other elements if not found
+        if not result['match_time']:
+            for div in live_soup.find_all('div'):
+                text = div.get_text(strip=True)
+                if 'Match starts at' in text and len(text) < 60:
+                    time_match = re.search(r'Match starts at\s+(.+?)(?:$|Match)', text)
+                    if time_match:
+                        result['match_time'] = time_match.group(1).strip()
+                        break
         
         # Check for common status patterns
         status_patterns = [
