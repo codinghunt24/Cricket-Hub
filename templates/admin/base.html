@@ -26,6 +26,12 @@
                             <span class="sidebar-text">Live Score</span>
                         </a>
                     </li>
+                    <li class="sidebar-item {% if request.path == '/admin/scorecard' %}active{% endif %}">
+                        <a href="/admin/scorecard" class="sidebar-link">
+                            <span class="sidebar-icon">&#128202;</span>
+                            <span class="sidebar-text">Scorecard</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             
