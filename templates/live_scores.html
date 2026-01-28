@@ -1037,7 +1037,7 @@ function displayScorecard(scorecard) {
         <div class="scorecard-match-info">
             <div class="match-title">${scorecard.team1_name || 'Team 1'} vs ${scorecard.team2_name || 'Team 2'}</div>
             <div class="match-venue">${scorecard.venue || ''}</div>
-            ${scorecard.result ? `<div class="match-result-text">${scorecard.result}</div>` : ''}
+            ${scorecard.result && !(isLive && scorecard.result.toLowerCase().includes('won')) ? `<div class="match-result-text">${scorecard.result}</div>` : ''}
         </div>
     `;
     
