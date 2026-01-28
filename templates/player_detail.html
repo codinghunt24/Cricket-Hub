@@ -329,7 +329,7 @@
         {% endif %}
         {% endif %}
         
-        {% if player.career_timeline %}
+        {% if player.career_timeline and player.career_timeline|length > 0 %}
         <div class="player-stats-card">
             <h3>Career Timeline</h3>
             <div class="stats-table-wrapper">
@@ -342,11 +342,23 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for format, data in player.career_timeline.items() %}
+                        {% for entry in player.career_timeline %}
                         <tr>
-                            <td class="format-label">{{ format|upper }}</td>
-                            <td>{{ data.debut or '-' }}</td>
-                            <td>{{ data.last_match or '-' }}</td>
+                            <td class="format-label">{{ entry.format }}</td>
+                            <td>
+                                {% if entry.debut %}
+                                vs {{ entry.debut.opponent }}, {{ entry.debut.date }}, {{ entry.debut.venue }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if entry.last_match %}
+                                vs {{ entry.last_match.opponent }}, {{ entry.last_match.date }}, {{ entry.last_match.venue }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
