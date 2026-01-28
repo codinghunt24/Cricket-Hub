@@ -562,12 +562,16 @@ def admin_live_score():
     upcoming_matches = [m for m in unique_matches if m.state in ['Upcoming', 'Preview', 'Toss']]
     complete_matches = [m for m in unique_matches if m.state in ['Complete', 'Abandon', 'No Result']]
     
+    # All matches sorted: Live > Break > Upcoming > Complete
+    all_sorted = live_matches + break_matches + upcoming_matches + complete_matches
+    
     return render_template('admin/live_score.html', 
                          setting=setting,
                          live_matches=live_matches,
                          break_matches=break_matches,
                          upcoming_matches=upcoming_matches,
-                         complete_matches=complete_matches)
+                         complete_matches=complete_matches,
+                         all_matches=all_sorted)
 
 @app.route('/admin/live-score/settings', methods=['POST'])
 @admin_required

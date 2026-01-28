@@ -60,7 +60,7 @@
         <!-- Series Table -->
         <div class="table-section">
             <div class="table-header series" style="background: linear-gradient(135deg, #8b5cf6, #6366f1);">
-                <span>📋 Series (<span id="series-count">0</span>) | Matches (<span id="match-count">0</span>)</span>
+                <span>📋 Matches (<span id="match-count">{{ all_matches|length if all_matches else 0 }}</span>)</span>
                 <div style="display: flex; gap: 10px; margin-left: 15px;">
                     <button type="button" class="btn btn-sm" onclick="scrapeSeries()" id="scrape-series-btn" style="background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Fetch Data</button>
                     <button type="button" class="btn btn-sm" onclick="sortMatchesByStatus()" style="background: #ef4444; color: #fff; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">🔴 Live First</button>
@@ -82,7 +82,23 @@
                         </tr>
                     </thead>
                     <tbody id="series-tbody">
-                        <tr><td colspan="9" class="no-data">Click "Fetch Data" to load series and matches</td></tr>
+                        {% if all_matches %}
+                            {% for m in all_matches %}
+                            <tr id="row-{{ m.match_id }}">
+                                <td><a href="https://www.cricbuzz.com/cricket-series/{{ m.series_id }}" target="_blank">{{ m.series_id or '-' }}</a></td>
+                                <td>{{ m.series.name if m.series else '-' }}</td>
+                                <td><a href="https://www.cricbuzz.com/live-cricket-scores/{{ m.match_id }}" target="_blank">{{ m.match_id }}</a></td>
+                                <td>{{ m.match_format or '-' }}</td>
+                                <td class="score-cell">{{ m.team1_score or '-' }}</td>
+                                <td class="score-cell">{{ m.team2_score or '-' }}</td>
+                                <td class="status-cell {% if m.state == 'Live' or m.state == 'In Progress' %}status-live{% elif m.state == 'Complete' %}status-completed{% elif m.state in ['Innings Break', 'Stumps', 'Lunch', 'Tea', 'Drinks'] %}status-break{% endif %}">{{ m.state or '-' }}</td>
+                                <td class="result-cell">{{ m.result or '-' }}</td>
+                                <td><button class="scrape-btn" onclick="scrapeScorecard('{{ m.match_id }}', '{{ m.series_id }}', '{{ m.series.name if m.series else "" }}', this)">Scrape</button></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="9" class="no-data">No matches in database. Click "Fetch Data" to load.</td></tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
@@ -616,7 +632,6 @@ function sortMatchesByStatus() {
 
 function scrapeSeries() {
     const btn = document.getElementById('scrape-series-btn');
-    const seriesCountEl = document.getElementById('series-count');
     const matchCountEl = document.getElementById('match-count');
     const tbody = document.getElementById('series-tbody');
     
@@ -633,30 +648,30 @@ function scrapeSeries() {
         btn.textContent = 'Fetch Data';
         
         if (data.success) {
-            seriesCountEl.textContent = data.count;
-            
             // Calculate total matches
             let totalMatches = 0;
             data.series.forEach(function(s) {
                 totalMatches += s.match_count || 0;
             });
-            matchCountEl.textContent = totalMatches;
+            // Update count (add to existing)
+            const currentCount = parseInt(matchCountEl.textContent) || 0;
+            matchCountEl.textContent = Math.max(currentCount, totalMatches);
             
-            tbody.innerHTML = '';
-            // Create separate row for each match
+            // Remove "no data" row if exists
+            const noDataRow = tbody.querySelector('.no-data');
+            if (noDataRow) {
+                noDataRow.parentElement.remove();
+            }
+            
+            // Update existing rows or add new ones
             data.series.forEach(function(s) {
                 if (s.matches && s.matches.length > 0) {
                     s.matches.forEach(function(match) {
-                        const row = document.createElement('tr');
-                        row.id = 'row-' + match.match_id;
                         const escapedSeriesName = s.series_name.replace(/'/g, "\\'");
-                        // Get status class for styling
                         let statusClass = '';
                         let statusText = match.match_status || '-';
                         if (statusText === 'Live') {
                             statusClass = 'status-live';
-                        } else if (statusText === 'Upcoming') {
-                            statusClass = 'status-upcoming';
                         } else if (statusText === 'Completed') {
                             statusClass = 'status-completed';
                         } else if (statusText === 'Break') {
@@ -666,39 +681,35 @@ function scrapeSeries() {
                         const resultText = match.match_result || '-';
                         const team1Score = match.team1_score || '-';
                         const team2Score = match.team2_score || '-';
+                        
+                        // Check if row exists
+                        let row = document.getElementById('row-' + match.match_id);
+                        if (!row) {
+                            row = document.createElement('tr');
+                            row.id = 'row-' + match.match_id;
+                            tbody.insertBefore(row, tbody.firstChild); // Add at top
+                        }
+                        
                         row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
                             '<td>' + s.series_name + '</td>' +
                             '<td><a href="https://www.cricbuzz.com/live-cricket-scores/' + match.match_id + '" target="_blank">' + match.match_id + '</a></td>' +
                             '<td>' + match.match_title + '</td>' +
                             '<td class="score-cell">' + team1Score + '</td>' +
                             '<td class="score-cell">' + team2Score + '</td>' +
-                            '<td class="status-cell ' + statusClass + '" id="status-' + match.match_id + '">' + statusText + '</td>' +
+                            '<td class="status-cell ' + statusClass + '">' + statusText + '</td>' +
                             '<td class="result-cell">' + resultText + '</td>' +
                             '<td><button class="scrape-btn" onclick="scrapeScorecard(\'' + match.match_id + '\', \'' + s.series_id + '\', \'' + escapedSeriesName + '\', this)">Scrape</button></td>';
-                        tbody.appendChild(row);
                     });
-                } else {
-                    const row = document.createElement('tr');
-                    row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
-                        '<td>' + s.series_name + '</td>' +
-                        '<td>-</td>' +
-                        '<td>-</td>' +
-                        '<td>-</td>' +
-                        '<td>-</td>' +
-                        '<td>-</td>' +
-                        '<td>-</td>' +
-                        '<td>-</td>';
-                    tbody.appendChild(row);
                 }
             });
         } else {
-            tbody.innerHTML = '<tr><td colspan="9" class="no-data">Error: ' + data.message + '</td></tr>';
+            alert('Error: ' + data.message);
         }
     })
     .catch(function(err) {
         btn.disabled = false;
         btn.textContent = 'Fetch Data';
-        tbody.innerHTML = '<tr><td colspan="9" class="no-data">Error: ' + err.message + '</td></tr>';
+        alert('Error: ' + err.message);
     });
 }
 </script>
