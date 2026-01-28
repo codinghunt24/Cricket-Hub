@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ post.meta_title or post.title }} - CricLive{% endblock %}
+{% block title %}{{ post.meta_title or post.title }}{% endblock %}
 
 {% block head %}
 <meta name="description" content="{{ post.meta_description or post.excerpt or post.title }}">

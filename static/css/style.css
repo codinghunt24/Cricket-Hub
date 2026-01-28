@@ -102,10 +102,44 @@ body {
 
 .nav-logo a {
     color: var(--white);
-    font-size: 1.5rem;
-    font-weight: 700;
     text-decoration: none;
-    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.logo-cricbuzz {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.5px;
+}
+
+.logo-live-score {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.3px;
+}
+
+.logo-live {
+    color: #ff0000;
+    font-weight: 700;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% {
+        opacity: 1;
+    }
+    51%, 100% {
+        opacity: 0.4;
+    }
 }
 
 .nav-menu {
