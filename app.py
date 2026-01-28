@@ -351,12 +351,12 @@ def live_scores():
     teams = Team.query.all()
     for m in recent_matches:
         if m.match_id:
-            match_flags[f"{m.match_id}_1"] = m.team1_flag if m.team1_flag else get_team_flag(m.team1_name, teams)
-            match_flags[f"{m.match_id}_2"] = m.team2_flag if m.team2_flag else get_team_flag(m.team2_name, teams)
+            match_flags[f"{m.match_id}_1"] = m.team1_flag if m.team1_flag else get_team_flag_from_list(m.team1_name, teams)
+            match_flags[f"{m.match_id}_2"] = m.team2_flag if m.team2_flag else get_team_flag_from_list(m.team2_name, teams)
         if m.team1_name:
-            match_flags[m.team1_name] = m.team1_flag if m.team1_flag else get_team_flag(m.team1_name, teams)
+            match_flags[m.team1_name] = m.team1_flag if m.team1_flag else get_team_flag_from_list(m.team1_name, teams)
         if m.team2_name:
-            match_flags[m.team2_name] = m.team2_flag if m.team2_flag else get_team_flag(m.team2_name, teams)
+            match_flags[m.team2_name] = m.team2_flag if m.team2_flag else get_team_flag_from_list(m.team2_name, teams)
     
     # Get "Today Live Match" category posts
     today_live_category = PostCategory.query.filter_by(slug='today-live-match').first()
@@ -1234,8 +1234,8 @@ def get_recent_matches():
             'result': m.result,
             'match_date': m.match_date,
             'series_name': series_name,
-            'team1_flag': get_team_flag(m.team1_name, teams),
-            'team2_flag': get_team_flag(m.team2_name, teams)
+            'team1_flag': get_team_flag_from_list(m.team1_name, teams),
+            'team2_flag': get_team_flag_from_list(m.team2_name, teams)
         })
     
     return jsonify({'matches': result, 'has_more': has_more})
