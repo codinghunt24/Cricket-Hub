@@ -51,7 +51,7 @@
             </label>
             <input type="time" id="teamScrapeTime" value="{{ team_setting.scrape_time if team_setting else '02:00' }}" class="time-input" onchange="toggleTeamAutoScrape()">
             {% if team_setting and team_setting.last_scrape %}
-            <span class="last-scrape">Last: {{ team_setting.last_scrape.strftime('%d %b, %H:%M') }}</span>
+            <span class="last-scrape">Last: {{ team_setting.last_scrape.strftime('%d %b, %H:%M:%S') }}</span>
             {% endif %}
         </div>
         <div class="category-buttons">
@@ -74,7 +74,7 @@
             </label>
             <input type="time" id="playerScrapeTime" value="{{ team_setting.player_scrape_time if team_setting else '03:00' }}" class="time-input" onchange="togglePlayerAutoScrape()">
             {% if team_setting and team_setting.last_player_scrape %}
-            <span class="last-scrape">Last: {{ team_setting.last_player_scrape.strftime('%d %b, %H:%M') }}</span>
+            <span class="last-scrape">Last: {{ team_setting.last_player_scrape.strftime('%d %b, %H:%M:%S') }}</span>
             {% endif %}
         </div>
         <h4 class="subsection-title">By Category</h4>
@@ -128,7 +128,7 @@
                     <input type="time" id="profileTimeIntl" value="{{ profile_settings['international'].scrape_time if profile_settings.get('international') else '03:00' }}" class="time-xs" onchange="saveProfileAuto('international')">
                 </div>
                 {% if profile_settings.get('international') and profile_settings['international'].last_scrape %}
-                <span class="last-scrape-small">Last: {{ profile_settings['international'].last_scrape.strftime('%d %b, %H:%M') }}</span>
+                <span class="last-scrape-small">Last: {{ profile_settings['international'].last_scrape.strftime('%d %b, %H:%M:%S') }}</span>
                 {% endif %}
             </div>
             <div class="cat-box">
@@ -139,7 +139,7 @@
                     <input type="time" id="profileTimeDomestic" value="{{ profile_settings['domestic'].scrape_time if profile_settings.get('domestic') else '03:30' }}" class="time-xs" onchange="saveProfileAuto('domestic')">
                 </div>
                 {% if profile_settings.get('domestic') and profile_settings['domestic'].last_scrape %}
-                <span class="last-scrape-small">Last: {{ profile_settings['domestic'].last_scrape.strftime('%d %b, %H:%M') }}</span>
+                <span class="last-scrape-small">Last: {{ profile_settings['domestic'].last_scrape.strftime('%d %b, %H:%M:%S') }}</span>
                 {% endif %}
             </div>
             <div class="cat-box">
@@ -150,7 +150,7 @@
                     <input type="time" id="profileTimeLeague" value="{{ profile_settings['league'].scrape_time if profile_settings.get('league') else '04:00' }}" class="time-xs" onchange="saveProfileAuto('league')">
                 </div>
                 {% if profile_settings.get('league') and profile_settings['league'].last_scrape %}
-                <span class="last-scrape-small">Last: {{ profile_settings['league'].last_scrape.strftime('%d %b, %H:%M') }}</span>
+                <span class="last-scrape-small">Last: {{ profile_settings['league'].last_scrape.strftime('%d %b, %H:%M:%S') }}</span>
                 {% endif %}
             </div>
             <div class="cat-box">
@@ -161,7 +161,7 @@
                     <input type="time" id="profileTimeWomen" value="{{ profile_settings['women'].scrape_time if profile_settings.get('women') else '04:30' }}" class="time-xs" onchange="saveProfileAuto('women')">
                 </div>
                 {% if profile_settings.get('women') and profile_settings['women'].last_scrape %}
-                <span class="last-scrape-small">Last: {{ profile_settings['women'].last_scrape.strftime('%d %b, %H:%M') }}</span>
+                <span class="last-scrape-small">Last: {{ profile_settings['women'].last_scrape.strftime('%d %b, %H:%M:%S') }}</span>
                 {% endif %}
             </div>
         </div>
@@ -171,7 +171,7 @@
         <div class="section-header">
             <h2>Series</h2>
             {% if series_settings.get('international') and series_settings['international'].last_scrape %}
-            <span class="last-scrape">Last: {{ series_settings['international'].last_scrape.strftime('%d %b, %H:%M') }}</span>
+            <span class="last-scrape">Last: {{ series_settings['international'].last_scrape.strftime('%d %b, %H:%M:%S') }}</span>
             {% endif %}
         </div>
         <div class="series-scrape-row">
