@@ -6,70 +6,32 @@
 {% block content %}
 <div class="admin-page">
     <div class="scrape-section">
-        <h3>Scrape Scorecard</h3>
+        <h3>View Scorecard</h3>
         <div class="input-group">
             <div class="input-row">
-                <label>Series ID</label>
-                <input type="text" id="series-id" placeholder="Enter Series ID (e.g., 8671)">
-            </div>
-            <div class="input-row">
                 <label>Match ID</label>
-                <input type="text" id="match-id" placeholder="Enter Match ID (e.g., 114323)">
+                <input type="text" id="match-id" placeholder="Enter Match ID (e.g., 121417)">
             </div>
-            <button class="btn-scrape" onclick="scrapeScorecard()">
-                <i class="fas fa-download"></i> Scrape Scorecard
+            <button class="btn-scrape" onclick="fetchScorecard()">
+                Get Scorecard
             </button>
         </div>
-    </div>
-    
-    <div class="verification-section" id="verification-section" style="display: none;">
-        <h3>ID Verification</h3>
-        <div class="verification-grid" id="verification-grid"></div>
     </div>
     
     <div class="scorecard-preview" id="scorecard-preview" style="display: none;">
         <div class="preview-header">
-            <h3>Scorecard Data</h3>
-            <button class="btn-save" id="btn-save" onclick="saveScorecard()">
-                <i class="fas fa-database"></i> Save to Database
-            </button>
+            <h3 id="match-title">Scorecard</h3>
         </div>
+        <div class="match-info" id="match-info"></div>
         <div class="preview-content" id="preview-content"></div>
     </div>
     
-    <div class="recent-matches">
-        <h3>Recent Matches</h3>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Match ID</th>
-                    <th>Series ID</th>
-                    <th>Teams</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for match in matches %}
-                <tr>
-                    <td>{{ match.match_id }}</td>
-                    <td>{{ match.series_id or '-' }}</td>
-                    <td>{{ match.team1_name }} vs {{ match.team2_name }}</td>
-                    <td>
-                        <span class="status-badge {{ match.state|lower if match.state else 'unknown' }}">
-                            {{ match.state or 'Unknown' }}
-                        </span>
-                    </td>
-                    <td>
-                        <button class="btn-sm" onclick="loadMatch('{{ match.match_id }}', '{{ match.series_id or '' }}')">
-                            Scrape
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="loading" id="loading" style="display: none;">
+        <div class="spinner"></div>
+        <p>Loading scorecard...</p>
     </div>
+    
+    <div class="error-msg" id="error-msg" style="display: none;"></div>
 </div>
 
 <style>
@@ -77,7 +39,7 @@
     padding: 20px;
 }
 
-.scrape-section, .verification-section, .scorecard-preview, .recent-matches {
+.scrape-section, .scorecard-preview {
     background: #fff;
     border-radius: 8px;
     padding: 20px;
@@ -85,7 +47,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.scrape-section h3, .verification-section h3, .scorecard-preview h3, .recent-matches h3 {
+.scrape-section h3, .scorecard-preview h3 {
     margin: 0 0 15px 0;
     color: #1a472a;
     font-size: 16px;
@@ -113,24 +75,27 @@
 }
 
 .input-row input {
-    padding: 10px 15px;
-    border: 1px solid #ddd;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
     border-radius: 6px;
-    font-size: 14px;
-    width: 200px;
+    font-size: 16px;
+    width: 250px;
+}
+
+.input-row input:focus {
+    border-color: #1a472a;
+    outline: none;
 }
 
 .btn-scrape {
     background: linear-gradient(135deg, #1a472a, #2d6a4f);
     color: #fff;
     border: none;
-    padding: 10px 20px;
+    padding: 12px 25px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-size: 14px;
 }
 
 .btn-scrape:hover {
@@ -142,72 +107,27 @@
     cursor: not-allowed;
 }
 
-.verification-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-}
-
-.verify-item {
+.match-info {
     background: #f8f9fa;
-    padding: 12px;
+    padding: 15px;
     border-radius: 6px;
-    border-left: 4px solid #1a472a;
-}
-
-.verify-item.mismatch {
-    border-left-color: #dc3545;
-    background: #fff5f5;
-}
-
-.verify-item.match {
-    border-left-color: #28a745;
-    background: #f0fff4;
-}
-
-.verify-label {
-    font-size: 11px;
-    color: #666;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-}
-
-.verify-value {
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-}
-
-.preview-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-bottom: 15px;
 }
 
-.btn-save {
-    background: #28a745;
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+.match-info p {
+    margin: 5px 0;
+    font-size: 14px;
 }
 
-.btn-save:hover {
-    background: #218838;
+.match-info .label {
+    font-weight: 600;
+    color: #555;
 }
 
 .preview-content {
     background: #f8f9fa;
     border-radius: 6px;
     padding: 15px;
-    max-height: 500px;
-    overflow-y: auto;
 }
 
 .innings-card {
@@ -255,58 +175,48 @@
     color: #666;
 }
 
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.data-table th, .data-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-}
-
-.data-table th {
-    background: #f8f9fa;
-    font-weight: 600;
-    color: #555;
-}
-
-.status-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.status-badge.live { background: #ff4444; color: #fff; }
-.status-badge.complete { background: #28a745; color: #fff; }
-.status-badge.upcoming { background: #3498db; color: #fff; }
-.status-badge.unknown { background: #999; color: #fff; }
-
-.btn-sm {
-    background: #1a472a;
-    color: #fff;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-.btn-sm:hover {
-    background: #2d6a4f;
-}
-
 .result-text {
     background: #e8f5e9;
-    padding: 10px 15px;
+    padding: 12px 15px;
     border-radius: 6px;
     color: #1a472a;
     font-weight: 600;
     margin-bottom: 15px;
+    font-size: 15px;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #1a472a;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-msg {
+    background: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 6px;
+    margin-top: 15px;
+}
+
+.no-data {
+    text-align: center;
+    padding: 30px;
+    color: #888;
 }
 
 @media (max-width: 768px) {
@@ -318,24 +228,11 @@
     .input-row input {
         width: 100%;
     }
-    
-    .verification-grid {
-        grid-template-columns: 1fr;
-    }
 }
 </style>
 
 <script>
-let currentScorecard = null;
-
-function loadMatch(matchId, seriesId) {
-    document.getElementById('match-id').value = matchId;
-    document.getElementById('series-id').value = seriesId;
-    scrapeScorecard();
-}
-
-async function scrapeScorecard() {
-    const seriesId = document.getElementById('series-id').value.trim();
+async function fetchScorecard() {
     const matchId = document.getElementById('match-id').value.trim();
     
     if (!matchId) {
@@ -344,221 +241,137 @@ async function scrapeScorecard() {
     }
     
     const btn = document.querySelector('.btn-scrape');
+    const loading = document.getElementById('loading');
+    const preview = document.getElementById('scorecard-preview');
+    const errorMsg = document.getElementById('error-msg');
+    
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scraping...';
+    btn.textContent = 'Loading...';
+    loading.style.display = 'block';
+    preview.style.display = 'none';
+    errorMsg.style.display = 'none';
     
     try {
         const response = await fetch('/api/scrape/scorecard', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                match_id: matchId,
-                series_id: seriesId
-            })
+            body: JSON.stringify({ match_id: matchId })
         });
         
         const data = await response.json();
         
-        if (data.success) {
-            currentScorecard = data.scorecard;
-            displayVerification(data.verification);
+        if (data.success && data.scorecard) {
             displayScorecard(data.scorecard);
-            
-            // Auto-save scorecard
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-            try {
-                const saveResponse = await fetch('/api/save/scorecard', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data.scorecard)
-                });
-                const saveData = await saveResponse.json();
-                if (saveData.success) {
-                    const saveBtn = document.getElementById('btn-save');
-                    saveBtn.innerHTML = '<i class="fas fa-check"></i> Saved';
-                    saveBtn.style.background = '#28a745';
-                }
-            } catch (e) {
-                console.error('Auto-save failed:', e);
-            }
         } else {
-            alert(data.message || 'Failed to scrape scorecard');
+            errorMsg.textContent = data.message || 'Failed to fetch scorecard';
+            errorMsg.style.display = 'block';
         }
     } catch (err) {
-        alert('Error: ' + err.message);
+        errorMsg.textContent = 'Error: ' + err.message;
+        errorMsg.style.display = 'block';
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-download"></i> Scrape Scorecard';
+        btn.textContent = 'Get Scorecard';
+        loading.style.display = 'none';
     }
-}
-
-function displayVerification(verification) {
-    const section = document.getElementById('verification-section');
-    const grid = document.getElementById('verification-grid');
-    
-    if (!verification) {
-        section.style.display = 'none';
-        return;
-    }
-    
-    section.style.display = 'block';
-    
-    let html = '';
-    
-    html += `<div class="verify-item ${verification.match_id_match ? 'match' : 'mismatch'}">
-        <div class="verify-label">Match ID</div>
-        <div class="verify-value">Input: ${verification.input_match_id} | Page: ${verification.page_match_id}</div>
-    </div>`;
-    
-    html += `<div class="verify-item ${verification.series_id_match ? 'match' : 'mismatch'}">
-        <div class="verify-label">Series ID</div>
-        <div class="verify-value">Input: ${verification.input_series_id || 'Not provided'} | Page: ${verification.page_series_id}</div>
-    </div>`;
-    
-    html += `<div class="verify-item">
-        <div class="verify-label">Team 1 ID</div>
-        <div class="verify-value">${verification.team1_id || '-'}</div>
-    </div>`;
-    
-    html += `<div class="verify-item">
-        <div class="verify-label">Team 2 ID</div>
-        <div class="verify-value">${verification.team2_id || '-'}</div>
-    </div>`;
-    
-    grid.innerHTML = html;
 }
 
 function displayScorecard(scorecard) {
-    const section = document.getElementById('scorecard-preview');
+    const preview = document.getElementById('scorecard-preview');
+    const matchInfo = document.getElementById('match-info');
     const content = document.getElementById('preview-content');
+    const title = document.getElementById('match-title');
     
-    if (!scorecard) {
-        section.style.display = 'none';
-        return;
+    preview.style.display = 'block';
+    
+    // Match title
+    let teams = '';
+    if (scorecard.team1_name && scorecard.team2_name) {
+        teams = scorecard.team1_name + ' vs ' + scorecard.team2_name;
     }
+    title.textContent = teams || 'Scorecard';
     
-    section.style.display = 'block';
+    // Match info
+    let infoHtml = '';
+    if (scorecard.venue) {
+        infoHtml += '<p><span class="label">Venue:</span> ' + scorecard.venue + '</p>';
+    }
+    if (scorecard.match_date) {
+        infoHtml += '<p><span class="label">Date:</span> ' + scorecard.match_date + '</p>';
+    }
+    if (scorecard.match_format) {
+        infoHtml += '<p><span class="label">Format:</span> ' + scorecard.match_format + '</p>';
+    }
+    matchInfo.innerHTML = infoHtml;
     
+    // Content
     let html = '';
     
     if (scorecard.result) {
-        html += `<div class="result-text">${scorecard.result}</div>`;
-    }
-    
-    if (scorecard.venue) {
-        html += `<p><strong>Venue:</strong> ${scorecard.venue}</p>`;
-    }
-    
-    if (scorecard.match_date) {
-        html += `<p><strong>Date:</strong> ${scorecard.match_date}</p>`;
+        html += '<div class="result-text">' + scorecard.result + '</div>';
     }
     
     if (scorecard.innings && scorecard.innings.length > 0) {
         scorecard.innings.forEach((inn, idx) => {
-            html += `<div class="innings-card">
-                <div class="innings-header">
-                    <span class="innings-team">${inn.team_name} - Innings ${inn.innings_num}</span>
-                    <span class="innings-score">${inn.total_score} (${inn.overs} Ov)</span>
-                </div>`;
+            html += '<div class="innings-card">';
+            html += '<div class="innings-header">';
+            html += '<span class="innings-team">' + inn.team_name + '</span>';
+            html += '<span class="innings-score">' + inn.total_score + ' (' + inn.overs + ' Ov)</span>';
+            html += '</div>';
             
+            // Batting
             if (inn.batting && inn.batting.length > 0) {
-                html += `<table class="innings-table">
-                    <thead>
-                        <tr>
-                            <th>Batter</th>
-                            <th>Dismissal</th>
-                            <th>R</th>
-                            <th>B</th>
-                            <th>4s</th>
-                            <th>6s</th>
-                            <th>SR</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
-                
+                html += '<table class="innings-table">';
+                html += '<thead><tr><th>Batter</th><th>Dismissal</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th></tr></thead>';
+                html += '<tbody>';
                 inn.batting.forEach(bat => {
-                    html += `<tr>
-                        <td>${bat.name}</td>
-                        <td>${bat.dismissal || 'not out'}</td>
-                        <td><strong>${bat.runs}</strong></td>
-                        <td>${bat.balls}</td>
-                        <td>${bat.fours}</td>
-                        <td>${bat.sixes}</td>
-                        <td>${bat.strike_rate}</td>
-                    </tr>`;
+                    html += '<tr>';
+                    html += '<td>' + bat.name + '</td>';
+                    html += '<td>' + (bat.dismissal || 'not out') + '</td>';
+                    html += '<td><strong>' + bat.runs + '</strong></td>';
+                    html += '<td>' + bat.balls + '</td>';
+                    html += '<td>' + bat.fours + '</td>';
+                    html += '<td>' + bat.sixes + '</td>';
+                    html += '<td>' + bat.strike_rate + '</td>';
+                    html += '</tr>';
                 });
-                
-                html += `</tbody></table>`;
+                html += '</tbody></table>';
             }
             
+            // Bowling
             if (inn.bowling && inn.bowling.length > 0) {
-                html += `<table class="innings-table" style="margin-top: 10px;">
-                    <thead>
-                        <tr>
-                            <th>Bowler</th>
-                            <th>O</th>
-                            <th>M</th>
-                            <th>R</th>
-                            <th>W</th>
-                            <th>Econ</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
-                
+                html += '<table class="innings-table" style="margin-top: 10px;">';
+                html += '<thead><tr><th>Bowler</th><th>O</th><th>M</th><th>R</th><th>W</th><th>Econ</th></tr></thead>';
+                html += '<tbody>';
                 inn.bowling.forEach(bowl => {
-                    html += `<tr>
-                        <td>${bowl.name}</td>
-                        <td>${bowl.overs}</td>
-                        <td>${bowl.maidens}</td>
-                        <td>${bowl.runs}</td>
-                        <td><strong>${bowl.wickets}</strong></td>
-                        <td>${bowl.economy}</td>
-                    </tr>`;
+                    html += '<tr>';
+                    html += '<td>' + bowl.name + '</td>';
+                    html += '<td>' + bowl.overs + '</td>';
+                    html += '<td>' + bowl.maidens + '</td>';
+                    html += '<td>' + bowl.runs + '</td>';
+                    html += '<td><strong>' + bowl.wickets + '</strong></td>';
+                    html += '<td>' + bowl.economy + '</td>';
+                    html += '</tr>';
                 });
-                
-                html += `</tbody></table>`;
+                html += '</tbody></table>';
             }
             
-            html += `</div>`;
+            html += '</div>';
         });
     } else {
-        html += '<p>No innings data available</p>';
+        html += '<div class="no-data">Match has not started yet or no scorecard data available</div>';
     }
     
     content.innerHTML = html;
 }
 
-async function saveScorecard() {
-    if (!currentScorecard) {
-        alert('No scorecard data to save');
-        return;
-    }
-    
-    const btn = document.getElementById('btn-save');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-    
-    try {
-        const response = await fetch('/api/save/scorecard', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(currentScorecard)
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            alert('Scorecard saved successfully!');
-            location.reload();
-        } else {
-            alert(data.message || 'Failed to save scorecard');
+// Enter key support
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('match-id').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            fetchScorecard();
         }
-    } catch (err) {
-        alert('Error: ' + err.message);
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-database"></i> Save to Database';
-    }
-}
+    });
+});
 </script>
 {% endblock %}
