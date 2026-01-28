@@ -2054,6 +2054,11 @@ def scrape_scorecard(match_id):
             if not team2_name:
                 team2_name = title_match.group(2).strip()
     
+    # Extract match state first to determine if live
+    state_match = re.search(r'"state"\s*:\s*"([^"]*)"', html)
+    match_state = state_match.group(1) if state_match else ''
+    is_live = match_state.lower() in ['live', 'in progress', 'innings break']
+    
     scorecard = {
         # PRIMARY IDs - Required for verification
         'match_id': verified_match_id,
@@ -2068,7 +2073,8 @@ def scrape_scorecard(match_id):
         'innings': [],
         'venue': '',
         'match_date': '',
-        'result': ''
+        'result': '',
+        'state': match_state
     }
     
     venue_link = soup.find('a', href=lambda h: h and '/cricket-series/' in h and '/venues/' in h)
@@ -2095,17 +2101,26 @@ def scrape_scorecard(match_id):
     result_json = re.search(r'"status"\s*:\s*"([^"]*)"', html)
     if result_json:
         status_text = result_json.group(1)
-        if 'won' in status_text.lower() or 'need' in status_text.lower() or 'Match' in status_text:
-            scorecard['result'] = status_text
+        # For live matches, only show current status (need X runs, trail by, etc.) - NOT "won" results
+        if is_live:
+            if 'need' in status_text.lower() or 'trail' in status_text.lower() or 'lead' in status_text.lower():
+                scorecard['result'] = status_text
+            # Skip "won" results for live matches - they're from related matches
+        else:
+            if 'won' in status_text.lower() or 'need' in status_text.lower() or 'Match' in status_text:
+                scorecard['result'] = status_text
     
-    # Fallback to HTML parsing
-    if not scorecard.get('result'):
+    # Fallback to HTML parsing (only for completed matches)
+    if not scorecard.get('result') and not is_live:
         result_div = soup.find('div', class_=lambda c: c and 'cb-col-100' in c and 'cb-min-stts' in c if c else False)
         if result_div:
-            scorecard['result'] = result_div.get_text(strip=True)
+            result_text = result_div.get_text(strip=True)
+            # Only set if it's a final result, not live status
+            if 'won' in result_text.lower() or 'drawn' in result_text.lower() or 'tied' in result_text.lower():
+                scorecard['result'] = result_text
     
-    # Further fallback
-    if not scorecard.get('result'):
+    # Further fallback (only for completed matches)
+    if not scorecard.get('result') and not is_live:
         result_match = re.search(rf'({re.escape(team1_name)}|{re.escape(team2_name)}) won by (\d+ (?:runs?|wkts?))', html_content, re.IGNORECASE)
         if result_match:
             scorecard['result'] = f"{result_match.group(1)} won by {result_match.group(2)}"
