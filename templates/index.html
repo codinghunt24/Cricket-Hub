@@ -851,6 +851,8 @@
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 2px solid #1a472a;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .scorecard-header h3 {
@@ -859,6 +861,26 @@
     font-size: 1.1rem;
     border: none;
     padding: 0;
+}
+
+.scorecard-header .status-badge {
+    margin-left: 10px;
+}
+
+.match-scores-summary {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 0.95rem;
+    color: #333;
+    font-weight: 600;
+    margin-top: 5px;
+}
+
+.match-scores-summary span {
+    background: #f0f0f0;
+    padding: 4px 10px;
+    border-radius: 4px;
 }
 
 .back-to-news {
@@ -1114,14 +1136,36 @@ async function loadScorecard(matchId) {
 function displayScorecard(scorecard) {
     const scorecardContent = document.getElementById('scorecard-content');
     
+    // Determine status badge class and text
+    let statusClass = 'upcoming';
+    let statusText = scorecard.state || 'MATCH';
+    if (scorecard.state === 'Live' || scorecard.state === 'In Progress') {
+        statusClass = 'live';
+    } else if (scorecard.state === 'Innings Break') {
+        statusClass = 'innings';
+    } else if (['Stumps', 'Lunch', 'Tea', 'Drinks'].includes(scorecard.state)) {
+        statusClass = 'break';
+    } else if (scorecard.state === 'Complete') {
+        statusClass = 'complete';
+    } else if (scorecard.state === 'Preview') {
+        statusClass = 'preview';
+    } else if (scorecard.state === 'Abandon') {
+        statusClass = 'abandon';
+    }
+    
     let html = `
         <div class="scorecard-header">
             <h3>Live Scorecard</h3>
+            <span class="status-badge ${statusClass}">${statusText.toUpperCase()}</span>
             <button class="back-to-news" onclick="showNews()">← Back to News</button>
         </div>
         <div class="scorecard-match-info">
             <div class="match-title">${scorecard.team1_name || 'Team 1'} vs ${scorecard.team2_name || 'Team 2'}</div>
             <div class="match-venue">${scorecard.venue || ''}</div>
+            <div class="match-scores-summary">
+                ${scorecard.team1_score ? `<span>${scorecard.team1_name}: ${scorecard.team1_score}</span>` : ''}
+                ${scorecard.team2_score ? `<span>${scorecard.team2_name}: ${scorecard.team2_score}</span>` : ''}
+            </div>
             ${scorecard.result ? `<div class="match-result-text">${scorecard.result}</div>` : ''}
         </div>
     `;
