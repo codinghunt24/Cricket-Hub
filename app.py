@@ -2576,16 +2576,17 @@ def admin_auto_post():
 
 @app.route('/api/live-matches')
 def api_live_matches():
-    match_type = request.args.get('type', 'live')
+    match_type = request.args.get('type', 'all')
     try:
         if match_type == 'live':
-            matches = Match.query.filter(Match.state.in_(['live', 'Live', 'LIVE', 'In Progress'])).order_by(Match.updated_at.desc()).all()
+            matches = Match.query.filter(Match.state.in_(['live', 'Live', 'LIVE', 'In Progress', 'Innings Break', 'Toss', 'Stumps', 'Lunch', 'Tea', 'Drinks'])).order_by(Match.updated_at.desc()).all()
         elif match_type == 'upcoming':
             matches = Match.query.filter(Match.state.in_(['upcoming', 'Upcoming', 'UPCOMING'])).order_by(Match.match_date).all()
         elif match_type == 'recent':
             matches = Match.query.filter(Match.state.in_(['Complete', 'complete', 'COMPLETE', 'Result'])).order_by(Match.updated_at.desc()).limit(20).all()
         else:
-            matches = Match.query.order_by(Match.updated_at.desc()).limit(20).all()
+            # Return all matches for card refresh (default)
+            matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
         
         result = []
         for m in matches:
@@ -2600,9 +2601,9 @@ def api_live_matches():
                 'state': m.state,
                 'result': m.result
             })
-        return jsonify({'matches': result})
+        return jsonify({'success': True, 'matches': result})
     except Exception as e:
-        return jsonify({'matches': [], 'error': str(e)})
+        return jsonify({'success': False, 'matches': [], 'error': str(e)})
 
 @app.route('/api/categories', methods=['POST'])
 def api_create_category():

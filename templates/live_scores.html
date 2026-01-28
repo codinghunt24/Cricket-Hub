@@ -1153,6 +1153,92 @@ let recentMatchOffset = 5;
 let currentMatchId = null;
 let autoRefreshInterval = null;
 let isLiveMatch = false;
+let cardsRefreshInterval = null;
+
+// Auto-refresh all match cards every 60 seconds
+function startCardsAutoRefresh() {
+    if (cardsRefreshInterval) return; // Already running
+    cardsRefreshInterval = setInterval(refreshAllCards, 60000);
+}
+
+function stopCardsAutoRefresh() {
+    if (cardsRefreshInterval) {
+        clearInterval(cardsRefreshInterval);
+        cardsRefreshInterval = null;
+    }
+}
+
+async function refreshAllCards() {
+    try {
+        const response = await fetch('/api/live-matches');
+        const data = await response.json();
+        
+        if (data.success && data.matches) {
+            data.matches.forEach(match => {
+                const card = document.querySelector(`.match-card[data-match-id="${match.match_id}"]`);
+                if (card) {
+                    // Update team scores
+                    const teamRows = card.querySelectorAll('.team-row');
+                    if (teamRows[0]) {
+                        const score1 = teamRows[0].querySelector('.team-score');
+                        if (score1) score1.textContent = match.team1_score || '';
+                    }
+                    if (teamRows[1]) {
+                        const score2 = teamRows[1].querySelector('.team-score');
+                        if (score2) score2.textContent = match.team2_score || '';
+                    }
+                    
+                    // Update result
+                    let resultDiv = card.querySelector('.match-result');
+                    if (match.result) {
+                        if (!resultDiv) {
+                            resultDiv = document.createElement('div');
+                            resultDiv.className = 'match-result';
+                            card.querySelector('.card-body').appendChild(resultDiv);
+                        }
+                        resultDiv.textContent = match.result;
+                        // Update result class
+                        resultDiv.className = 'match-result';
+                        if (match.result.toLowerCase().includes('opt to')) {
+                            resultDiv.classList.add('result-toss');
+                        } else if (match.result.toLowerCase().includes('won') || match.result.toLowerCase().includes('win')) {
+                            resultDiv.classList.add('result-won');
+                        } else if (match.result.toLowerCase().includes('need')) {
+                            resultDiv.classList.add('result-need');
+                        }
+                    }
+                    
+                    // Update status badge
+                    const badge = card.querySelector('.status-badge');
+                    if (badge && match.state) {
+                        badge.className = 'status-badge';
+                        if (match.state === 'Live') {
+                            badge.classList.add('live');
+                            badge.textContent = 'LIVE';
+                        } else if (match.state === 'Innings Break') {
+                            badge.classList.add('innings');
+                            badge.textContent = 'BREAK';
+                        } else if (match.state === 'Complete') {
+                            badge.classList.add('complete');
+                            badge.textContent = 'RESULT';
+                        } else {
+                            badge.classList.add('upcoming');
+                            badge.textContent = 'UPCOMING';
+                        }
+                    }
+                }
+            });
+        }
+    } catch (err) {
+        console.log('Cards refresh error:', err);
+    }
+}
+
+// Start cards auto-refresh when page loads
+document.addEventListener('DOMContentLoaded', startCardsAutoRefresh);
+
+// Stop cards refresh when leaving page
+window.addEventListener('beforeunload', stopCardsAutoRefresh);
 
 function stopAutoRefresh() {
     if (autoRefreshInterval) {
