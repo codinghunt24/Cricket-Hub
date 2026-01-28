@@ -494,10 +494,14 @@ def admin_dashboard():
 def admin_automation():
     team_setting = ScrapeSetting.query.first()
     live_score_setting = LiveScoreScrapeSetting.query.first()
+    profile_settings = {s.category_slug: s for s in ProfileScrapeSetting.query.all()}
+    series_settings = {s.category_slug: s for s in SeriesScrapeSetting.query.all()}
     recent_logs = ScrapeLog.query.order_by(ScrapeLog.created_at.desc()).limit(10).all()
     return render_template('admin/automation.html', 
                          team_setting=team_setting,
                          live_score_setting=live_score_setting,
+                         profile_settings=profile_settings,
+                         series_settings=series_settings,
                          recent_logs=recent_logs)
 
 @app.route('/admin/matches')

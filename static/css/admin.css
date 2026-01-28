@@ -727,6 +727,13 @@
     color: var(--admin-text-muted);
 }
 
+.last-scrape-small {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--admin-text-muted);
+    margin-top: 5px;
+}
+
 /* Categories Section */
 .categories-section {
     margin-bottom: 25px;

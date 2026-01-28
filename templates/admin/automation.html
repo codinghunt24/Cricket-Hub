@@ -124,33 +124,45 @@
                 <span class="cat-name">International</span>
                 <button class="btn btn-xs btn-profile" onclick="scrapeCategoryProfiles('international')">Scrape</button>
                 <div class="cat-auto">
-                    <label><input type="checkbox" id="profileAutoIntl" onchange="saveProfileAuto('international')"> Auto</label>
-                    <input type="time" id="profileTimeIntl" value="03:00" class="time-xs" onchange="saveProfileAuto('international')">
+                    <label><input type="checkbox" id="profileAutoIntl" {% if profile_settings.get('international') and profile_settings['international'].auto_scrape_enabled %}checked{% endif %} onchange="saveProfileAuto('international')"> Auto</label>
+                    <input type="time" id="profileTimeIntl" value="{{ profile_settings['international'].scrape_time if profile_settings.get('international') else '03:00' }}" class="time-xs" onchange="saveProfileAuto('international')">
                 </div>
+                {% if profile_settings.get('international') and profile_settings['international'].last_scrape %}
+                <span class="last-scrape-small">Last: {{ profile_settings['international'].last_scrape.strftime('%d %b, %H:%M') }}</span>
+                {% endif %}
             </div>
             <div class="cat-box">
                 <span class="cat-name">Domestic</span>
                 <button class="btn btn-xs btn-profile" onclick="scrapeCategoryProfiles('domestic')">Scrape</button>
                 <div class="cat-auto">
-                    <label><input type="checkbox" id="profileAutoDomestic" onchange="saveProfileAuto('domestic')"> Auto</label>
-                    <input type="time" id="profileTimeDomestic" value="03:30" class="time-xs" onchange="saveProfileAuto('domestic')">
+                    <label><input type="checkbox" id="profileAutoDomestic" {% if profile_settings.get('domestic') and profile_settings['domestic'].auto_scrape_enabled %}checked{% endif %} onchange="saveProfileAuto('domestic')"> Auto</label>
+                    <input type="time" id="profileTimeDomestic" value="{{ profile_settings['domestic'].scrape_time if profile_settings.get('domestic') else '03:30' }}" class="time-xs" onchange="saveProfileAuto('domestic')">
                 </div>
+                {% if profile_settings.get('domestic') and profile_settings['domestic'].last_scrape %}
+                <span class="last-scrape-small">Last: {{ profile_settings['domestic'].last_scrape.strftime('%d %b, %H:%M') }}</span>
+                {% endif %}
             </div>
             <div class="cat-box">
                 <span class="cat-name">League</span>
                 <button class="btn btn-xs btn-profile" onclick="scrapeCategoryProfiles('league')">Scrape</button>
                 <div class="cat-auto">
-                    <label><input type="checkbox" id="profileAutoLeague" onchange="saveProfileAuto('league')"> Auto</label>
-                    <input type="time" id="profileTimeLeague" value="04:00" class="time-xs" onchange="saveProfileAuto('league')">
+                    <label><input type="checkbox" id="profileAutoLeague" {% if profile_settings.get('league') and profile_settings['league'].auto_scrape_enabled %}checked{% endif %} onchange="saveProfileAuto('league')"> Auto</label>
+                    <input type="time" id="profileTimeLeague" value="{{ profile_settings['league'].scrape_time if profile_settings.get('league') else '04:00' }}" class="time-xs" onchange="saveProfileAuto('league')">
                 </div>
+                {% if profile_settings.get('league') and profile_settings['league'].last_scrape %}
+                <span class="last-scrape-small">Last: {{ profile_settings['league'].last_scrape.strftime('%d %b, %H:%M') }}</span>
+                {% endif %}
             </div>
             <div class="cat-box">
                 <span class="cat-name">Women</span>
                 <button class="btn btn-xs btn-profile" onclick="scrapeCategoryProfiles('women')">Scrape</button>
                 <div class="cat-auto">
-                    <label><input type="checkbox" id="profileAutoWomen" onchange="saveProfileAuto('women')"> Auto</label>
-                    <input type="time" id="profileTimeWomen" value="04:30" class="time-xs" onchange="saveProfileAuto('women')">
+                    <label><input type="checkbox" id="profileAutoWomen" {% if profile_settings.get('women') and profile_settings['women'].auto_scrape_enabled %}checked{% endif %} onchange="saveProfileAuto('women')"> Auto</label>
+                    <input type="time" id="profileTimeWomen" value="{{ profile_settings['women'].scrape_time if profile_settings.get('women') else '04:30' }}" class="time-xs" onchange="saveProfileAuto('women')">
                 </div>
+                {% if profile_settings.get('women') and profile_settings['women'].last_scrape %}
+                <span class="last-scrape-small">Last: {{ profile_settings['women'].last_scrape.strftime('%d %b, %H:%M') }}</span>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -158,6 +170,9 @@
     <div class="automation-section">
         <div class="section-header">
             <h2>Series</h2>
+            {% if series_settings.get('international') and series_settings['international'].last_scrape %}
+            <span class="last-scrape">Last: {{ series_settings['international'].last_scrape.strftime('%d %b, %H:%M') }}</span>
+            {% endif %}
         </div>
         <div class="series-scrape-row">
             <select id="seriesType" class="select-input" onchange="updateSeriesUrl()">
