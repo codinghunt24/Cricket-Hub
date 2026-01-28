@@ -90,6 +90,14 @@
             </nav>
             
             <div class="sidebar-footer">
+                <a href="/admin/profile" class="sidebar-link">
+                    <span class="sidebar-icon">&#128100;</span>
+                    <span class="sidebar-text">Profile</span>
+                </a>
+                <a href="/admin/logout" class="sidebar-link logout-link">
+                    <span class="sidebar-icon">&#128682;</span>
+                    <span class="sidebar-text">Logout</span>
+                </a>
                 <a href="/" class="sidebar-link">
                     <span class="sidebar-icon">&#8592;</span>
                     <span class="sidebar-text">Back to Site</span>
@@ -101,7 +109,7 @@
             <header class="admin-header">
                 <h1 class="admin-page-title">{% block page_title %}Dashboard{% endblock %}</h1>
                 <div class="admin-user">
-                    <span>Admin</span>
+                    <span>{{ session.get('admin_name', 'Admin') }}</span>
                 </div>
                 <button class="mobile-sidebar-toggle" id="mobileSidebarToggle" aria-label="Toggle sidebar">
                     <span class="hamburger"></span>

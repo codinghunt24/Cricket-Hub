@@ -3,7 +3,9 @@ import re
 import requests
 import threading
 from datetime import datetime
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, session, redirect, url_for, flash
+from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 
@@ -69,7 +71,7 @@ def utility_processor():
     return dict(get_team_flag=get_team_flag)
 
 from models import init_models
-TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, PostCategory, Post = init_models(db)
+TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, PostCategory, Post, AdminUser = init_models(db)
 
 import scraper
 from scheduler import init_scheduler, update_schedule, update_player_schedule
@@ -107,7 +109,23 @@ with app.app_context():
         ms = MatchScrapeSetting(auto_scrape_enabled=False, scrape_time='10:00')
         db.session.add(ms)
     
+    if not AdminUser.query.first():
+        admin = AdminUser(
+            username='admin',
+            password_hash=generate_password_hash('admin123'),
+            name='Administrator'
+        )
+        db.session.add(admin)
+    
     db.session.commit()
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'admin_id' not in session:
+            return redirect(url_for('admin_login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player)
 
@@ -397,7 +415,69 @@ def match_detail(match_id):
 def news():
     return render_template('index.html')
 
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if 'admin_id' in session:
+        return redirect(url_for('admin_dashboard'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        admin = AdminUser.query.filter_by(username=username).first()
+        if admin and check_password_hash(admin.password_hash, password):
+            session['admin_id'] = admin.id
+            session['admin_name'] = admin.name
+            admin.last_login = datetime.utcnow()
+            db.session.commit()
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('Invalid username or password', 'error')
+    
+    return render_template('admin/login.html')
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('admin_id', None)
+    session.pop('admin_name', None)
+    return redirect(url_for('admin_login'))
+
+@app.route('/admin/profile', methods=['GET', 'POST'])
+@admin_required
+def admin_profile():
+    admin = AdminUser.query.get(session['admin_id'])
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'update_profile':
+            admin.name = request.form.get('name', admin.name)
+            admin.email = request.form.get('email', admin.email)
+            db.session.commit()
+            flash('Profile updated successfully', 'success')
+        
+        elif action == 'change_password':
+            current_password = request.form.get('current_password')
+            new_password = request.form.get('new_password')
+            confirm_password = request.form.get('confirm_password')
+            
+            if not check_password_hash(admin.password_hash, current_password):
+                flash('Current password is incorrect', 'error')
+            elif new_password != confirm_password:
+                flash('New passwords do not match', 'error')
+            elif len(new_password) < 6:
+                flash('Password must be at least 6 characters', 'error')
+            else:
+                admin.password_hash = generate_password_hash(new_password)
+                db.session.commit()
+                flash('Password changed successfully', 'success')
+        
+        return redirect(url_for('admin_profile'))
+    
+    return render_template('admin/profile.html', admin=admin)
+
 @app.route('/admin')
+@admin_required
 def admin_dashboard():
     teams_count = Team.query.count()
     players_count = Player.query.count()
@@ -410,6 +490,7 @@ def admin_dashboard():
                          recent_logs=recent_logs)
 
 @app.route('/admin/automation')
+@admin_required
 def admin_automation():
     team_setting = ScrapeSetting.query.first()
     recent_logs = ScrapeLog.query.order_by(ScrapeLog.created_at.desc()).limit(10).all()
@@ -418,6 +499,7 @@ def admin_automation():
                          recent_logs=recent_logs)
 
 @app.route('/admin/matches')
+@admin_required
 def admin_matches():
     matches = Match.query.order_by(Match.id.desc()).all()
     live_count = len([m for m in matches if m.state == 'Live'])
@@ -436,6 +518,7 @@ def admin_matches():
                            status_count=status_count)
 
 @app.route('/admin/teams')
+@admin_required
 def admin_teams():
     categories = TeamCategory.query.all()
     setting = ScrapeSetting.query.first()
@@ -457,6 +540,7 @@ def admin_teams():
                          recent_logs=recent_logs)
 
 @app.route('/admin/series')
+@admin_required
 def admin_series():
     categories = SeriesCategory.query.all()
     recent_logs = ScrapeLog.query.filter(
@@ -483,10 +567,12 @@ def admin_series():
                          match_setting=match_setting)
 
 @app.route('/admin/news')
+@admin_required
 def admin_news():
     return render_template('admin/news.html')
 
 @app.route('/admin/scorecard')
+@admin_required
 def admin_scorecard():
     matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
     return render_template('admin/scorecard.html', matches=matches)
@@ -574,6 +660,7 @@ def api_save_scorecard():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/admin/settings')
+@admin_required
 def admin_settings():
     setting = ScrapeSetting.query.first()
     return render_template('admin/settings.html', setting=setting)
@@ -2333,28 +2420,33 @@ def clear_all_matches():
 
 
 @app.route('/admin/categories')
+@admin_required
 def admin_categories():
     categories = PostCategory.query.order_by(PostCategory.navbar_order).all()
     return render_template('admin/categories.html', categories=categories)
 
 @app.route('/admin/posts')
+@admin_required
 def admin_posts():
     posts = Post.query.order_by(Post.created_at.desc()).all()
     categories = PostCategory.query.order_by(PostCategory.name).all()
     return render_template('admin/posts.html', posts=posts, categories=categories)
 
 @app.route('/admin/posts/new')
+@admin_required
 def admin_post_new():
     categories = PostCategory.query.order_by(PostCategory.name).all()
     return render_template('admin/post_edit.html', post=None, categories=categories)
 
 @app.route('/admin/posts/<int:post_id>')
+@admin_required
 def admin_post_edit(post_id):
     post = Post.query.get_or_404(post_id)
     categories = PostCategory.query.order_by(PostCategory.name).all()
     return render_template('admin/post_edit.html', post=post, categories=categories)
 
 @app.route('/admin/auto-post')
+@admin_required
 def admin_auto_post():
     categories = PostCategory.query.order_by(PostCategory.name).all()
     return render_template('admin/auto_post.html', categories=categories)

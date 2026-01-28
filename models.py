@@ -242,4 +242,15 @@ def init_models(db):
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
         updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, PostCategory, Post
+    class AdminUser(db.Model):
+        __tablename__ = 'admin_users'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        username = db.Column(db.String(50), unique=True, nullable=False)
+        password_hash = db.Column(db.String(256), nullable=False)
+        name = db.Column(db.String(100), default='Admin')
+        email = db.Column(db.String(100), nullable=True)
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+        last_login = db.Column(db.DateTime, nullable=True)
+    
+    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, PostCategory, Post, AdminUser

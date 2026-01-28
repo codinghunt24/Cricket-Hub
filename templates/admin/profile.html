@@ -1,0 +1,205 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Profile - Admin Panel{% endblock %}
+{% block page_title %}Profile{% endblock %}
+
+{% block content %}
+<div class="admin-page profile-page">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash-message {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+    
+    <div class="profile-section">
+        <h2>Profile Information</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="update_profile">
+            
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" value="{{ admin.username }}" disabled>
+                <small>Username cannot be changed</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="name">Display Name</label>
+                <input type="text" id="name" name="name" value="{{ admin.name or '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" value="{{ admin.email or '' }}" placeholder="admin@example.com">
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+        </form>
+    </div>
+    
+    <div class="profile-section">
+        <h2>Change Password</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="change_password">
+            
+            <div class="form-group">
+                <label for="current_password">Current Password</label>
+                <input type="password" id="current_password" name="current_password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="new_password">New Password</label>
+                <input type="password" id="new_password" name="new_password" required minlength="6">
+                <small>Minimum 6 characters</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm_password">Confirm New Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-danger">Change Password</button>
+        </form>
+    </div>
+    
+    <div class="profile-section">
+        <h2>Account Info</h2>
+        <div class="info-row">
+            <span class="info-label">Created:</span>
+            <span class="info-value">{{ admin.created_at.strftime('%d %b %Y, %H:%M') if admin.created_at else 'N/A' }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Last Login:</span>
+            <span class="info-value">{{ admin.last_login.strftime('%d %b %Y, %H:%M') if admin.last_login else 'Never' }}</span>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-page {
+    max-width: 600px;
+}
+
+.profile-section {
+    background: #1f2937;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 20px;
+    border: 1px solid #374151;
+}
+
+.profile-section h2 {
+    color: #10b981;
+    font-size: 18px;
+    margin: 0 0 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #374151;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: #e4e4e7;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    background: #111827;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    color: #e4e4e7;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #10b981;
+}
+
+.form-group input:disabled {
+    background: #374151;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.form-group small {
+    display: block;
+    color: #9ca3af;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #10b981;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #059669;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+.info-row {
+    display: flex;
+    padding: 10px 0;
+    border-bottom: 1px solid #374151;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #9ca3af;
+    width: 120px;
+    font-size: 14px;
+}
+
+.info-value {
+    color: #e4e4e7;
+    font-size: 14px;
+}
+
+.flash-message {
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.flash-message.success {
+    background: #064e3b;
+    color: #6ee7b7;
+    border: 1px solid #10b981;
+}
+
+.flash-message.error {
+    background: #7f1d1d;
+    color: #fca5a5;
+    border: 1px solid #ef4444;
+}
+</style>
+{% endblock %}
