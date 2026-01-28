@@ -766,13 +766,143 @@ def scrape_scorecard(match_id):
 
 
 def scrape_category(category_slug):
-    """Scrape matches from a category."""
-    return {'success': False, 'matches': [], 'message': 'Not implemented'}
+    """Scrape teams from a category (international, domestic, league, women)."""
+    category_urls = {
+        'international': 'https://www.cricbuzz.com/cricket-team',
+        'domestic': 'https://www.cricbuzz.com/cricket-team/domestic',
+        'league': 'https://www.cricbuzz.com/cricket-team/league',
+        'women': 'https://www.cricbuzz.com/cricket-team/women'
+    }
+    
+    url = category_urls.get(category_slug)
+    if not url:
+        return {'success': False, 'teams': [], 'message': f'Unknown category: {category_slug}'}
+    
+    try:
+        response = requests.get(url, headers=HEADERS, timeout=15)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        teams = []
+        
+        team_links = soup.select('a.cb-teams-lft-ancr, a[href*="/cricket-team/"]')
+        
+        for link in team_links:
+            href = link.get('href', '')
+            if '/cricket-team/' not in href or href.endswith('/cricket-team') or href.endswith('/cricket-team/'):
+                continue
+            if '/domestic' in href or '/league' in href or '/women' in href:
+                if not any(x in href for x in ['/profiles/', '/players/']):
+                    continue
+            
+            team_name = link.get_text(strip=True)
+            if not team_name or len(team_name) < 2:
+                continue
+            
+            team_id = None
+            team_id_match = re.search(r'/cricket-team/[^/]+/(\d+)', href)
+            if team_id_match:
+                team_id = team_id_match.group(1)
+            
+            flag_url = None
+            flag_img = link.find('img')
+            if flag_img:
+                flag_url = flag_img.get('src', '')
+                if flag_url and not flag_url.startswith('http'):
+                    flag_url = 'https://www.cricbuzz.com' + flag_url
+            
+            team_url = href if href.startswith('http') else 'https://www.cricbuzz.com' + href
+            
+            if team_name and team_id:
+                teams.append({
+                    'name': team_name,
+                    'team_id': team_id,
+                    'flag_url': flag_url,
+                    'team_url': team_url
+                })
+        
+        seen = set()
+        unique_teams = []
+        for t in teams:
+            if t['team_id'] not in seen:
+                seen.add(t['team_id'])
+                unique_teams.append(t)
+        
+        logger.info(f"Scraped {len(unique_teams)} teams from {category_slug}")
+        return {'success': True, 'teams': unique_teams, 'message': f'Scraped {len(unique_teams)} teams'}
+        
+    except Exception as e:
+        logger.error(f"Error scraping category {category_slug}: {e}")
+        return {'success': False, 'teams': [], 'message': str(e)}
 
 
 def scrape_players_from_team(team_url):
     """Scrape players from a team page."""
-    return []
+    try:
+        if not team_url:
+            return []
+        
+        if not team_url.startswith('http'):
+            team_url = 'https://www.cricbuzz.com' + team_url
+        
+        players_url = team_url.rstrip('/') + '/players'
+        
+        response = requests.get(players_url, headers=HEADERS, timeout=15)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        players = []
+        
+        player_links = soup.select('a[href*="/profiles/"]')
+        
+        for link in player_links:
+            href = link.get('href', '')
+            if '/profiles/' not in href:
+                continue
+            
+            player_name = link.get_text(strip=True)
+            if not player_name or len(player_name) < 2:
+                continue
+            
+            player_id = None
+            player_id_match = re.search(r'/profiles/(\d+)/', href)
+            if player_id_match:
+                player_id = player_id_match.group(1)
+            
+            photo_url = None
+            photo_img = link.find('img')
+            if photo_img:
+                photo_url = photo_img.get('src', '')
+                if photo_url and not photo_url.startswith('http'):
+                    photo_url = 'https://www.cricbuzz.com' + photo_url
+            
+            player_url = href if href.startswith('http') else 'https://www.cricbuzz.com' + href
+            
+            role_elem = link.find_next('div', class_='cb-font-12')
+            role = role_elem.get_text(strip=True) if role_elem else None
+            
+            if player_name and player_id:
+                players.append({
+                    'name': player_name,
+                    'player_id': player_id,
+                    'photo_url': photo_url,
+                    'player_url': player_url,
+                    'role': role
+                })
+        
+        seen = set()
+        unique_players = []
+        for p in players:
+            if p['player_id'] not in seen:
+                seen.add(p['player_id'])
+                unique_players.append(p)
+        
+        logger.info(f"Scraped {len(unique_players)} players from {team_url}")
+        return unique_players
+        
+    except Exception as e:
+        logger.error(f"Error scraping players from {team_url}: {e}")
+        return []
 
 
 def scrape_series_from_category(category_url):
