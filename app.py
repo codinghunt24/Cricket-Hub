@@ -990,6 +990,13 @@ def api_save_scorecard():
             match.team2_name = inn2.get('team_name', match.team2_name)
             match.team2_score = f"{inn2.get('total_score', '')} ({inn2.get('overs', '')} Ov)"
         
+        if data.get('toss'):
+            match.toss = data.get('toss')
+        if data.get('live_status'):
+            match.live_status = data.get('live_status')
+        if innings:
+            match.innings_data = innings
+        
         db.session.commit()
         
         return jsonify({

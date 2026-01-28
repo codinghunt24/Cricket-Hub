@@ -501,6 +501,11 @@ def scrape_scorecard(match_id):
                         
                         player_name = player_link.get_text(strip=True)
                         
+                        # Extract player_id from URL (e.g., /profiles/12345/player-name)
+                        player_href = player_link.get('href', '')
+                        player_id_match = re.search(r'/profiles/(\d+)/', player_href)
+                        player_id = player_id_match.group(1) if player_id_match else None
+                        
                         # Find dismissal text (in text-cbTxtSec div)
                         dismissal_div = bat_row.find('div', class_=re.compile(r'text-cbTxtSec'))
                         dismissal = dismissal_div.get_text(strip=True) if dismissal_div else 'not out'
@@ -516,6 +521,7 @@ def scrape_scorecard(match_id):
                         if len(stats) >= 5:
                             batting_entry = {
                                 'player': player_name,
+                                'player_id': player_id,
                                 'dismissal': dismissal,
                                 'runs': stats[0],
                                 'balls': stats[1],
@@ -539,6 +545,11 @@ def scrape_scorecard(match_id):
                         
                         bowler_name = bowler_link.get_text(strip=True)
                         
+                        # Extract player_id from URL
+                        bowler_href = bowler_link.get('href', '')
+                        bowler_id_match = re.search(r'/profiles/(\d+)/', bowler_href)
+                        bowler_id = bowler_id_match.group(1) if bowler_id_match else None
+                        
                         # Extract O, M, R, W, NB, WD, ECO - keep all values including empty for position alignment
                         stats_divs = bowl_row.find_all('div', class_=re.compile(r'justify-center'))
                         all_stats = []
@@ -554,6 +565,7 @@ def scrape_scorecard(match_id):
                         if len(all_stats) >= 5:
                             bowling_entry = {
                                 'bowler': bowler_name,
+                                'player_id': bowler_id,
                                 'overs': all_stats[0],
                                 'maidens': all_stats[1],
                                 'runs': all_stats[2],
@@ -577,6 +589,11 @@ def scrape_scorecard(match_id):
                         
                         player_name = player_link.get_text(strip=True)
                         
+                        # Extract player_id from URL
+                        fow_player_href = player_link.get('href', '')
+                        fow_player_id_match = re.search(r'/profiles/(\d+)/', fow_player_href)
+                        fow_player_id = fow_player_id_match.group(1) if fow_player_id_match else None
+                        
                         # Extract score and over
                         stats_divs = fow_row.find_all('div', class_=re.compile(r'justify-center'))
                         stats = []
@@ -588,6 +605,7 @@ def scrape_scorecard(match_id):
                         if len(stats) >= 2:
                             fow_entry = {
                                 'player': player_name,
+                                'player_id': fow_player_id,
                                 'score': stats[0],  # e.g., "73-1"
                                 'over': stats[1]    # e.g., "8.6"
                             }

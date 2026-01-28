@@ -190,6 +190,9 @@ def init_models(db):
         series_id = db.Column(db.Integer, db.ForeignKey('series.id'), nullable=True)
         batting_data = db.Column(db.JSON, nullable=True)
         bowling_data = db.Column(db.JSON, nullable=True)
+        innings_data = db.Column(db.JSON, nullable=True)
+        toss = db.Column(db.String(300), nullable=True)
+        live_status = db.Column(db.String(300), nullable=True)
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
         updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
