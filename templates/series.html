@@ -35,7 +35,7 @@
                             {% for series in data.series %}
                             <tr>
                                 <td>
-                                    <a href="{{ url_for('series_detail', series_id=series.id) }}" class="series-link">
+                                    <a href="{{ url_for('series_detail', slug=series.slug) }}" class="series-link">
                                         {{ series.name }}
                                     </a>
                                 </td>
@@ -76,7 +76,7 @@
                         {% for series in data.series %}
                         <tr>
                             <td>
-                                <a href="{{ url_for('series_detail', series_id=series.id) }}" class="series-link">
+                                <a href="{{ url_for('series_detail', slug=series.slug) }}" class="series-link">
                                     {{ series.name }}
                                 </a>
                             </td>
