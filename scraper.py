@@ -492,7 +492,7 @@ def scrape_live_scores():
     
     # Fetch scores for Live and Innings Break matches from their detail pages
     for match in all_matches:
-        if match['status'] in ['Live', 'Innings Break', 'Complete']:
+        if match['status'] in ['Live', 'Innings Break', 'Complete'] or match.get('result', '').lower() == 'toss':
             try:
                 score_url = f"{BASE_URL}/live-cricket-scores/{match['match_id']}"
                 score_resp = requests.get(score_url, headers=HEADERS, timeout=5)
@@ -518,12 +518,12 @@ def scrape_live_scores():
                     elif len(unique_scores) == 1:
                         match['team1_score'] = unique_scores[0]
                     
-                    # Extract toss info if no result yet
-                    if not match.get('result') or match['result'].lower() in ['live', 'upcoming', '']:
+                    # Extract toss info if no result yet or just "Toss"
+                    if not match.get('result') or match['result'].lower() in ['live', 'upcoming', '', 'toss']:
                         toss_patterns = [
-                            r'([A-Za-z\s]+)\s+won\s+the\s+toss\s+and\s+(?:elected|opted)\s+to\s+(bat|bowl|field)',
-                            r'([A-Za-z\s]+)\s+opt(?:ed)?\s+to\s+(bat|bowl|field)',
-                            r'Toss\s*:\s*([A-Za-z\s]+)\s+(?:elected|opted)\s+to\s+(bat|bowl|field)',
+                            r'([A-Za-z\s,]+(?:Women)?)\s+won\s+the\s+toss\s+and\s+(?:elected|opted)\s+to\s+(bat|bowl|field)',
+                            r'([A-Za-z\s,]+(?:Women)?)\s+opt(?:ed)?\s+to\s+(bat|bowl|field)',
+                            r'Toss\s*:\s*([A-Za-z\s,]+)\s+(?:elected|opted)\s+to\s+(bat|bowl|field)',
                         ]
                         for pattern in toss_patterns:
                             toss_match = re.search(pattern, html_text, re.IGNORECASE)
@@ -531,6 +531,7 @@ def scrape_live_scores():
                                 team = toss_match.group(1).strip()
                                 decision = toss_match.group(2).strip().lower()
                                 match['result'] = f"{team} opt to {decision}"
+                                logger.info(f"Toss extracted for {match['match_id']}: {match['result']}")
                                 break
                         
             except Exception as e:
