@@ -475,14 +475,16 @@ function scrapeScorecard(matchId, seriesId, seriesName, btn) {
     btn.disabled = true;
     btn.textContent = '...';
     
-    fetch('/admin/live-score/scrape-scorecard/' + matchId, {
+    // Use same API as Scorecard nav
+    fetch('/api/scrape/scorecard', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({series_id: seriesId, series_name: seriesName})
+        body: JSON.stringify({match_id: matchId})
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
+        if (data.success && data.scorecard) {
+            const scorecard = data.scorecard;
             btn.textContent = '▼';
             btn.style.background = '#10b981';
             btn.title = 'Click to toggle scorecard';
@@ -490,12 +492,12 @@ function scrapeScorecard(matchId, seriesId, seriesName, btn) {
             
             // Update status cell
             const statusCell = document.getElementById('status-' + matchId);
-            if (statusCell && data.match_status) {
-                statusCell.textContent = data.match_status;
-                if (data.match_status === 'Live') {
+            if (statusCell && scorecard.match_status) {
+                statusCell.textContent = scorecard.match_status;
+                if (scorecard.match_status === 'Live') {
                     statusCell.style.color = '#ef4444';
                     statusCell.style.fontWeight = 'bold';
-                } else if (data.match_status.includes('won') || data.match_status === 'Completed') {
+                } else if (scorecard.match_status.includes('won') || scorecard.match_status === 'Completed') {
                     statusCell.style.color = '#10b981';
                 } else {
                     statusCell.style.color = '#f59e0b';
@@ -516,19 +518,19 @@ function scrapeScorecard(matchId, seriesId, seriesName, btn) {
                 '<div class="scorecard-content">' +
                     '<div class="scorecard-grid">' +
                         '<div class="score-team">' +
-                            '<span class="team-name">' + (data.team1 || '-') + '</span>' +
-                            '<span class="team-score">' + (data.team1_score || '-') + '</span>' +
+                            '<span class="team-name">' + (scorecard.team1 || '-') + '</span>' +
+                            '<span class="team-score">' + (scorecard.team1_score || '-') + '</span>' +
                         '</div>' +
                         '<div class="score-vs">VS</div>' +
                         '<div class="score-team">' +
-                            '<span class="team-name">' + (data.team2 || '-') + '</span>' +
-                            '<span class="team-score">' + (data.team2_score || '-') + '</span>' +
+                            '<span class="team-name">' + (scorecard.team2 || '-') + '</span>' +
+                            '<span class="team-score">' + (scorecard.team2_score || '-') + '</span>' +
                         '</div>' +
                     '</div>' +
                     '<div class="scorecard-details">' +
-                        '<span><b>Venue:</b> ' + (data.venue || '-') + '</span>' +
-                        '<span><b>Format:</b> ' + (data.match_format || '-') + '</span>' +
-                        '<span><b>Result:</b> ' + (data.result || data.match_status || '-') + '</span>' +
+                        '<span><b>Venue:</b> ' + (scorecard.venue || '-') + '</span>' +
+                        '<span><b>Toss:</b> ' + (scorecard.toss || '-') + '</span>' +
+                        '<span><b>Result:</b> ' + (scorecard.result || scorecard.match_status || '-') + '</span>' +
                     '</div>' +
                 '</div>' +
             '</td>';
@@ -540,7 +542,7 @@ function scrapeScorecard(matchId, seriesId, seriesName, btn) {
         } else {
             btn.textContent = '✗';
             btn.style.background = '#ef4444';
-            alert('Error: ' + data.message);
+            alert('Error: ' + (data.message || 'Failed to fetch scorecard'));
         }
     })
     .catch(function(err) {
