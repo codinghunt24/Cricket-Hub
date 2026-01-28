@@ -517,6 +517,21 @@ def scrape_live_scores():
                         match['team2_score'] = unique_scores[1]
                     elif len(unique_scores) == 1:
                         match['team1_score'] = unique_scores[0]
+                    
+                    # Extract toss info if no result yet
+                    if not match.get('result') or match['result'].lower() in ['live', 'upcoming', '']:
+                        toss_patterns = [
+                            r'([A-Za-z\s]+)\s+won\s+the\s+toss\s+and\s+(?:elected|opted)\s+to\s+(bat|bowl|field)',
+                            r'([A-Za-z\s]+)\s+opt(?:ed)?\s+to\s+(bat|bowl|field)',
+                            r'Toss\s*:\s*([A-Za-z\s]+)\s+(?:elected|opted)\s+to\s+(bat|bowl|field)',
+                        ]
+                        for pattern in toss_patterns:
+                            toss_match = re.search(pattern, html_text, re.IGNORECASE)
+                            if toss_match:
+                                team = toss_match.group(1).strip()
+                                decision = toss_match.group(2).strip().lower()
+                                match['result'] = f"{team} opt to {decision}"
+                                break
                         
             except Exception as e:
                 logger.debug(f"Score fetch failed for {match['match_id']}: {e}")
