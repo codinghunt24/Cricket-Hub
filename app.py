@@ -525,7 +525,7 @@ def admin_matches():
                 if pattern.lower() in m.match_date.lower():
                     matches.append(m)
                     break
-        elif m.state in ['Live', 'Innings Break']:
+        else:
             matches.append(m)
     live_count = len([m for m in matches if m.state == 'Live'])
     innings_count = len([m for m in matches if m.state == 'Innings Break'])
