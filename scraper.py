@@ -951,8 +951,110 @@ def scrape_matches_from_series(series_url):
 
 
 def scrape_player_profile(player_url):
-    """Scrape player profile."""
-    return None
+    """Scrape player profile details from Cricbuzz."""
+    try:
+        if not player_url:
+            return None
+        
+        if not player_url.startswith('http'):
+            player_url = 'https://www.cricbuzz.com' + player_url
+        
+        response = requests.get(player_url, headers=HEADERS, timeout=15)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        profile = {
+            'born': None,
+            'birth_place': None,
+            'nickname': None,
+            'batting_style': None,
+            'bowling_style': None,
+            'role': None,
+            'photo_url': None,
+            'batting_stats': {},
+            'bowling_stats': {},
+            'career_timeline': []
+        }
+        
+        # Extract player photo
+        photo_img = soup.select_one('img[src*="static.cricbuzz.com/a/img/v1/"]')
+        if photo_img:
+            src = photo_img.get('src', '')
+            if src and 'static.cricbuzz.com' in src:
+                profile['photo_url'] = src
+        
+        # Get all text from the page for regex extraction
+        page_text = soup.get_text()
+        
+        # Extract Born date using regex - pattern: BornDATE (YEARS)
+        born_match = re.search(r'Born\s*([A-Za-z]+ \d{1,2}, \d{4})', page_text)
+        if born_match:
+            profile['born'] = born_match.group(1)
+        
+        # Extract Birth Place - pattern: Birth PlaceCITY
+        birth_place_match = re.search(r'Birth\s*Place\s*([A-Za-z][A-Za-z\s]+?)(?:Nickname|Height|Role|Batting)', page_text)
+        if birth_place_match:
+            profile['birth_place'] = birth_place_match.group(1).strip()
+        
+        # Extract Nickname - pattern: NicknameNAME
+        nickname_match = re.search(r'Nickname\s*([A-Za-z][A-Za-z\s]+?)(?:Height|Role|Batting|Born)', page_text)
+        if nickname_match:
+            profile['nickname'] = nickname_match.group(1).strip()
+        
+        # Extract Role - pattern: RoleTYPE
+        role_match = re.search(r'Role\s*([A-Za-z][A-Za-z\-\s]+?)(?:Batting|Bowling|Teams|$)', page_text)
+        if role_match:
+            profile['role'] = role_match.group(1).strip()
+        
+        # Extract Batting Style - pattern: Batting StyleTYPE
+        batting_match = re.search(r'Batting\s*Style\s*([A-Za-z][A-Za-z\s\-]+?)(?:Bowling|Teams|$)', page_text)
+        if batting_match:
+            profile['batting_style'] = batting_match.group(1).strip()
+        
+        # Extract Bowling Style - pattern: Bowling StyleTYPE
+        bowling_match = re.search(r'Bowling\s*Style\s*([A-Za-z][A-Za-z\s\-]+?)(?:Teams|$)', page_text)
+        if bowling_match:
+            profile['bowling_style'] = bowling_match.group(1).strip()
+        
+        # Extract batting stats from stats tables
+        batting_stats = {}
+        bowling_stats = {}
+        
+        # Find stats tables
+        stats_tables = soup.select('table')
+        for table in stats_tables:
+            headers = [th.get_text(strip=True).lower() for th in table.select('th')]
+            rows = table.select('tr')[1:]  # Skip header row
+            
+            for row in rows:
+                cells = row.select('td')
+                if len(cells) < 2:
+                    continue
+                
+                format_type = cells[0].get_text(strip=True)
+                if not format_type:
+                    continue
+                
+                row_data = {}
+                for i, cell in enumerate(cells):
+                    if i < len(headers):
+                        row_data[headers[i]] = cell.get_text(strip=True)
+                
+                # Check if this is batting or bowling stats based on headers
+                if 'wkts' in headers or 'bbi' in headers:
+                    bowling_stats[format_type] = row_data
+                elif 'runs' in headers or 'avg' in headers:
+                    batting_stats[format_type] = row_data
+        
+        profile['batting_stats'] = batting_stats if batting_stats else None
+        profile['bowling_stats'] = bowling_stats if bowling_stats else None
+        
+        logger.info(f"Scraped player profile from {player_url}: Born={profile['born']}, Role={profile['role']}")
+        return profile
+        
+    except Exception as e:
+        logger.error(f"Error scraping player profile from {player_url}: {e}")
+        return None
 
 
 def update_match_with_accurate_data(match_id):
