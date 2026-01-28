@@ -117,6 +117,13 @@
     font-size: 14px;
 }
 
+.match-venue-line {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a472a;
+    margin-bottom: 10px;
+}
+
 .match-info .label {
     font-weight: 600;
     color: #555;
@@ -350,11 +357,15 @@ function displayScorecard(scorecard) {
     
     // Match info
     let infoHtml = '';
+    // Show match short + venue together (e.g., "7th Match • Harare Sports Club")
+    if (scorecard.match_short || scorecard.venue) {
+        let matchInfoParts = [];
+        if (scorecard.match_short) matchInfoParts.push(scorecard.match_short);
+        if (scorecard.venue) matchInfoParts.push(scorecard.venue);
+        infoHtml += '<p class="match-venue-line">' + matchInfoParts.join(' • ') + '</p>';
+    }
     if (scorecard.series_name) {
         infoHtml += '<p><span class="label">Series:</span> ' + scorecard.series_name + '</p>';
-    }
-    if (scorecard.venue) {
-        infoHtml += '<p><span class="label">Venue:</span> ' + scorecard.venue + '</p>';
     }
     if (scorecard.match_datetime) {
         infoHtml += '<p><span class="label">Date & Time:</span> ' + scorecard.match_datetime + '</p>';
