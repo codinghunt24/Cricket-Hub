@@ -392,6 +392,12 @@ def scrape_live_scores():
         elif 'need' in title_lower or 'trail' in title_lower or 'lead' in title_lower:
             # Match is in progress if there's a "need X runs" or "trail by" or "lead by"
             status = 'Live'
+        elif 'opt to bat' in title_lower or 'opt to bowl' in title_lower:
+            # Toss has happened, match is live or starting
+            status = 'Live'
+        elif re.search(r'\d+/\d+', title):
+            # Score pattern like "174/3" indicates live match
+            status = 'Live'
         
         # Also check for live tag in HTML
         has_live_tag = link.find('span', class_=re.compile(r'cbPlusLiveTag|live', re.IGNORECASE)) is not None
