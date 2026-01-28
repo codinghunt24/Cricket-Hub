@@ -70,10 +70,11 @@
                             <th>Series ID</th>
                             <th>Series Name</th>
                             <th>Match ID</th>
+                            <th>Match Title</th>
                         </tr>
                     </thead>
                     <tbody id="series-tbody">
-                        <tr><td colspan="3" class="no-data">Click "Fetch Data" to load series and matches</td></tr>
+                        <tr><td colspan="4" class="no-data">Click "Fetch Data" to load series and matches</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -577,32 +578,34 @@ function scrapeSeries() {
             matchCountEl.textContent = totalMatches;
             
             tbody.innerHTML = '';
-            // Create separate row for each match ID
+            // Create separate row for each match
             data.series.forEach(function(s) {
-                if (s.match_ids && s.match_ids.length > 0) {
-                    s.match_ids.forEach(function(matchId) {
+                if (s.matches && s.matches.length > 0) {
+                    s.matches.forEach(function(match) {
                         const row = document.createElement('tr');
                         row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
                             '<td>' + s.series_name + '</td>' +
-                            '<td><a href="https://www.cricbuzz.com/live-cricket-scores/' + matchId + '" target="_blank">' + matchId + '</a></td>';
+                            '<td><a href="https://www.cricbuzz.com/live-cricket-scores/' + match.match_id + '" target="_blank">' + match.match_id + '</a></td>' +
+                            '<td>' + match.match_title + '</td>';
                         tbody.appendChild(row);
                     });
                 } else {
                     const row = document.createElement('tr');
                     row.innerHTML = '<td><a href="' + s.series_url + '" target="_blank">' + s.series_id + '</a></td>' +
                         '<td>' + s.series_name + '</td>' +
+                        '<td>-</td>' +
                         '<td>-</td>';
                     tbody.appendChild(row);
                 }
             });
         } else {
-            tbody.innerHTML = '<tr><td colspan="3" class="no-data">Error: ' + data.message + '</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="no-data">Error: ' + data.message + '</td></tr>';
         }
     })
     .catch(function(err) {
         btn.disabled = false;
         btn.textContent = 'Fetch Data';
-        tbody.innerHTML = '<tr><td colspan="3" class="no-data">Error: ' + err.message + '</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="no-data">Error: ' + err.message + '</td></tr>';
     });
 }
 </script>

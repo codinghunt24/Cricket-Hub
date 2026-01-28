@@ -88,7 +88,7 @@ def scrape_series_from_live_page():
         
         # Find all match links under this series parent
         match_links = parent.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
-        match_ids = []
+        matches = []
         seen_match_ids = set()
         
         for m_link in match_links:
@@ -98,15 +98,20 @@ def scrape_series_from_live_page():
                 mid = m_match.group(1)
                 if mid not in seen_match_ids:
                     seen_match_ids.add(mid)
-                    match_ids.append(mid)
+                    match_title = m_link.get_text(strip=True)
+                    matches.append({
+                        'match_id': mid,
+                        'match_title': match_title if match_title else '-'
+                    })
         
         series_list.append({
             'series_id': series_id,
             'series_name': series_name,
             'series_slug': series_slug,
             'series_url': BASE_URL + href,
-            'match_ids': match_ids,
-            'match_count': len(match_ids)
+            'matches': matches,
+            'match_ids': [m['match_id'] for m in matches],
+            'match_count': len(matches)
         })
     
     total_matches = sum(s['match_count'] for s in series_list)
