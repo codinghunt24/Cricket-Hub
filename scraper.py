@@ -492,31 +492,37 @@ def scrape_live_scores():
     
     # Fetch scores for Live and Innings Break matches from their detail pages
     for match in all_matches:
-        if match['status'] in ['Live', 'Innings Break', 'Complete'] or match.get('result', '').lower() == 'toss':
+        is_active_match = match['status'] in ['Live', 'Innings Break', 'Complete']
+        is_toss_only = match.get('result', '').lower() == 'toss'
+        
+        if is_active_match or is_toss_only:
             try:
                 score_url = f"{BASE_URL}/live-cricket-scores/{match['match_id']}"
                 score_resp = requests.get(score_url, headers=HEADERS, timeout=5)
                 if score_resp.status_code == 200:
                     html_text = score_resp.text
                     
-                    # Find all unique score patterns in order of appearance
-                    all_scores = re.findall(r'(\d+/\d+)', html_text)
-                    
-                    # Get unique scores preserving order
-                    seen = set()
-                    unique_scores = []
-                    for s in all_scores:
-                        if s not in seen:
-                            seen.add(s)
-                            unique_scores.append(s)
+                    # Only extract scores for active matches (Live/Innings Break/Complete)
+                    # NOT for toss-only matches (match hasn't started yet)
+                    if is_active_match:
+                        # Find all unique score patterns in order of appearance
+                        all_scores = re.findall(r'(\d+/\d+)', html_text)
+                        
+                        # Get unique scores preserving order
+                        seen = set()
+                        unique_scores = []
+                        for s in all_scores:
+                            if s not in seen:
+                                seen.add(s)
+                                unique_scores.append(s)
+                            if len(unique_scores) >= 2:
+                                break
+                        
                         if len(unique_scores) >= 2:
-                            break
-                    
-                    if len(unique_scores) >= 2:
-                        match['team1_score'] = unique_scores[0]
-                        match['team2_score'] = unique_scores[1]
-                    elif len(unique_scores) == 1:
-                        match['team1_score'] = unique_scores[0]
+                            match['team1_score'] = unique_scores[0]
+                            match['team2_score'] = unique_scores[1]
+                        elif len(unique_scores) == 1:
+                            match['team1_score'] = unique_scores[0]
                     
                     # Extract toss info if no result yet or just "Toss"
                     if not match.get('result') or match['result'].lower() in ['live', 'upcoming', '', 'toss']:
