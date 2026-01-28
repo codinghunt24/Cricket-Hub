@@ -7,6 +7,7 @@
 <div class="admin-page">
     <div class="page-header">
         <h2>Manage Matches</h2>
+        <span class="today-badge">Today: {{ today_date }}</span>
         <div class="header-buttons">
             <button class="btn btn-primary" id="scrapeLiveBtn" onclick="scrapeLiveScores()">Scrape Live Scores</button>
             <button class="btn btn-danger" id="clearMatchesBtn" onclick="clearAllMatches()">Clear All</button>
@@ -108,6 +109,15 @@
     font-size: 16px;
     margin: 0;
     color: #333;
+}
+
+.today-badge {
+    background: #00deaa;
+    color: #111;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .header-buttons {

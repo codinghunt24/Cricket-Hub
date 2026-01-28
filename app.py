@@ -507,7 +507,26 @@ def admin_automation():
 @app.route('/admin/matches')
 @admin_required
 def admin_matches():
-    matches = Match.query.order_by(Match.id.desc()).all()
+    from datetime import datetime
+    today = datetime.now()
+    today_patterns = [
+        today.strftime('%b %d'),
+        today.strftime('%d %b'),
+        today.strftime('%B %d'),
+        today.strftime('%d %B'),
+        f"{today.strftime('%b')} {today.day}",
+        f"{today.day} {today.strftime('%b')}"
+    ]
+    all_matches = Match.query.order_by(Match.id.desc()).all()
+    matches = []
+    for m in all_matches:
+        if m.match_date:
+            for pattern in today_patterns:
+                if pattern.lower() in m.match_date.lower():
+                    matches.append(m)
+                    break
+        elif m.state in ['Live', 'Innings Break']:
+            matches.append(m)
     live_count = len([m for m in matches if m.state == 'Live'])
     innings_count = len([m for m in matches if m.state == 'Innings Break'])
     complete_count = len([m for m in matches if m.state == 'Complete'])
@@ -521,7 +540,8 @@ def admin_matches():
                            complete_count=complete_count,
                            upcoming_count=upcoming_count,
                            result_count=result_count,
-                           status_count=status_count)
+                           status_count=status_count,
+                           today_date=today.strftime('%d %b, %Y'))
 
 @app.route('/admin/teams')
 @admin_required
