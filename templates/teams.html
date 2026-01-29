@@ -1,6 +1,25 @@
 {% extends 'base.html' %}
 
-{% block title %}Cricket Teams - International, Domestic, League & Women{% endblock %}
+{% block title %}Cricket Teams - International, Domestic, League & Women | Cricbuzz Live Score{% endblock %}
+
+{% block meta_description %}Browse all cricket teams - International, Domestic, League and Women cricket teams. Get complete squad list, player profiles and team information on Cricbuzz Live Score.{% endblock %}
+
+{% block meta_keywords %}cricket teams, international cricket teams, domestic cricket teams, T20 league teams, women cricket teams, IPL teams, cricket squad, cricket players{% endblock %}
+
+{% block og_title %}Cricket Teams - All Categories{% endblock %}
+{% block og_description %}Browse International, Domestic, League and Women cricket teams{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Cricket Teams",
+    "description": "Complete list of cricket teams - International, Domestic, League and Women",
+    "url": "https://cricbuzz-live-score.com/teams"
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <section class="teams-page">

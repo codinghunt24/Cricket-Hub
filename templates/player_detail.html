@@ -66,6 +66,22 @@
             </div>
         </div>
         
+        <div class="player-about-card">
+            <h3>About {{ player.name }}</h3>
+            <p class="player-about-text">
+                {{ player.name }} is a professional cricket player who represents {{ player.team.name }} in {{ player.team.category.name }} cricket{% if player.role %}, primarily known as a {{ player.role }}{% endif %}.
+                {% if player.batting_style %}{{ player.name }} is a {{ player.batting_style }} batsman{% endif %}{% if player.bowling_style %} and bowls {{ player.bowling_style }}{% endif %}.
+                {% if player.birth_place %}Born in {{ player.birth_place }}{% if player.born %} on {{ player.born }}{% endif %}, {{ player.name }} has established a notable career in cricket.{% endif %}
+                {% if player.bat_matches and player.bat_matches > 0 %}
+                In batting, {{ player.name }} has played {{ player.bat_matches }} matches, scoring {{ player.bat_runs or 0 }} runs{% if player.bat_highest %} with a highest score of {{ player.bat_highest }}{% endif %}{% if player.bat_average %} at an average of {{ player.bat_average }}{% endif %}.
+                {% if player.bat_hundreds and player.bat_hundreds > 0 %}{{ player.name }} has scored {{ player.bat_hundreds }} centuries and {{ player.bat_fifties or 0 }} half-centuries.{% endif %}
+                {% endif %}
+                {% if player.bowl_wickets and player.bowl_wickets > 0 %}
+                As a bowler, {{ player.name }} has taken {{ player.bowl_wickets }} wickets{% if player.bowl_best_innings %} with best bowling figures of {{ player.bowl_best_innings }}{% endif %}{% if player.bowl_average %} at an average of {{ player.bowl_average }}{% endif %}.
+                {% endif %}
+            </p>
+        </div>
+        
         <div class="player-details-card">
             <h3>Personal Information</h3>
             <div class="info-grid">

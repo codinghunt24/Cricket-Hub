@@ -1,6 +1,34 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ team.name }} - Cricket Team | Cricbuzz Live Score{% endblock %}
+{% block title %}{{ team.name }}{% if team.category.slug == 'international' %} National Cricket Team{% else %} Cricket Team{% endif %} - Squad, Players, Stats | Cricbuzz Live Score{% endblock %}
+
+{% block meta_description %}{{ team.name }}{% if team.category.slug == 'international' %} National Cricket Team{% else %} Cricket Team{% endif %} squad, players list, team stats, latest news. Get complete {{ team.name }} cricket team information, player profiles and match updates on Cricbuzz Live Score.{% endblock %}
+
+{% block meta_keywords %}{{ team.name }}, {{ team.name }} cricket team, {{ team.name }} squad, {{ team.name }} players, {{ team.name }} team list, {{ team.category.name }} cricket, {{ team.name }} matches{% endblock %}
+
+{% block og_title %}{{ team.name }}{% if team.category.slug == 'international' %} National Cricket Team{% else %} Cricket Team{% endif %} - Squad & Players{% endblock %}
+{% block og_description %}{{ team.name }} cricket team squad, players list and latest match updates{% endblock %}
+{% block og_type %}website{% endblock %}
+{% block og_image %}{% if team.flag_url %}{{ team.flag_url }}{% else %}https://cricbuzz-live-score.com/static/og-image.png{% endif %}{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "SportsTeam",
+    "name": "{{ team.name }}{% if team.category.slug == 'international' %} National Cricket Team{% else %} Cricket Team{% endif %}",
+    "sport": "Cricket",
+    "url": "https://cricbuzz-live-score.com/team/{{ team.slug or team.id }}",
+    {% if team.flag_url %}
+    "logo": "{{ team.flag_url }}",
+    {% endif %}
+    "memberOf": {
+        "@type": "SportsOrganization",
+        "name": "{{ team.category.name }} Cricket"
+    }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <section class="team-detail-page">

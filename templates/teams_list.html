@@ -1,6 +1,25 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ category.name }} Cricket Teams - Squad & Players{% endblock %}
+{% block title %}{{ category.name }} Cricket Teams - Complete List, Squad & Players | Cricbuzz Live Score{% endblock %}
+
+{% block meta_description %}Browse all {{ category.name }} cricket teams. Get complete squad list, player profiles, team stats and latest match updates for all {{ category.name }} cricket teams on Cricbuzz Live Score.{% endblock %}
+
+{% block meta_keywords %}{{ category.name }} cricket teams, {{ category.name }} teams list, cricket teams, {{ category.name }} squad, {{ category.name }} players, cricket team profiles{% endblock %}
+
+{% block og_title %}{{ category.name }} Cricket Teams - Complete List{% endblock %}
+{% block og_description %}Browse all {{ category.name }} cricket teams, squads and players{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "{{ category.name }} Cricket Teams",
+    "description": "Complete list of {{ category.name }} cricket teams",
+    "url": "https://cricbuzz-live-score.com/teams/{{ category.slug }}"
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <section class="teams-list-page">

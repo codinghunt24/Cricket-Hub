@@ -1085,6 +1085,28 @@ body {
     font-size: 0.85rem;
 }
 
+.player-about-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 20px 25px;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.player-about-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.player-about-text {
+    color: #333;
+    font-size: 1rem;
+    line-height: 1.8;
+    text-align: justify;
+}
+
 .player-details-card {
     background: var(--white);
     padding: 15px 20px;
