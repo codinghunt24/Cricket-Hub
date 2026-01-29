@@ -1233,7 +1233,7 @@ function displayScorecard(scorecard) {
                 <div class="innings-card">
                     <div class="innings-header">
                         <span>${inning.team_name || 'Team'} - Innings ${idx + 1}</span>
-                        <span>${inning.total_score || '0'}/${inning.wickets || '0'} (${inning.overs || '0'} Ov)</span>
+                        <span>${inning.total_score || '0'} (${inning.overs || '0'} Ov)</span>
                     </div>
                     <div class="innings-body">
             `;
@@ -1275,7 +1275,7 @@ function displayScorecard(scorecard) {
             if (inning.extras) {
                 html += `<div class="extras-row"><span>Extras</span><span>${inning.extras}</span></div>`;
             }
-            html += `<div class="total-row"><span>Total</span><span>${inning.total_score || '0'}/${inning.wickets || '0'} (${inning.overs || '0'} Ov)</span></div>`;
+            html += `<div class="total-row"><span>Total</span><span>${inning.total_score || '0'} (${inning.overs || '0'} Ov)</span></div>`;
             
             if (inning.bowling && inning.bowling.length > 0) {
                 html += `
