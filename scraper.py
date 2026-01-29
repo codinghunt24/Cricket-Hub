@@ -71,8 +71,206 @@ def fetch_page(url, retries=3):
 
 
 def scrape_live_scores():
-    """Scrape all matches from Cricbuzz live-scores page."""
-    return {'success': False, 'matches': [], 'message': 'Scraping method not implemented yet'}
+    """
+    Scrape all matches from Cricbuzz live-scores page.
+    Gets ALL matches from the first 'div.flex.flex-col.gap-3' container.
+    Returns dynamically - whatever matches are in that container.
+    """
+    url = "https://www.cricbuzz.com/cricket-match/live-scores"
+    html = fetch_page(url)
+    
+    if not html:
+        return {'success': False, 'matches': [], 'message': 'Failed to fetch page'}
+    
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(html, 'html.parser')
+    
+    # Find the FIRST main container with match links
+    main_container = None
+    containers = soup.select('div.flex.flex-col.gap-3')
+    for container in containers:
+        if container.find('a', href=re.compile(r'/live-cricket-scores/\d+/')):
+            main_container = container
+            break
+    
+    if not main_container:
+        return {'success': False, 'matches': [], 'message': 'No match container found'}
+    
+    # Build status map from CSS classes
+    status_map = {}
+    result_map = {}
+    
+    # Find status from text-cbLive, text-cbComplete, text-cbPreview classes
+    for span in main_container.find_all('span', class_=re.compile(r'text-cb')):
+        classes = span.get('class', [])
+        class_str = ' '.join(classes)
+        text = span.get_text(strip=True)
+        
+        # Skip navigation links
+        if text in ['Live Score', 'Scorecard', 'Full Commentary', 'News', 'Highlights']:
+            continue
+        
+        # Determine status
+        if 'cbLive' in class_str:
+            status = 'Live'
+        elif 'cbComplete' in class_str:
+            status = 'Complete'
+        elif 'cbPreview' in class_str:
+            status = 'Preview'
+        else:
+            continue
+        
+        # Find match_id from nearby link
+        parent = span.parent
+        for _ in range(8):
+            if parent:
+                link = parent.find('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+                if link:
+                    m = re.search(r'/live-cricket-scores/(\d+)/', link.get('href', ''))
+                    if m:
+                        mid = m.group(1)
+                        if mid not in status_map:
+                            status_map[mid] = status
+                            result_map[mid] = text
+                        break
+                parent = parent.parent
+    
+    # Extract scores
+    score_map = {}
+    score_pattern = re.compile(r'\d{1,3}(?:[-/]\d{1,2})?\s*\(\d+\.?\d*\)')
+    score_elements = main_container.find_all(string=score_pattern)
+    
+    for elem in score_elements:
+        parent = elem.parent
+        if parent:
+            score_text = elem.strip()
+            classes = parent.get('class', [])
+            class_str = ' '.join(classes) if classes else ''
+            
+            grandparent = parent.parent
+            for _ in range(6):
+                if grandparent:
+                    link = grandparent.find('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+                    if link:
+                        m = re.search(r'/live-cricket-scores/(\d+)/', link.get('href', ''))
+                        if m:
+                            mid = m.group(1)
+                            if mid not in score_map:
+                                score_map[mid] = {'team1_score': None, 'team2_score': None}
+                            
+                            if 'cbTxtPrim' in class_str and not score_map[mid]['team1_score']:
+                                score_map[mid]['team1_score'] = score_text
+                            elif 'cbTxtSec' in class_str and not score_map[mid]['team2_score']:
+                                score_map[mid]['team2_score'] = score_text
+                            break
+                    grandparent = grandparent.parent
+    
+    # Extract team flags and names
+    flag_map = {}
+    for img in main_container.find_all('img'):
+        src = img.get('src', '')
+        alt = img.get('alt', '')
+        if 'static.cricbuzz.com' in src and '.jpg' in src:
+            team_name = alt.replace('-', ' ').title() if alt else ''
+            
+            parent = img.parent
+            for _ in range(8):
+                if parent:
+                    link = parent.find('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+                    if link:
+                        m = re.search(r'/live-cricket-scores/(\d+)/', link.get('href', ''))
+                        if m:
+                            mid = m.group(1)
+                            if mid not in flag_map:
+                                flag_map[mid] = {'team1_flag': None, 'team2_flag': None, 'team1_name': None, 'team2_name': None}
+                            
+                            if not flag_map[mid]['team1_flag']:
+                                flag_map[mid]['team1_flag'] = src
+                                flag_map[mid]['team1_name'] = team_name
+                            elif not flag_map[mid]['team2_flag']:
+                                flag_map[mid]['team2_flag'] = src
+                                flag_map[mid]['team2_name'] = team_name
+                            break
+                    parent = parent.parent
+    
+    # Extract series info for each match
+    series_map = {}
+    for s_link in main_container.find_all('a', href=re.compile(r'/cricket-series/(\d+)/')):
+        href = s_link.get('href', '')
+        match = re.search(r'/cricket-series/(\d+)/([^/\?"]+)', href)
+        if match:
+            series_id = match.group(1)
+            series_name = s_link.get_text(strip=True)
+            if series_name and series_name not in ['Matches', 'Points Table', 'Venues']:
+                # Find match links near this series link
+                parent = s_link.parent
+                for _ in range(5):
+                    if parent:
+                        match_links = parent.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+                        for m_link in match_links:
+                            m_match = re.search(r'/live-cricket-scores/(\d+)/', m_link.get('href', ''))
+                            if m_match:
+                                mid = m_match.group(1)
+                                if mid not in series_map:
+                                    series_map[mid] = {'series_id': series_id, 'series_name': series_name}
+                        if match_links:
+                            break
+                        parent = parent.parent
+    
+    # Get ALL unique match IDs from first container
+    all_match_links = main_container.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+    seen_match_ids = set()
+    matches = []
+    
+    for link in all_match_links:
+        href = link.get('href', '')
+        m = re.search(r'/live-cricket-scores/(\d+)/', href)
+        if m:
+            mid = m.group(1)
+            if mid not in seen_match_ids:
+                seen_match_ids.add(mid)
+                
+                # Get status (default to 'Upcoming' if not found)
+                status = status_map.get(mid, 'Upcoming')
+                result = result_map.get(mid, '')
+                
+                # Get scores
+                scores = score_map.get(mid, {})
+                team1_score = scores.get('team1_score', '-')
+                team2_score = scores.get('team2_score', '-')
+                
+                # Get flags and team names
+                flags = flag_map.get(mid, {})
+                team1_flag = flags.get('team1_flag', '')
+                team2_flag = flags.get('team2_flag', '')
+                team1_name = flags.get('team1_name', '')
+                team2_name = flags.get('team2_name', '')
+                
+                # Get series info
+                series_info = series_map.get(mid, {})
+                series_id = series_info.get('series_id', '')
+                series_name = series_info.get('series_name', '')
+                
+                # Get match title from link text
+                match_title = link.get_text(strip=True) or ''
+                
+                matches.append({
+                    'match_id': mid,
+                    'match_title': match_title,
+                    'state': status,
+                    'result': result,
+                    'team1_name': team1_name,
+                    'team2_name': team2_name,
+                    'team1_score': team1_score,
+                    'team2_score': team2_score,
+                    'team1_flag': team1_flag,
+                    'team2_flag': team2_flag,
+                    'series_id': series_id,
+                    'series_name': series_name
+                })
+    
+    logger.info(f"Live Scores: Found {len(matches)} matches in first container")
+    return {'success': True, 'matches': matches, 'count': len(matches), 'message': f'Found {len(matches)} matches'}
 
 
 def scrape_series_from_live_page():

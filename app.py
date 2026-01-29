@@ -2988,28 +2988,32 @@ def scrape_live_scores_api():
             existing = Match.query.filter_by(match_id=match_data['match_id']).first()
             
             if existing:
-                existing.team1_name = match_data.get('team1', existing.team1_name)
-                existing.team2_name = match_data.get('team2', existing.team2_name)
+                existing.team1_name = match_data.get('team1_name') or match_data.get('team1') or existing.team1_name
+                existing.team2_name = match_data.get('team2_name') or match_data.get('team2') or existing.team2_name
                 existing.match_format = match_data.get('match_format', existing.match_format)
-                existing.state = match_data.get('status', existing.state)
+                existing.state = match_data.get('state') or match_data.get('status') or existing.state
                 existing.match_url = match_data.get('match_url', existing.match_url)
                 existing.cricbuzz_series_id = match_data.get('series_id', existing.cricbuzz_series_id)
                 existing.team1_score = match_data.get('team1_score') or existing.team1_score
                 existing.team2_score = match_data.get('team2_score') or existing.team2_score
+                existing.team1_flag = match_data.get('team1_flag') or existing.team1_flag
+                existing.team2_flag = match_data.get('team2_flag') or existing.team2_flag
                 existing.result = match_data.get('result') or existing.result
                 existing.updated_at = datetime.utcnow()
                 updated += 1
             else:
                 new_match = Match(
                     match_id=match_data['match_id'],
-                    team1_name=match_data.get('team1', ''),
-                    team2_name=match_data.get('team2', ''),
+                    team1_name=match_data.get('team1_name') or match_data.get('team1', ''),
+                    team2_name=match_data.get('team2_name') or match_data.get('team2', ''),
                     match_format=match_data.get('match_format', ''),
-                    state=match_data.get('status', 'Upcoming'),
+                    state=match_data.get('state') or match_data.get('status', 'Upcoming'),
                     match_url=match_data.get('match_url', ''),
                     cricbuzz_series_id=match_data.get('series_id'),
                     team1_score=match_data.get('team1_score', ''),
                     team2_score=match_data.get('team2_score', ''),
+                    team1_flag=match_data.get('team1_flag', ''),
+                    team2_flag=match_data.get('team2_flag', ''),
                     result=match_data.get('result', '')
                 )
                 db.session.add(new_match)
