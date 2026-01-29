@@ -4,17 +4,19 @@
 
 {% block content %}
 <section class="team-detail-page">
-    <div class="page-header">
-        <a href="/teams/{{ team.category.slug }}" class="back-link">&larr; Back to {{ team.category.name }}</a>
-        <div class="team-header">
-            <div class="team-flag-large">
+    <div class="team-hero">
+        <div class="team-hero-content">
+            <div class="team-flag-hero">
                 {% if team.flag_url %}
                 <img src="{{ team.flag_url }}" alt="{{ team.name }}">
                 {% else %}
-                <div class="flag-placeholder-large">{{ team.name[0] }}</div>
+                <div class="flag-placeholder-hero">{{ team.name[0] }}</div>
                 {% endif %}
             </div>
-            <h1 class="team-title">{{ team.name }}</h1>
+            <div class="team-info-hero">
+                <h1 class="team-name-hero">{{ team.name }}</h1>
+                <span class="team-category-badge">{{ team.category.name }}</span>
+            </div>
         </div>
     </div>
     

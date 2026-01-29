@@ -604,7 +604,135 @@ body {
     text-align: center;
 }
 
-/* Team Detail Page */
+/* Team Detail Page - Hero Section */
+.team-hero {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #1a5a3a 100%);
+    padding: 40px 20px;
+    margin: -20px -20px 30px -20px;
+    border-radius: 0 0 20px 20px;
+}
+
+.team-hero-content {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.team-flag-hero {
+    width: 120px;
+    height: 90px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.team-flag-hero img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.flag-placeholder-hero {
+    width: 80px;
+    height: 80px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.team-info-hero {
+    flex: 1;
+}
+
+.team-name-hero {
+    font-size: 2.5rem;
+    color: var(--white);
+    margin: 0 0 8px 0;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.team-category-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    color: var(--white);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Responsive Team Hero */
+@media (max-width: 768px) {
+    .team-hero {
+        padding: 30px 15px;
+        margin: -15px -15px 25px -15px;
+    }
+    
+    .team-hero-content {
+        gap: 20px;
+    }
+    
+    .team-flag-hero {
+        width: 90px;
+        height: 70px;
+        padding: 8px;
+    }
+    
+    .team-name-hero {
+        font-size: 1.8rem;
+    }
+    
+    .team-category-badge {
+        font-size: 0.8rem;
+        padding: 5px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .team-hero {
+        padding: 25px 12px;
+    }
+    
+    .team-hero-content {
+        gap: 15px;
+    }
+    
+    .team-flag-hero {
+        width: 70px;
+        height: 55px;
+        padding: 6px;
+    }
+    
+    .flag-placeholder-hero {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .team-name-hero {
+        font-size: 1.4rem;
+    }
+    
+    .team-category-badge {
+        font-size: 0.75rem;
+        padding: 4px 10px;
+    }
+}
+
+/* Legacy styles - keep for compatibility */
 .team-header {
     display: flex;
     align-items: center;
