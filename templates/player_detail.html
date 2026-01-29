@@ -17,7 +17,7 @@
     "@context": "https://schema.org",
     "@type": "Person",
     "name": "{{ player.name }}",
-    "url": "https://cricbuzz-live-score.com/player/{{ player.id }}",
+    "url": "https://cricbuzz-live-score.com/player/{{ player.slug or player.id }}",
     {% if player.photo_url %}
     "image": "{{ player.photo_url }}",
     {% endif %}
@@ -37,7 +37,7 @@
 <section class="player-detail-page">
     <div class="page-header">
         {% if player.team %}
-        <a href="/team/{{ player.team.id }}" class="back-link">&larr; Back to {{ player.team.name }}</a>
+        <a href="/team/{{ player.team.slug or player.team.id }}" class="back-link">&larr; Back to {{ player.team.name }}</a>
         {% else %}
         <a href="/teams" class="back-link">&larr; Back to Teams</a>
         {% endif %}
