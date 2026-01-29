@@ -14,7 +14,7 @@
                 {% endif %}
             </div>
             <div class="team-info-hero">
-                <h1 class="team-name-hero">{{ team.name }}</h1>
+                <h1 class="team-name-hero">{{ team.name }}{% if team.category.slug == 'international' %} National Cricket Team{% endif %}</h1>
                 <span class="team-category-badge">{{ team.category.name }}</span>
             </div>
         </div>
