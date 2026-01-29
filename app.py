@@ -643,10 +643,13 @@ def team_detail(slug):
         team = Team.query.get_or_404(int(slug))
         if team.slug:
             return redirect(url_for('team_detail', slug=team.slug), code=301)
+        # If no slug, render with ID (don't redirect to avoid loop)
+        players = Player.query.filter_by(team_id=team.id).all()
+        return render_template('team_detail.html', team=team, players=players)
     else:
         team = Team.query.filter_by(slug=slug).first_or_404()
-    players = Player.query.filter_by(team_id=team.id).all()
-    return render_template('team_detail.html', team=team, players=players)
+        players = Player.query.filter_by(team_id=team.id).all()
+        return render_template('team_detail.html', team=team, players=players)
 
 @app.route('/player/<slug>')
 def player_detail(slug):
@@ -3867,6 +3870,9 @@ def check_redirects():
         ).first()
     
     if redirect_rule:
+        # Prevent redirect loop - don't redirect to same URL
+        if redirect_rule.new_url == original_path or redirect_rule.new_url == original_path.rstrip('/'):
+            return None
         # Update hit count safely
         try:
             redirect_rule.hit_count += 1
