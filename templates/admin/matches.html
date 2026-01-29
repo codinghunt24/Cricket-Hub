@@ -446,44 +446,100 @@
 
 <script>
 function scrapeLiveScores() {
-    const btn = document.getElementById('scrapeLiveBtn');
+    const btn = document.getElementById('scrape-btn');
     const resultDiv = document.getElementById('liveScrapingResult');
+    const tbody = document.getElementById('matches-tbody');
     
-    btn.disabled = true;
-    btn.textContent = 'Scraping...';
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Fetching...';
+    }
     resultDiv.style.display = 'block';
     resultDiv.style.background = '#333';
-    resultDiv.innerHTML = '<span style="color: #00deaa;">Scraping live scores from Cricbuzz...</span>';
+    resultDiv.innerHTML = '<span style="color: #00deaa;">Fetching recent matches from Cricbuzz...</span>';
     
-    fetch('/api/scrape/live-scores', { method: 'POST' })
+    fetch('/api/matches/scrape-recent', { method: 'POST' })
         .then(r => r.json())
         .then(data => {
-            if (data.success) {
+            if (data.success && data.matches) {
                 resultDiv.style.background = '#1a4d1a';
                 resultDiv.innerHTML = `
-                    <div style="color: #00ff00; font-weight: bold;">Scraping Complete!</div>
-                    <div style="color: #ccc; margin-top: 8px;">
-                        <span style="margin-right: 15px;">Total: ${data.counts.total}</span>
-                        <span style="margin-right: 15px; color: #ff4444;">Live: ${data.counts.live}</span>
-                        <span style="margin-right: 15px; color: #ffaa00;">Innings Break: ${data.counts.innings_break}</span>
-                        <span style="color: #00cc66;">Complete: ${data.counts.complete}</span>
-                    </div>
-                    <div style="color: #888; margin-top: 5px;">Saved: ${data.saved} new, Updated: ${data.updated} existing</div>
+                    <div style="color: #00ff00; font-weight: bold;">Fetch Complete!</div>
+                    <div style="color: #ccc; margin-top: 8px;">Found ${data.count} recent matches</div>
                 `;
-                setTimeout(() => location.reload(), 2000);
+                
+                document.getElementById('match-count').textContent = data.count;
+                
+                if (data.matches.length > 0) {
+                    let html = '';
+                    data.matches.forEach(m => {
+                        html += `
+                        <tr id="row-${m.match_id}" data-state="${m.state || 'Complete'}" data-has-result="${m.result ? 'yes' : 'no'}">
+                            <td><a href="https://www.cricbuzz.com/cricket-series/${m.series_id}" target="_blank" title="${m.series_name}">${(m.series_name || '-').substring(0, 20)}...</a></td>
+                            <td><a href="https://www.cricbuzz.com/live-cricket-scores/${m.match_id}" target="_blank">${m.match_id}</a></td>
+                            <td class="team-cell">${m.team1_flag ? `<img src="${m.team1_flag}" class="team-flag" alt="">` : ''} ${m.team1_name || 'Team 1'}</td>
+                            <td class="score-cell">-</td>
+                            <td class="team-cell">${m.team2_flag ? `<img src="${m.team2_flag}" class="team-flag" alt="">` : ''} ${m.team2_name || 'Team 2'}</td>
+                            <td class="score-cell">-</td>
+                            <td class="status-cell status-completed">${m.state || 'Complete'}</td>
+                            <td class="result-cell">${m.result || '-'}</td>
+                            <td><button class="scrape-btn" onclick="scrapeScorecard('${m.match_id}', '${m.series_id}', this)">Scrape</button></td>
+                        </tr>`;
+                    });
+                    tbody.innerHTML = html;
+                }
             } else {
                 resultDiv.style.background = '#4d1a1a';
                 resultDiv.innerHTML = `<span style="color: #ff4444;">Error: ${data.message}</span>`;
             }
-            btn.disabled = false;
-            btn.textContent = 'Scrape Live Scores';
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Fetch Data';
+            }
         })
         .catch(e => {
             resultDiv.style.background = '#4d1a1a';
             resultDiv.innerHTML = `<span style="color: #ff4444;">Error: ${e}</span>`;
-            btn.disabled = false;
-            btn.textContent = 'Scrape Live Scores';
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Fetch Data';
+            }
         });
+}
+
+function scrapeScorecard(matchId, seriesId, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Scraping...';
+    
+    fetch(`/api/scrape/scorecard/${matchId}?series_id=${seriesId}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                btn.textContent = 'Done!';
+                btn.style.background = '#10b981';
+            } else {
+                btn.textContent = 'Error';
+                btn.style.background = '#ef4444';
+            }
+        })
+        .catch(e => {
+            btn.textContent = 'Error';
+            btn.style.background = '#ef4444';
+        });
+}
+
+function sortMatchesByStatus() {
+    const tbody = document.getElementById('matches-tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    rows.sort((a, b) => {
+        const stateOrder = {'Live': 0, 'In Progress': 1, 'Innings Break': 2, 'Complete': 3, 'Upcoming': 4};
+        const stateA = stateOrder[a.dataset.state] || 5;
+        const stateB = stateOrder[b.dataset.state] || 5;
+        return stateA - stateB;
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
 }
 
 function clearAllMatches() {
@@ -521,7 +577,7 @@ function filterMatches(status) {
         }
     });
     
-    const rows = document.querySelectorAll('.matches-table tbody tr');
+    const rows = document.querySelectorAll('#matches-tbody tr');
     rows.forEach(row => {
         if (status === 'all') {
             row.style.display = '';

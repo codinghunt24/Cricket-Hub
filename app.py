@@ -3183,6 +3183,16 @@ def clear_all_matches():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
+@app.route('/api/matches/scrape-recent', methods=['POST'])
+def api_scrape_recent_matches():
+    """API endpoint to scrape recent matches from Cricbuzz"""
+    try:
+        result = scraper.scrape_recent_matches()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e), 'matches': []}), 500
+
+
 @app.route('/admin/categories')
 @admin_required
 def admin_categories():
