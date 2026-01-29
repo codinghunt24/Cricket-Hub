@@ -141,6 +141,17 @@
                 </div>
             </div>
             <div class="footer-bottom">
+                <div class="footer-bottom-menu">
+                    <a href="/live-scores">Live Score</a>
+                    <span>|</span>
+                    <a href="/teams">Teams</a>
+                    <span>|</span>
+                    <a href="/series">Series</a>
+                    {% for page in footer_pages %}
+                    <span>|</span>
+                    <a href="/page/{{ page.slug }}">{{ page.title }}</a>
+                    {% endfor %}
+                </div>
                 <p>&copy; 2026 Cricbuzz Live Score. All rights reserved. | <a href="https://cricbuzz-live-score.com">cricbuzz-live-score.com</a></p>
             </div>
         </div>

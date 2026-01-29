@@ -1503,6 +1503,29 @@ body {
     text-align: center;
 }
 
+.footer-bottom-menu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.footer-bottom-menu a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer-bottom-menu a:hover {
+    color: var(--accent-color);
+}
+
+.footer-bottom-menu span {
+    color: rgba(255, 255, 255, 0.4);
+}
+
 .footer-bottom p {
     color: rgba(255, 255, 255, 0.6);
     font-size: 0.85rem;
