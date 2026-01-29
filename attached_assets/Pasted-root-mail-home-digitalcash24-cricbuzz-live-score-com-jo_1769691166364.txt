@@ -1,0 +1,53 @@
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# journalctl -u cricbuzz -n 50 --no-pager
+-- Logs begin at Mon 2025-11-10 12:47:14 CET, end at Thu 2026-01-29 13:51:59 CET. --
+Jan 29 13:48:56 mail.digitalcash24.com gunicorn[4105402]:   File "<frozen importlib._bootstrap>", line 1014, in _gcd_import
+Jan 29 13:48:56 mail.digitalcash24.com gunicorn[4105402]:   File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+Jan 29 13:48:56 mail.digitalcash24.com gunicorn[4105402]:   File "<frozen importlib._bootstrap>", line 973, in _find_and_load_unlocked
+Jan 29 13:48:56 mail.digitalcash24.com gunicorn[4105402]: ModuleNotFoundError: No module named 'timeout'
+Jan 29 13:48:56 mail.digitalcash24.com gunicorn[4105402]: [2026-01-29 13:48:56 +0100] [4105402] [INFO] Worker exiting (pid: 4105402)
+Jan 29 13:48:56 mail.digitalcash24.com gunicorn[4105400]: [2026-01-29 13:48:56 +0100] [4105400] [ERROR] Worker (pid:4105402) exited with code 3
+Jan 29 13:48:56 mail.digitalcash24.com gunicorn[4105400]: [2026-01-29 13:48:56 +0100] [4105400] [ERROR] Shutting down: Master
+Jan 29 13:48:56 mail.digitalcash24.com gunicorn[4105400]: [2026-01-29 13:48:56 +0100] [4105400] [ERROR] Reason: Worker failed to boot.
+Jan 29 13:48:56 mail.digitalcash24.com systemd[1]: cricbuzz.service: Main process exited, code=exited, status=3/NOTIMPLEMENTED
+Jan 29 13:48:56 mail.digitalcash24.com systemd[1]: cricbuzz.service: Failed with result 'exit-code'.
+Jan 29 13:48:56 mail.digitalcash24.com systemd[1]: cricbuzz.service: Scheduled restart job, restart counter is at 4.
+Jan 29 13:48:56 mail.digitalcash24.com systemd[1]: Stopped Cricbuzz Live Score.
+Jan 29 13:48:56 mail.digitalcash24.com systemd[1]: Started Cricbuzz Live Score.
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105410]: [2026-01-29 13:48:57 +0100] [4105410] [INFO] Starting gunicorn 23.0.0
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105410]: [2026-01-29 13:48:57 +0100] [4105410] [INFO] Listening at: http://127.0.0.1:8000 (4105410)
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105410]: [2026-01-29 13:48:57 +0100] [4105410] [INFO] Using worker: sync
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]: [2026-01-29 13:48:57 +0100] [4105416] [INFO] Booting worker with pid: 4105416
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]: [2026-01-29 13:48:57 +0100] [4105416] [ERROR] Exception in worker process
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]: Traceback (most recent call last):
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:     worker.init_process()
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 135, in init_process
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:     self.load_wsgi()
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:     self.wsgi = self.app.wsgi()
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/app/base.py", line 66, in wsgi
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:     self.callable = self.load()
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:     return self.load_wsgiapp()
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:     return util.import_app(self.app_uri)
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/util.py", line 370, in import_app
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:     mod = importlib.import_module(module)
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:   File "/usr/lib/python3.8/importlib/__init__.py", line 127, in import_module
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:     return _bootstrap._gcd_import(name[level:], package, level)
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:   File "<frozen importlib._bootstrap>", line 1014, in _gcd_import
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:   File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]:   File "<frozen importlib._bootstrap>", line 973, in _find_and_load_unlocked
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]: ModuleNotFoundError: No module named 'timeout'
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105416]: [2026-01-29 13:48:57 +0100] [4105416] [INFO] Worker exiting (pid: 4105416)
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105410]: [2026-01-29 13:48:57 +0100] [4105410] [ERROR] Worker (pid:4105416) exited with code 3
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105410]: [2026-01-29 13:48:57 +0100] [4105410] [ERROR] Shutting down: Master
+Jan 29 13:48:57 mail.digitalcash24.com gunicorn[4105410]: [2026-01-29 13:48:57 +0100] [4105410] [ERROR] Reason: Worker failed to boot.
+Jan 29 13:48:57 mail.digitalcash24.com systemd[1]: cricbuzz.service: Main process exited, code=exited, status=3/NOTIMPLEMENTED
+Jan 29 13:48:57 mail.digitalcash24.com systemd[1]: cricbuzz.service: Failed with result 'exit-code'.
+Jan 29 13:48:57 mail.digitalcash24.com systemd[1]: cricbuzz.service: Scheduled restart job, restart counter is at 5.
+Jan 29 13:48:57 mail.digitalcash24.com systemd[1]: Stopped Cricbuzz Live Score.
+Jan 29 13:48:57 mail.digitalcash24.com systemd[1]: cricbuzz.service: Start request repeated too quickly.
+Jan 29 13:48:57 mail.digitalcash24.com systemd[1]: cricbuzz.service: Failed with result 'exit-code'.
+Jan 29 13:48:57 mail.digitalcash24.com systemd[1]: Failed to start Cricbuzz Live Score.
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
