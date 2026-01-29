@@ -381,6 +381,29 @@ def scrape_recent_matches():
     seen_match_ids = set()
     matches = []
     
+    # Team abbreviation to full name and flag mapping
+    team_abbr_map = {
+        'ind': ('India', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225641/india.jpg'),
+        'aus': ('Australia', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225635/australia.jpg'),
+        'eng': ('England', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225638/england.jpg'),
+        'pak': ('Pakistan', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225645/pakistan.jpg'),
+        'sa': ('South Africa', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225651/south-africa.jpg'),
+        'rsa': ('South Africa', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225651/south-africa.jpg'),
+        'nz': ('New Zealand', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225644/new-zealand.jpg'),
+        'wi': ('West Indies', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225653/west-indies.jpg'),
+        'sl': ('Sri Lanka', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225652/sri-lanka.jpg'),
+        'ban': ('Bangladesh', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225636/bangladesh.jpg'),
+        'afg': ('Afghanistan', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225634/afghanistan.jpg'),
+        'ire': ('Ireland', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225640/ireland.jpg'),
+        'zim': ('Zimbabwe', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225654/zimbabwe.jpg'),
+        'sco': ('Scotland', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225649/scotland.jpg'),
+        'ned': ('Netherlands', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225643/netherlands.jpg'),
+        'uae': ('UAE', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225655/uae.jpg'),
+        'usa': ('USA', 'https://static.cricbuzz.com/a/img/v1/152x152/i1/c225656/usa.jpg'),
+        'ita': ('Italy', ''),
+        'hk': ('Hong Kong', ''),
+    }
+    
     for link in all_match_links:
         href = link.get('href', '')
         m = re.search(r'/live-cricket-scores/(\d+)/', href)
@@ -391,11 +414,35 @@ def scrape_recent_matches():
                 
                 result = result_map.get(mid, '')
                 
+                # Try to extract team names from URL pattern like "nz-vs-ind"
+                team1_name = ''
+                team2_name = ''
+                team1_flag = ''
+                team2_flag = ''
+                
+                url_match = re.search(r'/(\w+)-vs-(\w+)-', href)
+                if url_match:
+                    abbr1 = url_match.group(1).lower()
+                    abbr2 = url_match.group(2).lower()
+                    if abbr1 in team_abbr_map:
+                        team1_name, team1_flag = team_abbr_map[abbr1]
+                    else:
+                        team1_name = abbr1.upper()
+                    if abbr2 in team_abbr_map:
+                        team2_name, team2_flag = team_abbr_map[abbr2]
+                    else:
+                        team2_name = abbr2.upper()
+                
+                # Override with flag_map if available
                 flags = flag_map.get(mid, {})
-                team1_flag = flags.get('team1_flag', '')
-                team2_flag = flags.get('team2_flag', '')
-                team1_name = flags.get('team1_name', '')
-                team2_name = flags.get('team2_name', '')
+                if flags.get('team1_flag'):
+                    team1_flag = flags.get('team1_flag')
+                if flags.get('team2_flag'):
+                    team2_flag = flags.get('team2_flag')
+                if flags.get('team1_name'):
+                    team1_name = flags.get('team1_name')
+                if flags.get('team2_name'):
+                    team2_name = flags.get('team2_name')
                 
                 series_info = series_map.get(mid, {})
                 series_id = series_info.get('series_id', '')
