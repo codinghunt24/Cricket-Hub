@@ -1,0 +1,53 @@
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# journalctl -u cricbuzz -n 50 --no-pager
+-- Logs begin at Mon 2025-11-10 12:47:14 CET, end at Thu 2026-01-29 18:46:00 CET. --
+Jan 29 18:28:41 mail.digitalcash24.com gunicorn[57317]: INFO:apscheduler.scheduler:Scheduler has been shut down
+Jan 29 18:28:41 mail.digitalcash24.com gunicorn[57317]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Jan 29 18:28:41 mail.digitalcash24.com gunicorn[57317]: DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+Jan 29 18:28:41 mail.digitalcash24.com gunicorn[57301]: [2026-01-29 18:28:41 +0100] [57301] [INFO] Shutting down: Master
+Jan 29 18:28:41 mail.digitalcash24.com systemd[1]: cricbuzz.service: Succeeded.
+Jan 29 18:28:41 mail.digitalcash24.com systemd[1]: Stopped Cricbuzz Live Score.
+Jan 29 18:28:41 mail.digitalcash24.com systemd[1]: Started Cricbuzz Live Score.
+Jan 29 18:28:41 mail.digitalcash24.com gunicorn[62562]: [2026-01-29 18:28:41 +0100] [62562] [INFO] Starting gunicorn 23.0.0
+Jan 29 18:28:41 mail.digitalcash24.com gunicorn[62562]: [2026-01-29 18:28:41 +0100] [62562] [INFO] Listening at: http://127.0.0.1:8000 (62562)
+Jan 29 18:28:41 mail.digitalcash24.com gunicorn[62562]: [2026-01-29 18:28:41 +0100] [62562] [INFO] Using worker: sync
+Jan 29 18:28:41 mail.digitalcash24.com gunicorn[62582]: [2026-01-29 18:28:41 +0100] [62582] [INFO] Booting worker with pid: 62582
+Jan 29 18:28:42 mail.digitalcash24.com gunicorn[62582]: DEBUG:tzlocal:/etc/timezone found, contents:
+Jan 29 18:28:42 mail.digitalcash24.com gunicorn[62582]:  Europe/Berlin
+Jan 29 18:28:42 mail.digitalcash24.com gunicorn[62582]: DEBUG:tzlocal:/etc/localtime found
+Jan 29 18:28:42 mail.digitalcash24.com gunicorn[62582]: DEBUG:tzlocal:2 found:
+Jan 29 18:28:42 mail.digitalcash24.com gunicorn[62582]:  {'/etc/timezone': 'Europe/Berlin', '/etc/localtime is a symlink to': 'Europe/Berlin'}
+Jan 29 18:28:42 mail.digitalcash24.com gunicorn[62582]: INFO:root:Generated slugs: 935 teams, 0 players, 0 series
+Jan 29 18:28:42 mail.digitalcash24.com gunicorn[62582]: INFO:apscheduler.scheduler:Scheduler started
+Jan 29 18:28:42 mail.digitalcash24.com gunicorn[62582]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Jan 29 18:28:42 mail.digitalcash24.com gunicorn[62582]: DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+Jan 29 18:29:13 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 18:29:13 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team HTTP/11" 200 51678
+Jan 29 18:29:13 mail.digitalcash24.com gunicorn[62582]: INFO:scraper:Scraped 37 teams from international
+Jan 29 18:29:13 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 18:29:13 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/domestic HTTP/11" 200 84565
+Jan 29 18:29:13 mail.digitalcash24.com gunicorn[62582]: INFO:scraper:Scraped 366 teams from domestic
+Jan 29 18:29:14 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 18:29:14 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/league HTTP/11" 200 87813
+Jan 29 18:29:14 mail.digitalcash24.com gunicorn[62582]: INFO:scraper:Scraped 366 teams from league
+Jan 29 18:29:15 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 18:29:15 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/women HTTP/11" 200 64570
+Jan 29 18:29:16 mail.digitalcash24.com gunicorn[62582]: INFO:scraper:Scraped 167 teams from women
+Jan 29 18:34:10 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 18:34:10 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 64700
+Jan 29 18:34:10 mail.digitalcash24.com gunicorn[62582]: INFO:scraper:Live Scores: Found 23 matches in first container
+Jan 29 18:36:49 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 18:36:49 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 64616
+Jan 29 18:36:49 mail.digitalcash24.com gunicorn[62582]: INFO:scraper:Live Scores: Found 23 matches in first container
+Jan 29 18:37:14 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 18:37:14 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 64638
+Jan 29 18:37:15 mail.digitalcash24.com gunicorn[62582]: INFO:scraper:Live Scores: Found 23 matches in first container
+Jan 29 18:37:16 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 18:37:16 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores/recent-matches HTTP/11" 200 93916
+Jan 29 18:37:17 mail.digitalcash24.com gunicorn[62582]: INFO:scraper:Recent Matches: Found 80 matches
+Jan 29 18:40:53 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 18:40:53 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 64638
+Jan 29 18:40:54 mail.digitalcash24.com gunicorn[62582]: INFO:scraper:Live Scores: Found 23 matches in first container
+Jan 29 18:43:38 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 18:43:38 mail.digitalcash24.com gunicorn[62582]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 64930
+Jan 29 18:43:38 mail.digitalcash24.com gunicorn[62582]: INFO:scraper:Live Scores: Found 23 matches in first container
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
