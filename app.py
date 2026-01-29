@@ -354,32 +354,31 @@ def sitemap_xml():
 
 @app.route('/')
 def index():
-    # Scrape live data from Cricbuzz (same as admin Live Score page)
-    scrape_result = scraper.scrape_series_from_live_page()
+    # Scrape live data from Cricbuzz using new function that gets ALL matches from first container
+    scrape_result = scraper.scrape_live_scores()
     
     matches = []
     match_flags = {}
     
     if scrape_result.get('success'):
         # Convert scraped data to match format for template
-        for s in scrape_result.get('series', []):
-            for m in s.get('matches', []):
-                match_data = {
-                    'match_id': m.get('match_id'),
-                    'match_format': s.get('series_name', 'Match'),
-                    'team1_name': m.get('team1_name', 'Team 1'),
-                    'team2_name': m.get('team2_name', 'Team 2'),
-                    'team1_score': m.get('team1_score', ''),
-                    'team2_score': m.get('team2_score', ''),
-                    'state': m.get('match_status', 'Live'),
-                    'result': m.get('match_result', '')
-                }
-                matches.append(type('Match', (), match_data)())
-                
-                # Set flags
-                if m.get('match_id'):
-                    match_flags[f"{m.get('match_id')}_1"] = m.get('team1_flag', '')
-                    match_flags[f"{m.get('match_id')}_2"] = m.get('team2_flag', '')
+        for m in scrape_result.get('matches', []):
+            match_data = {
+                'match_id': m.get('match_id'),
+                'match_format': m.get('series_name', 'Match'),
+                'team1_name': m.get('team1_name', 'Team 1'),
+                'team2_name': m.get('team2_name', 'Team 2'),
+                'team1_score': m.get('team1_score', ''),
+                'team2_score': m.get('team2_score', ''),
+                'state': m.get('state', 'Live'),
+                'result': m.get('result', '')
+            }
+            matches.append(type('Match', (), match_data)())
+            
+            # Set flags
+            if m.get('match_id'):
+                match_flags[f"{m.get('match_id')}_1"] = m.get('team1_flag', '')
+                match_flags[f"{m.get('match_id')}_2"] = m.get('team2_flag', '')
     
     recent_posts = Post.query.filter_by(is_published=True).order_by(Post.created_at.desc()).limit(10).all()
     
@@ -390,31 +389,30 @@ def index():
 
 @app.route('/live-scores')
 def live_scores():
-    # Scrape live data from Cricbuzz (same as home page)
-    scrape_result = scraper.scrape_series_from_live_page()
+    # Scrape live data from Cricbuzz using new function
+    scrape_result = scraper.scrape_live_scores()
     
     matches = []
     match_flags = {}
     
     if scrape_result.get('success'):
-        for s in scrape_result.get('series', []):
-            for m in s.get('matches', []):
-                match_data = {
-                    'match_id': m.get('match_id'),
-                    'match_format': s.get('series_name', 'Match'),
-                    'team1_name': m.get('team1_name', 'Team 1'),
-                    'team2_name': m.get('team2_name', 'Team 2'),
-                    'team1_score': m.get('team1_score', ''),
-                    'team2_score': m.get('team2_score', ''),
-                    'state': m.get('match_status', 'Live'),
-                    'result': m.get('match_result', '')
-                }
-                matches.append(type('Match', (), match_data)())
-                
-                if m.get('team1_flag'):
-                    match_flags[f"{m.get('match_id')}_1"] = m.get('team1_flag')
-                if m.get('team2_flag'):
-                    match_flags[f"{m.get('match_id')}_2"] = m.get('team2_flag')
+        for m in scrape_result.get('matches', []):
+            match_data = {
+                'match_id': m.get('match_id'),
+                'match_format': m.get('series_name', 'Match'),
+                'team1_name': m.get('team1_name', 'Team 1'),
+                'team2_name': m.get('team2_name', 'Team 2'),
+                'team1_score': m.get('team1_score', ''),
+                'team2_score': m.get('team2_score', ''),
+                'state': m.get('state', 'Live'),
+                'result': m.get('result', '')
+            }
+            matches.append(type('Match', (), match_data)())
+            
+            if m.get('team1_flag'):
+                match_flags[f"{m.get('match_id')}_1"] = m.get('team1_flag')
+            if m.get('team2_flag'):
+                match_flags[f"{m.get('match_id')}_2"] = m.get('team2_flag')
     
     # Recent completed matches for sidebar from database
     recent_matches = Match.query.filter(Match.state == 'Complete').order_by(Match.updated_at.desc()).limit(5).all()
@@ -648,32 +646,36 @@ def admin_live_score():
         db.session.add(setting)
         db.session.commit()
     
-    # Auto-fetch from container on page load
-    scrape_result = scraper.scrape_series_from_live_page()
+    # Auto-fetch from container on page load using new function
+    scrape_result = scraper.scrape_live_scores()
     
     all_sorted = []
     live_count = 0
     complete_count = 0
+    preview_count = 0
     
     if scrape_result.get('success'):
-        for s in scrape_result.get('series', []):
-            for m in s.get('matches', []):
-                all_sorted.append({
-                    'match_id': m.get('match_id'),
-                    'series_id': s.get('series_id'),
-                    'series_name': s.get('series_name'),
-                    'match_title': m.get('match_title', '-'),
-                    'team1_score': m.get('team1_score', '-'),
-                    'team2_score': m.get('team2_score', '-'),
-                    'team1_flag': m.get('team1_flag', ''),
-                    'team2_flag': m.get('team2_flag', ''),
-                    'status': m.get('match_status', '-'),
-                    'result': m.get('match_result', '-')
-                })
-                if m.get('match_status') == 'Live':
-                    live_count += 1
-                elif m.get('match_status') == 'Completed':
-                    complete_count += 1
+        for m in scrape_result.get('matches', []):
+            all_sorted.append({
+                'match_id': m.get('match_id'),
+                'series_id': m.get('series_id'),
+                'series_name': m.get('series_name'),
+                'match_title': m.get('match_title', '-'),
+                'team1_name': m.get('team1_name', '-'),
+                'team2_name': m.get('team2_name', '-'),
+                'team1_score': m.get('team1_score', '-'),
+                'team2_score': m.get('team2_score', '-'),
+                'team1_flag': m.get('team1_flag', ''),
+                'team2_flag': m.get('team2_flag', ''),
+                'status': m.get('state', '-'),
+                'result': m.get('result', '-')
+            })
+            if m.get('state') == 'Live':
+                live_count += 1
+            elif m.get('state') == 'Complete':
+                complete_count += 1
+            elif m.get('state') == 'Preview':
+                preview_count += 1
     
     return render_template('admin/live_score.html', 
                          setting=setting,
