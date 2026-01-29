@@ -42,7 +42,7 @@
     <div class="match-header">
         <div class="header-content">
             {% if match.series_id %}
-            <a href="{{ url_for('series_detail', series_id=match.series_id) }}" class="back-link">
+            <a href="{{ url_for('series_detail', slug=match.series_id) }}" class="back-link">
                 <i class="fas fa-arrow-left"></i> Back to Series
             </a>
             {% else %}
