@@ -13,6 +13,10 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="/admin" class="sidebar-logo">CricLive Admin</a>
+                <div class="server-time-display">
+                    <span class="server-time-label">Server:</span>
+                    <span id="serverClock" class="server-clock">--:--:--</span>
+                </div>
                 <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
                     <span class="hamburger"></span>
                 </button>
@@ -147,5 +151,20 @@
     </div>
     
     <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <script>
+    // Server Clock
+    function updateServerClock() {
+        fetch('/api/server-time')
+            .then(res => res.json())
+            .then(data => {
+                if (data.time) {
+                    document.getElementById('serverClock').textContent = data.time;
+                }
+            })
+            .catch(() => {});
+    }
+    updateServerClock();
+    setInterval(updateServerClock, 1000);
+    </script>
 </body>
 </html>
