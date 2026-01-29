@@ -1,0 +1,53 @@
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# journalctl -u cricbuzz -n 50 --no-pager
+-- Logs begin at Mon 2025-11-10 12:47:14 CET, end at Thu 2026-01-29 13:31:29 CET. --
+Jan 29 13:31:12 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/12247/zahoor-khan: Born=May 25, 1989, Role=Bowler
+Jan 29 13:31:12 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:12 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/1428060/ayan-desai HTTP/11" 200 None
+Jan 29 13:31:13 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/1428060/ayan-desai: Born=July 13, 2003, Role=Bowler
+Jan 29 13:31:13 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:13 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/9979/babar-hayat HTTP/11" 200 53297
+Jan 29 13:31:13 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/9979/babar-hayat: Born=January 05, 1992, Role=Batsman
+Jan 29 13:31:13 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:14 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/9981/kinchit-shah HTTP/11" 200 None
+Jan 29 13:31:14 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/9981/kinchit-shah: Born=December 09, 1995, Role=Batsman
+Jan 29 13:31:15 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:15 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/10208/waqas-khan HTTP/11" 200 None
+Jan 29 13:31:15 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/10208/waqas-khan: Born=March 10, 1999, Role=Batsman
+Jan 29 13:31:15 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:16 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/9980/nizakat-khan HTTP/11" 200 None
+Jan 29 13:31:16 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/9980/nizakat-khan: Born=July 08, 1992, Role=Batting Allrounder
+Jan 29 13:31:16 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:17 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/9975/aizaz-khan HTTP/11" 200 None
+Jan 29 13:31:17 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/9975/aizaz-khan: Born=March 21, 1993, Role=Bowling Allrounder
+Jan 29 13:31:18 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:18 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/9982/tanwir-afzal HTTP/11" 200 None
+Jan 29 13:31:19 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/9982/tanwir-afzal: Born=June 12, 1988, Role=Bowling Allrounder
+Jan 29 13:31:19 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:20 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/10035/anshuman-rath HTTP/11" 200 None
+Jan 29 13:31:20 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/10035/anshuman-rath: Born=November 05, 1997, Role=WK-Batsman
+Jan 29 13:31:20 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:21 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/1378/jamie-atkinson HTTP/11" 200 None
+Jan 29 13:31:21 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/1378/jamie-atkinson: Born=August 23, 1990, Role=WK-Batsman
+Jan 29 13:31:21 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:22 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/10793/christopher-carter HTTP/11" 200 None
+Jan 29 13:31:22 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/10793/christopher-carter: Born=September 09, 1997, Role=WK-Batsman
+Jan 29 13:31:22 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:23 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/11479/shahid-wasif HTTP/11" 200 None
+Jan 29 13:31:23 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/11479/shahid-wasif: Born=May 15, 1997, Role=WK-Batsman
+Jan 29 13:31:23 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:24 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/11485/ehsan-khan HTTP/11" 200 None
+Jan 29 13:31:24 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/11485/ehsan-khan: Born=December 27, 1984, Role=Bowler
+Jan 29 13:31:24 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:25 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/1385/nadeem-ahmed HTTP/11" 200 None
+Jan 29 13:31:25 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/1385/nadeem-ahmed: Born=September 28, 1987, Role=Bowler
+Jan 29 13:31:25 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:25 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/11342/tanveer-ahmed HTTP/11" 200 None
+Jan 29 13:31:25 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/11342/tanveer-ahmed: Born=September 18, 1997, Role=Bowler
+Jan 29 13:31:26 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:27 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/704/alex-obanda HTTP/11" 200 None
+Jan 29 13:31:27 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/704/alex-obanda: Born=December 25, 1987, Role=Batsman
+Jan 29 13:31:28 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:31:28 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/8075/duncan-allan HTTP/11" 200 None
+Jan 29 13:31:28 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/8075/duncan-allan: Born=October 14, 1991, Role=Batting Allrounder
+Jan 29 13:31:29 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
