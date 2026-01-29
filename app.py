@@ -547,32 +547,31 @@ def recent_matches_page():
     # Get completed matches from database
     db_matches = Match.query.filter(Match.state == 'Complete').order_by(Match.updated_at.desc()).limit(50).all()
     
-    # Also scrape recent from Cricbuzz
-    scrape_result = scraper.scrape_live_scores()
+    # Scrape recent matches from Cricbuzz
+    scrape_result = scraper.scrape_recent_matches()
     
     live_matches = []
     match_flags = {}
     
     if scrape_result.get('success'):
         for m in scrape_result.get('matches', []):
-            if m.get('state') in ['Complete', 'Result', 'Abandon']:
-                match_data = {
-                    'match_id': m.get('match_id'),
-                    'match_format': m.get('series_name', 'Match'),
-                    'team1_name': m.get('team1_name', 'Team 1'),
-                    'team2_name': m.get('team2_name', 'Team 2'),
-                    'team1_score': m.get('team1_score', ''),
-                    'team2_score': m.get('team2_score', ''),
-                    'state': m.get('state', 'Complete'),
-                    'result': m.get('result', ''),
-                    'from_live': True
-                }
-                live_matches.append(type('Match', (), match_data)())
-                
-                if m.get('team1_flag'):
-                    match_flags[f"{m.get('match_id')}_1"] = m.get('team1_flag')
-                if m.get('team2_flag'):
-                    match_flags[f"{m.get('match_id')}_2"] = m.get('team2_flag')
+            match_data = {
+                'match_id': m.get('match_id'),
+                'match_format': m.get('series_name', 'Match'),
+                'team1_name': m.get('team1_name', 'Team 1'),
+                'team2_name': m.get('team2_name', 'Team 2'),
+                'team1_score': m.get('team1_score', ''),
+                'team2_score': m.get('team2_score', ''),
+                'state': m.get('state', 'Complete'),
+                'result': m.get('result', ''),
+                'from_live': True
+            }
+            live_matches.append(type('Match', (), match_data)())
+            
+            if m.get('team1_flag'):
+                match_flags[f"{m.get('match_id')}_1"] = m.get('team1_flag')
+            if m.get('team2_flag'):
+                match_flags[f"{m.get('match_id')}_2"] = m.get('team2_flag')
     
     # Add flags for DB matches
     teams = Team.query.all()
