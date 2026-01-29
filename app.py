@@ -3953,7 +3953,9 @@ def get_vapid_public_key():
 @app.route('/api/push/subscribe', methods=['POST'])
 def push_subscribe():
     try:
-        data = request.json
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({'success': False, 'message': 'Invalid JSON data'}), 400
         subscription = data.get('subscription', {})
         
         endpoint = subscription.get('endpoint')
@@ -3989,7 +3991,9 @@ def push_subscribe():
 @app.route('/api/push/unsubscribe', methods=['POST'])
 def push_unsubscribe():
     try:
-        data = request.json
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({'success': False, 'message': 'Invalid JSON data'}), 400
         endpoint = data.get('endpoint')
         
         if not endpoint:
