@@ -1,0 +1,29 @@
+an 29 18:01:25 mail.digitalcash24.com systemd[1]: Stopping Cricbuzz Live Score...
+Jan 29 18:01:25 mail.digitalcash24.com gunicorn[47540]: [2026-01-29 18:01:25 +0100] [47540] [INFO] Handling signal: term
+Jan 29 18:01:25 mail.digitalcash24.com gunicorn[47556]: [2026-01-29 18:01:25 +0100] [47556] [INFO] Worker exiting (pid: 47556)
+Jan 29 18:01:25 mail.digitalcash24.com gunicorn[47556]: [SCHEDULER] Daily scrape scheduled at 17:46
+Jan 29 18:01:25 mail.digitalcash24.com gunicorn[47556]: INFO:apscheduler.scheduler:Scheduler has been shut down
+Jan 29 18:01:25 mail.digitalcash24.com gunicorn[47556]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Jan 29 18:01:25 mail.digitalcash24.com gunicorn[47556]: DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+Jan 29 18:01:25 mail.digitalcash24.com gunicorn[47540]: [2026-01-29 18:01:25 +0100] [47540] [INFO] Shutting down: Master
+Jan 29 18:01:25 mail.digitalcash24.com systemd[1]: cricbuzz.service: Succeeded.
+Jan 29 18:01:25 mail.digitalcash24.com systemd[1]: Stopped Cricbuzz Live Score.
+Jan 29 18:01:25 mail.digitalcash24.com systemd[1]: Started Cricbuzz Live Score.
+Jan 29 18:01:25 mail.digitalcash24.com gunicorn[47743]: [2026-01-29 18:01:25 +0100] [47743] [INFO] Starting gunicorn 23.0.0
+Jan 29 18:01:25 mail.digitalcash24.com gunicorn[47743]: [2026-01-29 18:01:25 +0100] [47743] [INFO] Listening at: http://127.0.0.1:8000 (47743)
+Jan 29 18:01:25 mail.digitalcash24.com gunicorn[47743]: [2026-01-29 18:01:25 +0100] [47743] [INFO] Using worker: sync
+Jan 29 18:01:25 mail.digitalcash24.com gunicorn[47764]: [2026-01-29 18:01:25 +0100] [47764] [INFO] Booting worker with pid: 47764
+Jan 29 18:01:26 mail.digitalcash24.com gunicorn[47764]: DEBUG:tzlocal:/etc/timezone found, contents:
+Jan 29 18:01:26 mail.digitalcash24.com gunicorn[47764]:  Europe/Berlin
+Jan 29 18:01:26 mail.digitalcash24.com gunicorn[47764]: DEBUG:tzlocal:/etc/localtime found
+Jan 29 18:01:26 mail.digitalcash24.com gunicorn[47764]: DEBUG:tzlocal:2 found:
+Jan 29 18:01:26 mail.digitalcash24.com gunicorn[47764]:  {'/etc/timezone': 'Europe/Berlin', '/etc/localtime is a symlink to': 'Europe/Berlin'}
+Jan 29 18:01:26 mail.digitalcash24.com gunicorn[47764]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Jan 29 18:01:26 mail.digitalcash24.com gunicorn[47764]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Jan 29 18:01:26 mail.digitalcash24.com gunicorn[47764]: INFO:apscheduler.scheduler:Scheduler started
+Jan 29 18:01:26 mail.digitalcash24.com gunicorn[47764]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Jan 29 18:01:26 mail.digitalcash24.com gunicorn[47764]: DEBUG:apscheduler.scheduler:Next wakeup is due at 2026-01-30 17:46:00+01:00 (in 85473.462012 seconds)
+Jan 29 18:01:56 mail.digitalcash24.com gunicorn[47764]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 18:01:56 mail.digitalcash24.com gunicorn[47764]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 64350
+Jan 29 18:01:56 mail.digitalcash24.com gunicorn[47764]: INFO:scraper:Live Scores: Found 23 matches in first container
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
