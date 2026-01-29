@@ -20,6 +20,18 @@ A professional cricket website (Cricbuzz Live Score) built with Python Flask fea
   - Each player page now has 200+ words of unique descriptive content
   - Prevents Google thin content penalty for similar player profiles
 
+## 301 Redirect Management (January 29, 2026)
+- **Admin Panel Feature**: Full redirect management at /admin/redirects
+- **Features**:
+  - Add/Edit/Delete 301 and 302 redirects
+  - Toggle redirects on/off
+  - Hit count tracking for each redirect
+  - Bulk import via CSV (old_url,new_url format)
+  - URL normalization (handles trailing slashes)
+- **Database Model**: Redirect table with old_url, new_url, redirect_type, is_active, hit_count
+- **Middleware**: @app.before_request checks all incoming requests against redirect rules
+- **Use Case**: Preserve SEO rankings when migrating URLs (e.g., /team/123 → /team/india-1871)
+
 ## SEO Implementation (Cricbuzz-Inspired)
 Based on Cricbuzz's SEO strategy (335M monthly traffic, 432K keywords):
 
