@@ -1251,7 +1251,7 @@ function displayScorecard(scorecard) {
             html += `
                 <div class="innings-card">
                     <div class="innings-header">
-                        <span>${inning.team_name || 'Team'} - Innings ${idx + 1}</span>
+                        <span>${inning.team_name || 'Team'} - ${inning.innings_num ? (inning.innings_num === 1 ? '1st' : inning.innings_num === 2 ? '2nd' : inning.innings_num === 3 ? '3rd' : inning.innings_num + 'th') + ' Innings' : 'Innings ' + (idx + 1)}</span>
                         <span>${inning.total_score || '0'} (${inning.overs || '0'} Ov)</span>
                     </div>
                     <div class="innings-body">

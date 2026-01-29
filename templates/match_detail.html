@@ -82,7 +82,7 @@
                 <div class="innings-header">
                     <div class="team-info">
                         <img class="team-flag" src="{{ get_team_flag(innings.team_name) }}" alt="{{ innings.team_name }}" onerror="this.style.display='none'">
-                        <span class="team-name">{{ innings.team_name }}</span>
+                        <span class="team-name">{{ innings.team_name }}{% if innings.innings_num %} - {{ '1st' if innings.innings_num == 1 else '2nd' if innings.innings_num == 2 else '3rd' if innings.innings_num == 3 else innings.innings_num ~ 'th' }} Innings{% endif %}</span>
                     </div>
                     <div class="innings-score">
                         <span class="score">{{ innings.total_score }}</span>
