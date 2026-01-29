@@ -4,6 +4,9 @@
 
 {% block content %}
 <section class="team-detail-page">
+    <div class="team-breadcrumb">
+        <a href="/teams">Teams</a> <span>/</span> <a href="/teams/{{ team.category.slug }}">{{ team.category.name }}</a>
+    </div>
     <div class="team-hero">
         <div class="team-hero-content">
             <div class="team-flag-hero">
