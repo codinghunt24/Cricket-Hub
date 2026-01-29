@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Recent Matches - Cricket Match Results | Cricbuzz Live Score{% endblock %}
+
+{% block meta_description %}View recent cricket match results, completed match scorecards, and full match summaries. Get results of all international and domestic cricket matches.{% endblock %}
+
+{% block meta_keywords %}recent cricket matches, cricket match results, completed matches, match scorecard, india match result, today match result{% endblock %}
+
+{% block og_title %}Recent Cricket Matches - Match Results{% endblock %}
+{% block og_description %}View recent cricket match results and completed match scorecards{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Recent Cricket Matches",
+    "description": "Recent cricket match results and completed match scorecards",
+    "url": "https://cricbuzz-live-score.com/recent-matches"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="recent-matches-page">
+    <div class="page-header">
+        <h1>Recent Matches</h1>
+        <p>View completed match results and scorecards</p>
+    </div>
+    
+    {% if live_matches %}
+    <section class="matches-section">
+        <h2 class="section-title">Just Completed</h2>
+        <div class="matches-grid">
+            {% for match in live_matches %}
+            <div class="match-card" onclick="window.location.href='/match/{{ match.match_id }}'">
+                <div class="card-header">
+                    <span class="series-name">{{ match.match_format or 'Match' }}</span>
+                    <span class="status-badge complete">RESULT</span>
+                </div>
+                <div class="card-body">
+                    <div class="teams-container">
+                        <div class="team-row">
+                            {% if match_flags.get(match.match_id ~ '_1') %}
+                            <img src="{{ match_flags.get(match.match_id ~ '_1') }}" alt="" class="team-flag">
+                            {% else %}
+                            <span class="team-flag-placeholder"></span>
+                            {% endif %}
+                            <span class="team-name">{{ match.team1_name }}</span>
+                            <span class="team-score">{{ match.team1_score or '' }}</span>
+                        </div>
+                        <div class="team-row">
+                            {% if match_flags.get(match.match_id ~ '_2') %}
+                            <img src="{{ match_flags.get(match.match_id ~ '_2') }}" alt="" class="team-flag">
+                            {% else %}
+                            <span class="team-flag-placeholder"></span>
+                            {% endif %}
+                            <span class="team-name">{{ match.team2_name }}</span>
+                            <span class="team-score">{{ match.team2_score or '' }}</span>
+                        </div>
+                    </div>
+                    {% if match.result %}
+                    <div class="match-result">{{ match.result }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    
+    {% if db_matches %}
+    <section class="matches-section">
+        <h2 class="section-title">Past Matches</h2>
+        <div class="matches-grid">
+            {% for match in db_matches %}
+            <div class="match-card" onclick="window.location.href='/match/{{ match.match_id }}'">
+                <div class="card-header">
+                    <span class="series-name">{{ match.match_format or 'Match' }}</span>
+                    <span class="status-badge complete">RESULT</span>
+                </div>
+                <div class="card-body">
+                    <div class="teams-container">
+                        <div class="team-row">
+                            {% if match_flags.get(match.match_id ~ '_1') %}
+                            <img src="{{ match_flags.get(match.match_id ~ '_1') }}" alt="" class="team-flag">
+                            {% else %}
+                            <span class="team-flag-placeholder"></span>
+                            {% endif %}
+                            <span class="team-name">{{ match.team1_name }}</span>
+                            <span class="team-score">{{ match.team1_score or '' }}</span>
+                        </div>
+                        <div class="team-row">
+                            {% if match_flags.get(match.match_id ~ '_2') %}
+                            <img src="{{ match_flags.get(match.match_id ~ '_2') }}" alt="" class="team-flag">
+                            {% else %}
+                            <span class="team-flag-placeholder"></span>
+                            {% endif %}
+                            <span class="team-name">{{ match.team2_name }}</span>
+                            <span class="team-score">{{ match.team2_score or '' }}</span>
+                        </div>
+                    </div>
+                    {% if match.result %}
+                    <div class="match-result">{{ match.result }}</div>
+                    {% endif %}
+                    {% if match.updated_at %}
+                    <div class="match-date">{{ match.updated_at.strftime('%b %d, %Y') }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    
+    {% if not live_matches and not db_matches %}
+    <div class="no-matches">
+        <p>No recent matches available</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.recent-matches-page { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.page-header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%); border-radius: 12px; color: #fff; }
+.page-header h1 { margin: 0 0 10px 0; font-size: 2rem; }
+.page-header p { margin: 0; opacity: 0.9; font-size: 1rem; }
+
+.matches-section { margin-bottom: 40px; }
+.section-title { color: #1a472a; font-size: 1.4rem; margin: 0 0 20px 0; padding-bottom: 10px; border-bottom: 3px solid #1a472a; }
+
+.matches-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+
+.match-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer; transition: all 0.3s; border: 1px solid #e0e0e0; }
+.match-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); border-color: #1a472a; }
+
+.card-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #f8f9fa; border-bottom: 1px solid #eee; }
+.series-name { font-size: 12px; color: #666; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
+.status-badge { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+.status-badge.complete { background: #16a34a; color: #fff; }
+
+.card-body { padding: 15px; }
+.teams-container { margin-bottom: 10px; }
+.team-row { display: flex; align-items: center; padding: 8px 0; gap: 10px; }
+.team-row:first-child { border-bottom: 1px dashed #eee; }
+.team-flag { width: 24px; height: 16px; object-fit: cover; border-radius: 2px; flex-shrink: 0; }
+.team-flag-placeholder { width: 24px; height: 16px; background: #e0e0e0; border-radius: 2px; flex-shrink: 0; }
+.team-name { flex: 1; font-weight: 600; font-size: 14px; color: #333; }
+.team-score { font-weight: 700; font-size: 14px; color: #1a472a; }
+
+.match-result { padding: 8px 12px; background: #e8f5e9; border-radius: 6px; font-size: 13px; color: #1a472a; text-align: center; font-weight: 500; margin-top: 10px; }
+.match-date { text-align: center; font-size: 11px; color: #888; margin-top: 8px; }
+
+.no-matches { text-align: center; padding: 60px 20px; background: #f8f9fa; border-radius: 12px; color: #666; }
+
+@media (max-width: 768px) {
+    .recent-matches-page { padding: 10px; }
+    .page-header { padding: 15px; margin-bottom: 20px; }
+    .page-header h1 { font-size: 1.5rem; }
+    .matches-grid { grid-template-columns: 1fr; gap: 15px; }
+    .match-card { border-radius: 8px; }
+    .card-header { padding: 10px 12px; }
+    .card-body { padding: 12px; }
+    .team-name { font-size: 13px; }
+    .team-score { font-size: 13px; }
+}
+</style>
+{% endblock %}
