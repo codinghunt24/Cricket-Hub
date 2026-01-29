@@ -303,40 +303,131 @@ def robots_txt():
     return app.send_static_file('robots.txt')
 
 @app.route('/sitemap.xml')
-def sitemap_xml():
+def sitemap_index():
+    """Sitemap index file that links to all category sitemaps"""
     from flask import Response
     from datetime import datetime
     
-    pages = []
     base_url = "https://cricbuzz-live-score.com"
+    today = datetime.utcnow().strftime('%Y-%m-%d')
+    
+    sitemaps = [
+        {'loc': f"{base_url}/sitemap-main.xml", 'lastmod': today},
+        {'loc': f"{base_url}/sitemap-teams.xml", 'lastmod': today},
+        {'loc': f"{base_url}/sitemap-players.xml", 'lastmod': today},
+        {'loc': f"{base_url}/sitemap-series.xml", 'lastmod': today},
+        {'loc': f"{base_url}/sitemap-posts.xml", 'lastmod': today},
+        {'loc': f"{base_url}/sitemap-pages.xml", 'lastmod': today},
+    ]
+    
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml_content += '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    
+    for sitemap in sitemaps:
+        xml_content += '  <sitemap>\n'
+        xml_content += f'    <loc>{sitemap["loc"]}</loc>\n'
+        xml_content += f'    <lastmod>{sitemap["lastmod"]}</lastmod>\n'
+        xml_content += '  </sitemap>\n'
+    
+    xml_content += '</sitemapindex>'
+    
+    return Response(xml_content, mimetype='application/xml')
+
+@app.route('/sitemap-main.xml')
+def sitemap_main():
+    """Main pages sitemap - homepage, live scores, categories"""
+    from flask import Response
+    
+    base_url = "https://cricbuzz-live-score.com"
+    pages = []
     
     pages.append({'loc': base_url, 'priority': '1.0', 'changefreq': 'hourly'})
     pages.append({'loc': f"{base_url}/live-scores", 'priority': '1.0', 'changefreq': 'always'})
-    pages.append({'loc': f"{base_url}/teams", 'priority': '0.8', 'changefreq': 'weekly'})
-    pages.append({'loc': f"{base_url}/series", 'priority': '0.8', 'changefreq': 'daily'})
+    pages.append({'loc': f"{base_url}/teams", 'priority': '0.9', 'changefreq': 'weekly'})
+    pages.append({'loc': f"{base_url}/series", 'priority': '0.9', 'changefreq': 'daily'})
     
     categories = PostCategory.query.all()
     for cat in categories:
-        pages.append({'loc': f"{base_url}/category/{cat.slug}", 'priority': '0.7', 'changefreq': 'daily'})
+        pages.append({'loc': f"{base_url}/category/{cat.slug}", 'priority': '0.8', 'changefreq': 'daily'})
     
-    posts = Post.query.filter_by(is_published=True).all()
-    for post in posts:
-        pages.append({'loc': f"{base_url}/post/{post.slug}", 'priority': '0.6', 'changefreq': 'weekly'})
+    return generate_sitemap_response(pages)
+
+@app.route('/sitemap-teams.xml')
+def sitemap_teams():
+    """Teams sitemap"""
+    from flask import Response
+    
+    base_url = "https://cricbuzz-live-score.com"
+    pages = []
     
     teams = Team.query.all()
     for team in teams:
         team_slug = team.slug or str(team.id)
-        pages.append({'loc': f"{base_url}/team/{team_slug}", 'priority': '0.6', 'changefreq': 'weekly'})
+        pages.append({'loc': f"{base_url}/team/{team_slug}", 'priority': '0.7', 'changefreq': 'weekly'})
+    
+    return generate_sitemap_response(pages)
+
+@app.route('/sitemap-players.xml')
+def sitemap_players():
+    """Players sitemap"""
+    from flask import Response
+    
+    base_url = "https://cricbuzz-live-score.com"
+    pages = []
     
     players = Player.query.all()
     for player in players:
         player_slug = player.slug or str(player.id)
-        pages.append({'loc': f"{base_url}/player/{player_slug}", 'priority': '0.5', 'changefreq': 'weekly'})
+        pages.append({'loc': f"{base_url}/player/{player_slug}", 'priority': '0.6', 'changefreq': 'weekly'})
+    
+    return generate_sitemap_response(pages)
+
+@app.route('/sitemap-series.xml')
+def sitemap_series():
+    """Series sitemap"""
+    from flask import Response
+    
+    base_url = "https://cricbuzz-live-score.com"
+    pages = []
     
     series_list = Series.query.all()
     for s in series_list:
         series_slug = s.slug or str(s.id)
-        pages.append({'loc': f"{base_url}/series/{series_slug}", 'priority': '0.7', 'changefreq': 'daily'})
+        pages.append({'loc': f"{base_url}/series/{series_slug}", 'priority': '0.8', 'changefreq': 'daily'})
+    
+    return generate_sitemap_response(pages)
+
+@app.route('/sitemap-posts.xml')
+def sitemap_posts():
+    """Posts/Blog sitemap"""
+    from flask import Response
+    
+    base_url = "https://cricbuzz-live-score.com"
+    pages = []
+    
+    posts = Post.query.filter_by(is_published=True).all()
+    for post in posts:
+        pages.append({'loc': f"{base_url}/post/{post.slug}", 'priority': '0.7', 'changefreq': 'daily'})
+    
+    return generate_sitemap_response(pages)
+
+@app.route('/sitemap-pages.xml')
+def sitemap_static_pages():
+    """Static pages sitemap"""
+    from flask import Response
+    
+    base_url = "https://cricbuzz-live-score.com"
+    pages = []
+    
+    static_pages = Page.query.filter_by(is_published=True).all()
+    for page in static_pages:
+        pages.append({'loc': f"{base_url}/page/{page.slug}", 'priority': '0.5', 'changefreq': 'monthly'})
+    
+    return generate_sitemap_response(pages)
+
+def generate_sitemap_response(pages):
+    """Helper function to generate sitemap XML response"""
+    from flask import Response
     
     xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -344,8 +435,10 @@ def sitemap_xml():
     for page in pages:
         xml_content += '  <url>\n'
         xml_content += f'    <loc>{page["loc"]}</loc>\n'
-        xml_content += f'    <changefreq>{page["changefreq"]}</changefreq>\n'
-        xml_content += f'    <priority>{page["priority"]}</priority>\n'
+        if 'changefreq' in page:
+            xml_content += f'    <changefreq>{page["changefreq"]}</changefreq>\n'
+        if 'priority' in page:
+            xml_content += f'    <priority>{page["priority"]}</priority>\n'
         xml_content += '  </url>\n'
     
     xml_content += '</urlset>'
