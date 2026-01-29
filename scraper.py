@@ -135,22 +135,23 @@ def scrape_live_scores():
                         break
                 parent = parent.parent
     
-    # Extract scores
+    # Extract scores - look for font-medium/font-semibold spans with score patterns
     score_map = {}
-    score_pattern = re.compile(r'\d{1,3}(?:[-/]\d{1,2})?\s*\(\d+\.?\d*\)')
-    score_elements = main_container.find_all(string=score_pattern)
+    # Match various score formats: 50-1, 215/7, 50-1 (10.2), 215/7 (50), etc.
+    score_pattern = re.compile(r'^\d{1,3}(?:[-/]\d{1,2})?(?:\s*\(\d+\.?\d*\))?$')
     
-    for elem in score_elements:
-        parent = elem.parent
-        if parent:
-            score_text = elem.strip()
-            classes = parent.get('class', [])
-            class_str = ' '.join(classes) if classes else ''
-            
-            grandparent = parent.parent
-            for _ in range(6):
-                if grandparent:
-                    link = grandparent.find('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+    # Find all spans with font-medium or font-semibold class (these contain scores)
+    score_spans = main_container.find_all('span', class_=re.compile(r'font-medium|font-semibold'))
+    
+    for span in score_spans:
+        text = span.get_text(strip=True)
+        # Check if text looks like a score
+        if score_pattern.match(text) or (text and re.match(r'^\d+[-/]?\d*', text)):
+            # Find parent match link
+            parent = span.parent
+            for _ in range(8):
+                if parent:
+                    link = parent.find('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
                     if link:
                         m = re.search(r'/live-cricket-scores/(\d+)/', link.get('href', ''))
                         if m:
@@ -158,12 +159,13 @@ def scrape_live_scores():
                             if mid not in score_map:
                                 score_map[mid] = {'team1_score': None, 'team2_score': None}
                             
-                            if 'cbTxtPrim' in class_str and not score_map[mid]['team1_score']:
-                                score_map[mid]['team1_score'] = score_text
-                            elif 'cbTxtSec' in class_str and not score_map[mid]['team2_score']:
-                                score_map[mid]['team2_score'] = score_text
+                            # First score found = team1, second = team2
+                            if not score_map[mid]['team1_score']:
+                                score_map[mid]['team1_score'] = text
+                            elif not score_map[mid]['team2_score']:
+                                score_map[mid]['team2_score'] = text
                             break
-                    grandparent = grandparent.parent
+                    parent = parent.parent
     
     # Extract team flags and names
     flag_map = {}
@@ -234,10 +236,10 @@ def scrape_live_scores():
                 status = status_map.get(mid, 'Upcoming')
                 result = result_map.get(mid, '')
                 
-                # Get scores
+                # Get scores (handle None values by defaulting to '-')
                 scores = score_map.get(mid, {})
-                team1_score = scores.get('team1_score', '-')
-                team2_score = scores.get('team2_score', '-')
+                team1_score = scores.get('team1_score') or '-'
+                team2_score = scores.get('team2_score') or '-'
                 
                 # Get flags and team names
                 flags = flag_map.get(mid, {})
