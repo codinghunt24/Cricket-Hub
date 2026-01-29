@@ -376,6 +376,29 @@ def scrape_recent_matches():
                             break
                         parent = parent.parent
     
+    # Extract scores - look for score patterns like "247/5" or "170/9 (20 Ov)"
+    score_map = {}
+    for span in main_container.find_all('span'):
+        text = span.get_text(strip=True)
+        # Match score patterns: 247/5, 170/9 (20), 125-3 etc
+        if text and re.match(r'^\d+[/-]\d+', text):
+            parent = span.parent
+            for _ in range(10):
+                if parent:
+                    link = parent.find('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+                    if link:
+                        m = re.search(r'/live-cricket-scores/(\d+)/', link.get('href', ''))
+                        if m:
+                            mid = m.group(1)
+                            if mid not in score_map:
+                                score_map[mid] = {'team1_score': None, 'team2_score': None}
+                            if not score_map[mid]['team1_score']:
+                                score_map[mid]['team1_score'] = text
+                            elif not score_map[mid]['team2_score']:
+                                score_map[mid]['team2_score'] = text
+                            break
+                    parent = parent.parent
+    
     # Get ALL unique match IDs
     all_match_links = main_container.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
     seen_match_ids = set()
@@ -448,6 +471,11 @@ def scrape_recent_matches():
                 series_id = series_info.get('series_id', '')
                 series_name = series_info.get('series_name', '')
                 
+                # Get scores
+                scores = score_map.get(mid, {})
+                team1_score = scores.get('team1_score', '')
+                team2_score = scores.get('team2_score', '')
+                
                 match_title = link.get_text(strip=True) or ''
                 
                 matches.append({
@@ -457,6 +485,8 @@ def scrape_recent_matches():
                     'result': result,
                     'team1_name': team1_name,
                     'team2_name': team2_name,
+                    'team1_score': team1_score,
+                    'team2_score': team2_score,
                     'team1_flag': team1_flag,
                     'team2_flag': team2_flag,
                     'series_id': series_id,

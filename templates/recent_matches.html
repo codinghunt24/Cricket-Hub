@@ -40,22 +40,26 @@
                 <div class="card-body">
                     <div class="teams-container">
                         <div class="team-row">
-                            {% if match_flags.get(match.match_id ~ '_1') %}
-                            <img src="{{ match_flags.get(match.match_id ~ '_1') }}" alt="" class="team-flag">
-                            {% else %}
-                            <span class="team-flag-placeholder"></span>
-                            {% endif %}
-                            <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
-                            <span class="team-score">{{ match.team1_score or '' }}</span>
+                            <div class="team-info">
+                                {% if match_flags.get(match.match_id ~ '_1') %}
+                                <img src="{{ match_flags.get(match.match_id ~ '_1') }}" alt="" class="team-flag">
+                                {% else %}
+                                <span class="team-flag-placeholder"></span>
+                                {% endif %}
+                                <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
+                            </div>
+                            {% if match.team1_score %}<span class="team-score">{{ match.team1_score }}</span>{% endif %}
                         </div>
                         <div class="team-row">
-                            {% if match_flags.get(match.match_id ~ '_2') %}
-                            <img src="{{ match_flags.get(match.match_id ~ '_2') }}" alt="" class="team-flag">
-                            {% else %}
-                            <span class="team-flag-placeholder"></span>
-                            {% endif %}
-                            <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
-                            <span class="team-score">{{ match.team2_score or '' }}</span>
+                            <div class="team-info">
+                                {% if match_flags.get(match.match_id ~ '_2') %}
+                                <img src="{{ match_flags.get(match.match_id ~ '_2') }}" alt="" class="team-flag">
+                                {% else %}
+                                <span class="team-flag-placeholder"></span>
+                                {% endif %}
+                                <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
+                            </div>
+                            {% if match.team2_score %}<span class="team-score">{{ match.team2_score }}</span>{% endif %}
                         </div>
                     </div>
                     {% if match.result %}
@@ -73,22 +77,26 @@
                 <div class="card-body">
                     <div class="teams-container">
                         <div class="team-row">
-                            {% if match_flags.get(match.match_id ~ '_1') %}
-                            <img src="{{ match_flags.get(match.match_id ~ '_1') }}" alt="" class="team-flag">
-                            {% else %}
-                            <span class="team-flag-placeholder"></span>
-                            {% endif %}
-                            <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
-                            <span class="team-score">{{ match.team1_score or '' }}</span>
+                            <div class="team-info">
+                                {% if match_flags.get(match.match_id ~ '_1') %}
+                                <img src="{{ match_flags.get(match.match_id ~ '_1') }}" alt="" class="team-flag">
+                                {% else %}
+                                <span class="team-flag-placeholder"></span>
+                                {% endif %}
+                                <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
+                            </div>
+                            {% if match.team1_score %}<span class="team-score">{{ match.team1_score }}</span>{% endif %}
                         </div>
                         <div class="team-row">
-                            {% if match_flags.get(match.match_id ~ '_2') %}
-                            <img src="{{ match_flags.get(match.match_id ~ '_2') }}" alt="" class="team-flag">
-                            {% else %}
-                            <span class="team-flag-placeholder"></span>
-                            {% endif %}
-                            <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
-                            <span class="team-score">{{ match.team2_score or '' }}</span>
+                            <div class="team-info">
+                                {% if match_flags.get(match.match_id ~ '_2') %}
+                                <img src="{{ match_flags.get(match.match_id ~ '_2') }}" alt="" class="team-flag">
+                                {% else %}
+                                <span class="team-flag-placeholder"></span>
+                                {% endif %}
+                                <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
+                            </div>
+                            {% if match.team2_score %}<span class="team-score">{{ match.team2_score }}</span>{% endif %}
                         </div>
                     </div>
                     {% if match.result %}
@@ -205,41 +213,53 @@
 .team-row {
     display: flex;
     align-items: center;
-    padding: 6px 0;
-    gap: 8px;
+    justify-content: space-between;
+    padding: 8px 0;
+    gap: 10px;
 }
 
 .team-row:first-child {
-    border-bottom: 1px dashed #eee;
+    border-bottom: 1px dashed #e0e0e0;
+    padding-bottom: 10px;
+    margin-bottom: 2px;
+}
+
+.team-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .team-flag {
-    width: 22px;
-    height: 15px;
+    width: 28px;
+    height: 20px;
     object-fit: cover;
-    border-radius: 2px;
+    border-radius: 3px;
     flex-shrink: 0;
+    border: 1px solid #ddd;
 }
 
 .team-flag-placeholder {
-    width: 22px;
-    height: 15px;
-    background: #e0e0e0;
-    border-radius: 2px;
+    width: 28px;
+    height: 20px;
+    background: linear-gradient(135deg, #e0e0e0, #ccc);
+    border-radius: 3px;
     flex-shrink: 0;
 }
 
 .team-name {
-    flex: 1;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     color: #333;
 }
 
 .team-score {
     font-weight: 700;
-    font-size: 13px;
+    font-size: 14px;
     color: #1a472a;
+    background: #e8f5e9;
+    padding: 3px 8px;
+    border-radius: 4px;
 }
 
 .match-result {
