@@ -323,12 +323,24 @@
     }
     
     async function subscribeToPush() {
+        const btn = document.querySelector('.push-allow-btn');
+        const originalText = btn.textContent;
+        btn.textContent = 'Subscribing...';
+        btn.disabled = true;
+        
         try {
+            if (!window.VAPID_KEY) {
+                throw new Error('VAPID key not loaded');
+            }
+            
             const reg = await navigator.serviceWorker.register('/static/sw.js');
             await navigator.serviceWorker.ready;
             
             const permission = await Notification.requestPermission();
             if (permission !== 'granted') {
+                if (permission === 'denied') {
+                    alert('Notifications blocked. Please enable in browser settings.');
+                }
                 closePushPopup();
                 return;
             }
@@ -338,16 +350,28 @@
                 applicationServerKey: urlBase64ToUint8Array(window.VAPID_KEY)
             });
             
-            await fetch('/api/push/subscribe', {
+            const response = await fetch('/api/push/subscribe', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ subscription: subscription.toJSON() })
             });
             
-            closePushPopup();
+            const result = await response.json();
+            if (result.success) {
+                btn.textContent = 'Subscribed!';
+                setTimeout(closePushPopup, 1000);
+            } else {
+                throw new Error(result.message || 'Subscription failed');
+            }
         } catch (e) {
-            console.log('Subscribe error:', e);
-            closePushPopup();
+            console.error('Subscribe error:', e);
+            btn.textContent = originalText;
+            btn.disabled = false;
+            if (e.name === 'NotAllowedError') {
+                alert('Please allow notifications in your browser settings.');
+            } else if (e.message.includes('secure origin') || e.message.includes('iframe')) {
+                alert('Please open this website directly (not in preview) to enable notifications.');
+            }
         }
     }
     
