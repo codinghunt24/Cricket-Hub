@@ -46,7 +46,7 @@
                                 <span class="team-flag-placeholder"></span>
                                 {% endif %}
                                 <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
-                                <span class="team-score">{{ match.team1_score or '' }}</span>
+                                <span class="team-score">{{ normalize_score(match.team1_score) or '' }}</span>
                             </div>
                             <div class="team-row">
                                 {% if match_flags.get(match.match_id ~ '_2') %}
@@ -55,7 +55,7 @@
                                 <span class="team-flag-placeholder"></span>
                                 {% endif %}
                                 <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
-                                <span class="team-score">{{ match.team2_score or '' }}</span>
+                                <span class="team-score">{{ normalize_score(match.team2_score) or '' }}</span>
                             </div>
                         </div>
                         {% if match.result %}

@@ -84,9 +84,22 @@ def get_team_flag(team_name):
     team_lower = team_name.lower().strip()
     return TEAM_FLAGS.get(team_lower, '')
 
+def normalize_score(score):
+    """Normalize score to use slash format: 123/4 (5.2 Ov)"""
+    if not score or score == '-':
+        return score
+    import re
+    # Replace hyphen with slash in score part (e.g., 43-2 -> 43/2)
+    # Pattern: number-number or number-number(overs)
+    score = re.sub(r'(\d+)-(\d+)', r'\1/\2', score)
+    # Ensure overs format is consistent: (5) -> (5 Ov), (30.2) -> (30.2 Ov)
+    if '(' in score and 'Ov' not in score:
+        score = re.sub(r'\(([\d.]+)\)$', r'(\1 Ov)', score)
+    return score
+
 @app.context_processor
 def utility_processor():
-    return dict(get_team_flag=get_team_flag)
+    return dict(get_team_flag=get_team_flag, normalize_score=normalize_score)
 
 from models import init_models
 TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect, SiteSettings = init_models(db)
