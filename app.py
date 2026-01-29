@@ -102,7 +102,7 @@ def utility_processor():
     return dict(get_team_flag=get_team_flag, normalize_score=normalize_score)
 
 from models import init_models
-TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect, SiteSettings = init_models(db)
+TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect, SiteSettings, PushSubscription, NotificationLog = init_models(db)
 
 import scraper
 from scheduler import init_scheduler, update_schedule, update_player_schedule, update_category_profile_schedule, update_category_series_schedule, update_category_matches_schedule
@@ -3945,6 +3945,171 @@ def inject_site_settings():
     except:
         settings = None
     return dict(site_settings=settings)
+
+@app.route('/vapid-public-key')
+def get_vapid_public_key():
+    return jsonify({'publicKey': os.environ.get('VAPID_PUBLIC_KEY', '')})
+
+@app.route('/api/push/subscribe', methods=['POST'])
+def push_subscribe():
+    try:
+        data = request.json
+        subscription = data.get('subscription', {})
+        
+        endpoint = subscription.get('endpoint')
+        keys = subscription.get('keys', {})
+        p256dh = keys.get('p256dh')
+        auth = keys.get('auth')
+        
+        if not endpoint or not p256dh or not auth:
+            return jsonify({'success': False, 'message': 'Invalid subscription data'}), 400
+        
+        existing = PushSubscription.query.filter_by(endpoint=endpoint).first()
+        if existing:
+            existing.p256dh_key = p256dh
+            existing.auth_key = auth
+            existing.is_active = True
+            existing.last_used = datetime.utcnow()
+        else:
+            sub = PushSubscription(
+                endpoint=endpoint,
+                p256dh_key=p256dh,
+                auth_key=auth,
+                user_agent=request.headers.get('User-Agent', '')[:500],
+                ip_address=request.remote_addr
+            )
+            db.session.add(sub)
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Subscribed successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/push/unsubscribe', methods=['POST'])
+def push_unsubscribe():
+    try:
+        data = request.json
+        endpoint = data.get('endpoint')
+        
+        if not endpoint:
+            return jsonify({'success': False, 'message': 'Endpoint required'}), 400
+        
+        sub = PushSubscription.query.filter_by(endpoint=endpoint).first()
+        if sub:
+            sub.is_active = False
+            db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Unsubscribed successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/admin/notifications')
+@admin_required
+def admin_notifications():
+    subscribers = PushSubscription.query.filter_by(is_active=True).order_by(PushSubscription.created_at.desc()).all()
+    logs = NotificationLog.query.order_by(NotificationLog.created_at.desc()).limit(50).all()
+    total_subscribers = PushSubscription.query.filter_by(is_active=True).count()
+    return render_template('admin/notifications.html', 
+                           subscribers=subscribers, 
+                           logs=logs,
+                           total_subscribers=total_subscribers,
+                           vapid_public_key=os.environ.get('VAPID_PUBLIC_KEY', ''))
+
+@app.route('/api/push/send', methods=['POST'])
+@admin_required
+def send_push_notification():
+    from pywebpush import webpush, WebPushException
+    
+    try:
+        data = request.json
+        title = data.get('title', 'Cricbuzz Live Score')
+        body = data.get('body', '')
+        icon_url = data.get('icon_url', '')
+        click_url = data.get('click_url', '/')
+        
+        if not body:
+            return jsonify({'success': False, 'message': 'Message body is required'}), 400
+        
+        vapid_private_key = os.environ.get('VAPID_PRIVATE_KEY')
+        vapid_claims_email = os.environ.get('VAPID_CLAIMS_EMAIL', 'admin@cricbuzz-live-score.com')
+        
+        if not vapid_private_key:
+            return jsonify({'success': False, 'message': 'VAPID keys not configured'}), 500
+        
+        subscribers = PushSubscription.query.filter_by(is_active=True).all()
+        
+        sent_count = 0
+        failed_count = 0
+        failed_endpoints = []
+        
+        notification_payload = json.dumps({
+            'title': title,
+            'body': body,
+            'icon': icon_url or '/static/images/notification-icon.png',
+            'url': click_url,
+            'tag': f'notification-{datetime.utcnow().timestamp()}'
+        })
+        
+        for sub in subscribers:
+            subscription_info = {
+                'endpoint': sub.endpoint,
+                'keys': {
+                    'p256dh': sub.p256dh_key,
+                    'auth': sub.auth_key
+                }
+            }
+            
+            try:
+                webpush(
+                    subscription_info,
+                    notification_payload,
+                    vapid_private_key=vapid_private_key,
+                    vapid_claims={'sub': f'mailto:{vapid_claims_email}'}
+                )
+                sent_count += 1
+                sub.last_used = datetime.utcnow()
+            except WebPushException as e:
+                failed_count += 1
+                if e.response and e.response.status_code in [404, 410]:
+                    sub.is_active = False
+                failed_endpoints.append(sub.endpoint[:50])
+            except Exception as e:
+                failed_count += 1
+        
+        log = NotificationLog(
+            title=title,
+            body=body,
+            icon_url=icon_url,
+            click_url=click_url,
+            sent_count=sent_count,
+            failed_count=failed_count
+        )
+        db.session.add(log)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Notification sent to {sent_count} subscribers',
+            'sent': sent_count,
+            'failed': failed_count
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/push/subscribers/<int:sub_id>', methods=['DELETE'])
+@admin_required
+def delete_push_subscriber(sub_id):
+    try:
+        sub = PushSubscription.query.get_or_404(sub_id)
+        db.session.delete(sub)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 if __name__ == '__main__':
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'

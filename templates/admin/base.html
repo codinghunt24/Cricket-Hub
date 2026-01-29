@@ -92,6 +92,12 @@
                             <span class="sidebar-text">Analytics</span>
                         </a>
                     </li>
+                    <li class="sidebar-item {% if '/admin/notifications' in request.path %}active{% endif %}">
+                        <a href="/admin/notifications" class="sidebar-link">
+                            <span class="sidebar-icon">&#128276;</span>
+                            <span class="sidebar-text">Notifications</span>
+                        </a>
+                    </li>
                     <li class="sidebar-item {% if '/admin/theme' in request.path %}active{% endif %}">
                         <a href="/admin/theme" class="sidebar-link">
                             <span class="sidebar-icon">&#127912;</span>

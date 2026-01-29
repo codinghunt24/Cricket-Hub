@@ -194,5 +194,168 @@
     </footer>
     
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <div id="pushNotifPopup" class="push-notif-popup" style="display:none;">
+        <div class="push-notif-content">
+            <button class="push-close" onclick="closePushPopup()">&times;</button>
+            <div class="push-icon">&#128276;</div>
+            <h3>Stay Updated!</h3>
+            <p>Get live match updates, breaking cricket news and scores directly in your browser.</p>
+            <button class="push-allow-btn" onclick="subscribeToPush()">Allow Notifications</button>
+            <button class="push-later-btn" onclick="closePushPopup()">Maybe Later</button>
+        </div>
+    </div>
+    
+    <style>
+    .push-notif-popup {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+        from { transform: translateY(100px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .push-notif-content {
+        background: #fff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        max-width: 320px;
+        text-align: center;
+        position: relative;
+    }
+    .push-close {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        background: none;
+        border: none;
+        font-size: 22px;
+        cursor: pointer;
+        color: #999;
+    }
+    .push-icon {
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+    .push-notif-content h3 {
+        margin: 0 0 8px 0;
+        color: #1a472a;
+        font-size: 1.2rem;
+    }
+    .push-notif-content p {
+        margin: 0 0 15px 0;
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    .push-allow-btn {
+        background: #1a472a;
+        color: #fff;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        width: 100%;
+        margin-bottom: 10px;
+        font-weight: 500;
+    }
+    .push-allow-btn:hover { background: #2d5a3d; }
+    .push-later-btn {
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+    @media (max-width: 480px) {
+        .push-notif-popup {
+            bottom: 10px;
+            right: 10px;
+            left: 10px;
+        }
+        .push-notif-content {
+            max-width: 100%;
+        }
+    }
+    </style>
+    
+    <script>
+    const VAPID_PUBLIC_KEY = '{{ site_settings.vapid_public_key if site_settings and site_settings.vapid_public_key else "" }}' || '';
+    
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+    
+    async function initPushNotifications() {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+        if (Notification.permission === 'granted') return;
+        if (localStorage.getItem('pushDismissed')) return;
+        
+        try {
+            const res = await fetch('/vapid-public-key');
+            const data = await res.json();
+            if (!data.publicKey) return;
+            window.VAPID_KEY = data.publicKey;
+            
+            setTimeout(() => {
+                document.getElementById('pushNotifPopup').style.display = 'block';
+            }, 3000);
+        } catch (e) {
+            console.log('Push init error:', e);
+        }
+    }
+    
+    function closePushPopup() {
+        document.getElementById('pushNotifPopup').style.display = 'none';
+        localStorage.setItem('pushDismissed', Date.now());
+    }
+    
+    async function subscribeToPush() {
+        try {
+            const reg = await navigator.serviceWorker.register('/static/sw.js');
+            await navigator.serviceWorker.ready;
+            
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                closePushPopup();
+                return;
+            }
+            
+            const subscription = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(window.VAPID_KEY)
+            });
+            
+            await fetch('/api/push/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subscription: subscription.toJSON() })
+            });
+            
+            closePushPopup();
+        } catch (e) {
+            console.log('Subscribe error:', e);
+            closePushPopup();
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPushNotifications);
+    } else {
+        initPushNotifications();
+    }
+    </script>
 </body>
 </html>

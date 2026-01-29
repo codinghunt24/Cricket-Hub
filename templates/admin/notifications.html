@@ -1,0 +1,320 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Push Notifications - Admin{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h1>Push Notifications</h1>
+    <p>Send push notifications to all subscribed users</p>
+</div>
+
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="stat-number">{{ total_subscribers }}</div>
+        <div class="stat-label">Active Subscribers</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ logs|length }}</div>
+        <div class="stat-label">Notifications Sent</div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <h2>Send New Notification</h2>
+    <form id="sendNotificationForm">
+        <div class="form-group">
+            <label for="notifTitle">Title *</label>
+            <input type="text" id="notifTitle" required placeholder="e.g., Match Started!">
+        </div>
+        <div class="form-group">
+            <label for="notifBody">Message *</label>
+            <textarea id="notifBody" required rows="3" placeholder="e.g., India vs Australia match is now LIVE!"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="notifIcon">Icon URL (Optional)</label>
+            <input type="url" id="notifIcon" placeholder="https://example.com/icon.png">
+        </div>
+        <div class="form-group">
+            <label for="notifUrl">Click URL (Optional)</label>
+            <input type="text" id="notifUrl" placeholder="/" value="/">
+        </div>
+        <button type="submit" class="btn btn-primary" id="sendBtn">
+            <span id="sendBtnText">Send Notification</span>
+            <span id="sendBtnLoader" style="display:none;">Sending...</span>
+        </button>
+    </form>
+    <div id="sendResult" class="alert" style="display:none; margin-top:15px;"></div>
+</div>
+
+<div class="admin-card">
+    <h2>Recent Notifications</h2>
+    {% if logs %}
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Title</th>
+                    <th>Message</th>
+                    <th>Sent</th>
+                    <th>Failed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ log.title }}</td>
+                    <td>{{ log.body[:50] }}{% if log.body|length > 50 %}...{% endif %}</td>
+                    <td style="color: #4CAF50;">{{ log.sent_count }}</td>
+                    <td style="color: {% if log.failed_count > 0 %}#f44336{% else %}#666{% endif %};">{{ log.failed_count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: var(--admin-muted);">No notifications sent yet.</p>
+    {% endif %}
+</div>
+
+<div class="admin-card">
+    <h2>Subscribers ({{ total_subscribers }})</h2>
+    {% if subscribers %}
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Browser</th>
+                    <th>Subscribed</th>
+                    <th>Last Active</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in subscribers %}
+                <tr id="sub-row-{{ sub.id }}">
+                    <td>{{ sub.id }}</td>
+                    <td>{{ sub.user_agent[:40] if sub.user_agent else 'Unknown' }}...</td>
+                    <td>{{ sub.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ sub.last_used.strftime('%Y-%m-%d %H:%M') if sub.last_used else '-' }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteSubscriber({{ sub.id }})">Remove</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: var(--admin-muted);">No subscribers yet. Users need to allow notifications on your website.</p>
+    {% endif %}
+</div>
+
+<div class="admin-card">
+    <h2>Integration Info</h2>
+    <div class="form-group">
+        <label>VAPID Public Key</label>
+        <input type="text" readonly value="{{ vapid_public_key }}" style="font-family: monospace; font-size: 0.85rem;">
+    </div>
+    <p style="color: var(--admin-muted); font-size: 0.9rem;">
+        This key is used to authenticate push notifications. It's automatically configured on your website.
+    </p>
+</div>
+
+<style>
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+}
+.stat-card {
+    background: var(--admin-card);
+    padding: 25px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid var(--admin-border);
+}
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--admin-accent);
+}
+.stat-label {
+    color: var(--admin-muted);
+    font-size: 0.95rem;
+    margin-top: 5px;
+}
+.admin-card {
+    background: var(--admin-card);
+    padding: 25px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid var(--admin-border);
+}
+.admin-card h2 {
+    margin: 0 0 20px 0;
+    font-size: 1.2rem;
+    color: var(--admin-text);
+    border-bottom: 1px solid var(--admin-border);
+    padding-bottom: 10px;
+}
+.form-group {
+    margin-bottom: 18px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: var(--admin-text);
+}
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--admin-border);
+    border-radius: 6px;
+    background: var(--admin-bg);
+    color: var(--admin-text);
+    font-size: 0.95rem;
+}
+.form-group input:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: var(--admin-accent);
+}
+.btn-primary {
+    background: var(--admin-accent);
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 1rem;
+}
+.btn-primary:hover {
+    opacity: 0.9;
+}
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.alert {
+    padding: 12px 15px;
+    border-radius: 6px;
+}
+.alert-success {
+    background: rgba(76, 175, 80, 0.15);
+    color: #4CAF50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+.alert-error {
+    background: rgba(244, 67, 54, 0.15);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+}
+.table-responsive {
+    overflow-x: auto;
+}
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.admin-table th, .admin-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--admin-border);
+}
+.admin-table th {
+    color: var(--admin-muted);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+.admin-table td {
+    color: var(--admin-text);
+}
+.btn-sm {
+    padding: 5px 12px;
+    font-size: 0.85rem;
+}
+.btn-danger {
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.btn-danger:hover {
+    background: #c82333;
+}
+</style>
+
+<script>
+document.getElementById('sendNotificationForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('sendBtn');
+    const btnText = document.getElementById('sendBtnText');
+    const btnLoader = document.getElementById('sendBtnLoader');
+    const result = document.getElementById('sendResult');
+    
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoader.style.display = 'inline';
+    result.style.display = 'none';
+    
+    const data = {
+        title: document.getElementById('notifTitle').value,
+        body: document.getElementById('notifBody').value,
+        icon_url: document.getElementById('notifIcon').value,
+        click_url: document.getElementById('notifUrl').value || '/'
+    };
+    
+    try {
+        const res = await fetch('/api/push/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        
+        result.style.display = 'block';
+        if (json.success) {
+            result.className = 'alert alert-success';
+            result.textContent = json.message + (json.failed > 0 ? ` (${json.failed} failed)` : '');
+            document.getElementById('sendNotificationForm').reset();
+            document.getElementById('notifUrl').value = '/';
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            result.className = 'alert alert-error';
+            result.textContent = json.message || 'Failed to send notification';
+        }
+    } catch (err) {
+        result.style.display = 'block';
+        result.className = 'alert alert-error';
+        result.textContent = 'Error: ' + err.message;
+    }
+    
+    btn.disabled = false;
+    btnText.style.display = 'inline';
+    btnLoader.style.display = 'none';
+});
+
+async function deleteSubscriber(id) {
+    if (!confirm('Remove this subscriber?')) return;
+    
+    try {
+        const res = await fetch(`/api/push/subscribers/${id}`, { method: 'DELETE' });
+        const json = await res.json();
+        if (json.success) {
+            document.getElementById('sub-row-' + id).remove();
+        } else {
+            alert(json.message || 'Failed to remove subscriber');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+}
+</script>
+{% endblock %}

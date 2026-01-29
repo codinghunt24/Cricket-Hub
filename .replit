@@ -38,3 +38,10 @@ externalPort = 80
 [deployment]
 deploymentTarget = "autoscale"
 run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
+
+[userenv]
+
+[userenv.shared]
+VAPID_PUBLIC_KEY = "BEbK2uoxqBWkFBpQdI1R_WsiZpOptJ39Gqe0-gVWsDXwC1BGG0YNGrMcut027v_10BWbVHaf5vNunkzw-asnPFs"
+VAPID_PRIVATE_KEY = "1ubUp_Co1v__QkmPSRMaOPzVJseM5thKGimj3l5NBEk"
+VAPID_CLAIMS_EMAIL = "admin@cricbuzz-live-score.com"
