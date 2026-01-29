@@ -2,9 +2,9 @@
 
 {% block title %}{{ player.name }} - Profile, Stats, Records | Cricbuzz Live Score{% endblock %}
 
-{% block meta_description %}{{ player.name }} cricket profile, career stats, batting and bowling records. {{ player.name }} plays for {{ player.team.name }}{% if player.role %} as {{ player.role }}{% endif %}. Get latest news and stats on Cricbuzz Live Score.{% endblock %}
+{% block meta_description %}{{ player.name }} cricket profile, career stats, batting and bowling records. {{ player.name }} plays for {% if player.team %}{{ player.team.name }}{% else %}International{% endif %}{% if player.role %} as {{ player.role }}{% endif %}. Get latest news and stats on Cricbuzz Live Score.{% endblock %}
 
-{% block meta_keywords %}{{ player.name }}, {{ player.name }} stats, {{ player.name }} career, {{ player.name }} batting, {{ player.name }} bowling, {{ player.name }} profile, {{ player.team.name }}, cricket player{% endblock %}
+{% block meta_keywords %}{{ player.name }}, {{ player.name }} stats, {{ player.name }} career, {{ player.name }} batting, {{ player.name }} bowling, {{ player.name }} profile, {% if player.team %}{{ player.team.name }}, {% endif %}cricket player{% endblock %}
 
 {% block og_title %}{{ player.name }} - Profile & Stats{% endblock %}
 {% block og_description %}{{ player.name }} cricket career stats, batting and bowling records{% endblock %}
@@ -22,11 +22,13 @@
     "image": "{{ player.photo_url }}",
     {% endif %}
     "jobTitle": "Cricket Player",
+    {% if player.team %}
     "memberOf": {
         "@type": "SportsTeam",
         "name": "{{ player.team.name }}"
     },
-    "description": "{{ player.name }} is a cricket player who plays for {{ player.team.name }}{% if player.role %} as {{ player.role }}{% endif %}"
+    {% endif %}
+    "description": "{{ player.name }} is a cricket player{% if player.team %} who plays for {{ player.team.name }}{% endif %}{% if player.role %} as {{ player.role }}{% endif %}"
 }
 </script>
 {% endblock %}
@@ -34,7 +36,11 @@
 {% block content %}
 <section class="player-detail-page">
     <div class="page-header">
+        {% if player.team %}
         <a href="/team/{{ player.team.id }}" class="back-link">&larr; Back to {{ player.team.name }}</a>
+        {% else %}
+        <a href="/teams" class="back-link">&larr; Back to Teams</a>
+        {% endif %}
     </div>
     
     <div class="player-profile">
@@ -54,13 +60,17 @@
                     <span class="badge-item">{{ player.role }}</span>
                     <span class="badge-divider">|</span>
                     {% endif %}
+                    {% if player.team %}
                     <span class="badge-item">{{ player.team.name }}</span>
+                    {% if player.team.category %}
                     <span class="badge-divider">|</span>
                     <span class="badge-item">{{ player.team.category.name }}</span>
+                    {% endif %}
+                    {% endif %}
                 </div>
             </div>
             <div class="player-flag-large">
-                {% if player.team.flag_url %}
+                {% if player.team and player.team.flag_url %}
                 <img src="{{ player.team.flag_url }}" alt="{{ player.team.name }}">
                 {% endif %}
             </div>
@@ -69,7 +79,7 @@
         <div class="player-about-card">
             <h3>About {{ player.name }}</h3>
             <p class="player-about-text">
-                {{ player.name }} is a professional cricket player who represents {{ player.team.name }} in {{ player.team.category.name }} cricket{% if player.role %}, primarily known as a {{ player.role }}{% endif %}.
+                {{ player.name }} is a professional cricket player{% if player.team %} who represents {{ player.team.name }}{% if player.team.category %} in {{ player.team.category.name }} cricket{% endif %}{% endif %}{% if player.role %}, primarily known as a {{ player.role }}{% endif %}.
                 {% if player.batting_style %}{{ player.name }} is a {{ player.batting_style }} batsman{% endif %}{% if player.bowling_style %} and bowls {{ player.bowling_style }}{% endif %}.
                 {% if player.birth_place %}Born in {{ player.birth_place }}{% if player.born %} on {{ player.born }}{% endif %}, {{ player.name }} has established a notable career in cricket.{% endif %}
                 {% if player.bat_matches and player.bat_matches > 0 %}
@@ -121,14 +131,18 @@
                     <span class="info-value">{{ player.bowling_style }}</span>
                 </div>
                 {% endif %}
+                {% if player.team %}
                 <div class="info-item">
                     <span class="info-label">Team</span>
                     <span class="info-value">{{ player.team.name }}</span>
                 </div>
+                {% if player.team.category %}
                 <div class="info-item">
                     <span class="info-label">Category</span>
                     <span class="info-value">{{ player.team.category.name }}</span>
                 </div>
+                {% endif %}
+                {% endif %}
             </div>
         </div>
         

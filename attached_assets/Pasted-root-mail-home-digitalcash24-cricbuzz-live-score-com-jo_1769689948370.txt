@@ -1,0 +1,27 @@
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# journalctl -u cricbuzz -f
+-- Logs begin at Mon 2025-11-10 12:47:14 CET. --
+Jan 29 13:32:09 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:32:09 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/1398/richie-berrington HTTP/11" 200 56046
+Jan 29 13:32:09 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/1398/richie-berrington: Born=April 03, 1987, Role=Batting Allrounder
+Jan 29 13:32:09 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:32:10 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/1416/calum-macleod HTTP/11" 200 None
+Jan 29 13:32:10 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/1416/calum-macleod: Born=November 15, 1988, Role=Batting Allrounder
+Jan 29 13:32:10 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:32:11 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/9383/michael-leask HTTP/11" 200 56150
+Jan 29 13:32:11 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/9383/michael-leask: Born=October 29, 1990, Role=Batting Allrounder
+Jan 29 13:32:11 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:32:18 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/3053/alasdair-evans HTTP/11" 200 None
+Jan 29 13:32:18 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/3053/alasdair-evans: Born=January 12, 1989, Role=Bowling Allrounder
+Jan 29 13:32:18 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:32:22 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/12771/tom-sole HTTP/11" 200 None
+Jan 29 13:32:22 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/12771/tom-sole: Born=June 21, 1996, Role=Bowling Allrounder
+Jan 29 13:32:22 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:32:23 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/9365/matthew-cross HTTP/11" 200 52460
+Jan 29 13:32:23 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/9365/matthew-cross: Born=October 15, 1992, Role=WK-Batsman
+Jan 29 13:32:23 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:32:23 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/8255/craig-wallace HTTP/11" 200 51612
+Jan 29 13:32:23 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/8255/craig-wallace: Born=June 27, 1990, Role=WK-Batsman
+Jan 29 13:32:24 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:32:24 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/9928/mark-watt HTTP/11" 200 None
+Jan 29 13:32:24 mail.digitalcash24.com gunicorn[4090362]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/9928/mark-watt: Born=July 29, 1996, Role=Bowler
+Jan 29 13:32:25 mail.digitalcash24.com gunicorn[4090362]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.c
