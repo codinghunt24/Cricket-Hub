@@ -45,7 +45,7 @@
                                 <span class="team-flag-placeholder"></span>
                                 {% endif %}
                                 <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
-                                <span class="team-score">{{ match.team1_score or '' }}</span>
+                                <span class="team-score">{{ normalize_score(match.team1_score) or '' }}</span>
                             </div>
                             <div class="team-row">
                                 {% if match_flags.get(match.match_id ~ '_2') %}
@@ -54,7 +54,7 @@
                                 <span class="team-flag-placeholder"></span>
                                 {% endif %}
                                 <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
-                                <span class="team-score">{{ match.team2_score or '' }}</span>
+                                <span class="team-score">{{ normalize_score(match.team2_score) or '' }}</span>
                             </div>
                         </div>
                         {% if match.result %}
@@ -117,14 +117,14 @@
                                     <img src="{{ match_flags.get(match.team1_name, '') }}" alt="" class="recent-team-flag" onerror="this.style.display='none'">
                                     <span class="team-name">{{ match.team1_name }}</span>
                                 </div>
-                                {% if match.team1_score %}<span class="team-score">{{ match.team1_score }}</span>{% endif %}
+                                {% if match.team1_score %}<span class="team-score">{{ normalize_score(match.team1_score) }}</span>{% endif %}
                             </div>
                             <div class="recent-team-row">
                                 <div class="recent-team-left">
                                     <img src="{{ match_flags.get(match.team2_name, '') }}" alt="" class="recent-team-flag" onerror="this.style.display='none'">
                                     <span class="team-name">{{ match.team2_name }}</span>
                                 </div>
-                                {% if match.team2_score %}<span class="team-score">{{ match.team2_score }}</span>{% endif %}
+                                {% if match.team2_score %}<span class="team-score">{{ normalize_score(match.team2_score) }}</span>{% endif %}
                             </div>
                         </div>
                         {% if match.result %}
@@ -774,6 +774,25 @@
     color: #666;
 }
 
+.batting-table tr.currently-batting {
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+}
+
+.batting-table tr.currently-batting td {
+    color: #047857;
+    font-weight: 600;
+}
+
+.batting-table tr.currently-batting .player-name {
+    color: #047857;
+    font-weight: 700;
+}
+
+.batting-table tr.currently-batting .runs {
+    color: #047857;
+    font-weight: 800;
+}
+
 .extras-row, .total-row {
     display: flex;
     justify-content: space-between;
@@ -1170,8 +1189,8 @@ function displayScorecard(scorecard) {
             html += `
                 <div class="innings-card">
                     <div class="innings-header">
-                        <span>${inning.team_name || 'Team'} - Innings ${idx + 1}</span>
-                        <span>${inning.total_score || '0'}/${inning.wickets || '0'} (${inning.overs || '0'} Ov)</span>
+                        <span>${inning.team_name || 'Team'} - ${inning.innings_num ? (inning.innings_num === 1 ? '1st' : inning.innings_num === 2 ? '2nd' : inning.innings_num === 3 ? '3rd' : inning.innings_num + 'th') + ' Innings' : 'Innings ' + (idx + 1)}</span>
+                        <span>${inning.total_score || '0'} (${inning.overs || '0'} Ov)</span>
                     </div>
                     <div class="innings-body">
             `;
@@ -1193,10 +1212,13 @@ function displayScorecard(scorecard) {
                         <tbody>
                 `;
                 inning.batting.forEach(batter => {
+                    const dismissalText = (batter.dismissal || '').toLowerCase();
+                    const isBatting = dismissalText === 'batting' || dismissalText === 'not out' || dismissalText === 'batting *' || dismissalText.includes('not out');
+                    const rowClass = isBatting ? 'currently-batting' : '';
                     html += `
-                        <tr>
+                        <tr class="${rowClass}">
                             <td>
-                                <span class="player-name">${batter.player || batter.name || ''}</span>
+                                <span class="player-name">${batter.player || batter.name || ''}${isBatting ? ' *' : ''}</span>
                                 <div class="dismissal">${batter.dismissal || ''}</div>
                             </td>
                             <td class="runs">${batter.runs || '0'}</td>
@@ -1213,7 +1235,7 @@ function displayScorecard(scorecard) {
             if (inning.extras) {
                 html += `<div class="extras-row"><span>Extras</span><span>${inning.extras}</span></div>`;
             }
-            html += `<div class="total-row"><span>Total</span><span>${inning.total_score || '0'}/${inning.wickets || '0'} (${inning.overs || '0'} Ov)</span></div>`;
+            html += `<div class="total-row"><span>Total</span><span>${inning.total_score || '0'} (${inning.overs || '0'} Ov)</span></div>`;
             
             if (inning.bowling && inning.bowling.length > 0) {
                 html += `
