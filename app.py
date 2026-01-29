@@ -1300,11 +1300,12 @@ def scrape_category(category_slug):
         
         teams_scraped = 0
         teams_updated = 0
+        existing_slugs = set(t.slug for t in Team.query.filter(Team.slug.isnot(None)).all())
+        
         for team_data in result['teams']:
             if not team_data.get('team_id'):
                 continue
             
-            # Use team_id for lookup (more reliable than name)
             existing = Team.query.filter_by(team_id=team_data['team_id']).first()
             if existing:
                 existing.name = team_data.get('name', existing.name)
@@ -1312,11 +1313,20 @@ def scrape_category(category_slug):
                 existing.team_url = team_data.get('team_url', existing.team_url)
                 existing.category_id = category.id
                 existing.updated_at = datetime.utcnow()
+                if not existing.slug and existing.name:
+                    existing.slug = generate_slug(existing.name, existing_slugs)
+                    if existing.slug:
+                        existing_slugs.add(existing.slug)
                 teams_updated += 1
             else:
+                team_name = team_data.get('name', '')
+                new_slug = generate_slug(team_name, existing_slugs) if team_name else None
+                if new_slug:
+                    existing_slugs.add(new_slug)
                 team = Team(
                     team_id=team_data['team_id'],
-                    name=team_data['name'],
+                    name=team_name,
+                    slug=new_slug,
                     flag_url=team_data.get('flag_url'),
                     team_url=team_data.get('team_url'),
                     category_id=category.id
@@ -1604,6 +1614,7 @@ def scrape_category_players(category_slug):
         total_players = 0
         teams = Team.query.filter_by(category_id=category.id).filter(Team.team_url.isnot(None)).all()
         total_teams = len(teams)
+        existing_player_slugs = set(p.slug for p in Player.query.filter(Player.slug.isnot(None)).all())
         
         scrape_progress[category_slug] = {'percent': 0, 'current': 0, 'total': total_teams, 'status': 'running'}
         
@@ -1618,10 +1629,19 @@ def scrape_category_players(category_slug):
                         existing.player_url = player_data.get('player_url')
                         existing.role = player_data.get('role')
                         existing.updated_at = datetime.utcnow()
+                        if not existing.slug and existing.name:
+                            existing.slug = generate_slug(existing.name, existing_player_slugs)
+                            if existing.slug:
+                                existing_player_slugs.add(existing.slug)
                     else:
+                        player_name = player_data.get('name', '')
+                        new_slug = generate_slug(player_name, existing_player_slugs) if player_name else None
+                        if new_slug:
+                            existing_player_slugs.add(new_slug)
                         player = Player(
                             player_id=player_data.get('player_id'),
-                            name=player_data['name'],
+                            name=player_name,
+                            slug=new_slug,
                             photo_url=player_data.get('photo_url'),
                             player_url=player_data.get('player_url'),
                             role=player_data.get('role'),
@@ -1669,6 +1689,7 @@ def scrape_all_players():
     try:
         total_players = 0
         teams = Team.query.filter(Team.team_url.isnot(None)).all()
+        existing_player_slugs = set(p.slug for p in Player.query.filter(Player.slug.isnot(None)).all())
         
         for team in teams:
             try:
@@ -1681,10 +1702,19 @@ def scrape_all_players():
                         existing.player_url = player_data.get('player_url')
                         existing.role = player_data.get('role')
                         existing.updated_at = datetime.utcnow()
+                        if not existing.slug and existing.name:
+                            existing.slug = generate_slug(existing.name, existing_player_slugs)
+                            if existing.slug:
+                                existing_player_slugs.add(existing.slug)
                     else:
+                        player_name = player_data.get('name', '')
+                        new_slug = generate_slug(player_name, existing_player_slugs) if player_name else None
+                        if new_slug:
+                            existing_player_slugs.add(new_slug)
                         player = Player(
                             player_id=player_data.get('player_id'),
-                            name=player_data['name'],
+                            name=player_name,
+                            slug=new_slug,
                             photo_url=player_data.get('photo_url'),
                             player_url=player_data.get('player_url'),
                             role=player_data.get('role'),
