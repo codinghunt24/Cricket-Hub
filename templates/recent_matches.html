@@ -29,9 +29,8 @@
     </div>
     
     {% if live_matches or db_matches %}
-    <div class="matches-slider-container">
-        <div class="matches-slider">
-            <div class="slider-track">
+    <div class="matches-grid-container">
+        <div class="matches-grid">
             {% for match in live_matches %}
             <div class="match-card" onclick="window.location.href='/match/{{ match.match_id }}'">
                 <div class="card-header">
@@ -98,7 +97,6 @@
                 </div>
             </div>
             {% endfor %}
-            </div>
         </div>
     </div>
     {% else %}
@@ -137,48 +135,24 @@
     font-size: 1rem;
 }
 
-.matches-slider-container {
+.matches-grid-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 15px;
 }
 
-.matches-slider {
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: #1a472a #e0e0e0;
-    padding-bottom: 15px;
-}
-
-.matches-slider::-webkit-scrollbar {
-    height: 8px;
-}
-
-.matches-slider::-webkit-scrollbar-track {
-    background: #e0e0e0;
-    border-radius: 10px;
-}
-
-.matches-slider::-webkit-scrollbar-thumb {
-    background: #1a472a;
-    border-radius: 10px;
-}
-
-.slider-track {
-    display: flex;
-    gap: 15px;
+.matches-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
     padding: 5px 0;
-    width: max-content;
 }
 
 .match-card {
-    min-width: 280px;
-    max-width: 280px;
     background: #fff;
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    flex-shrink: 0;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -303,13 +277,13 @@
         font-size: 1.4rem;
     }
     
-    .matches-slider-container {
+    .matches-grid-container {
         padding: 0 10px;
     }
     
-    .match-card {
-        min-width: 260px;
-        max-width: 260px;
+    .matches-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
     }
     
     .team-name {
