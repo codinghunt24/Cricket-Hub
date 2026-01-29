@@ -24,10 +24,6 @@
 
 {% block content %}
 <section class="matches-section">
-    <div class="section-header">
-        <h2 class="section-title">Recent Matches</h2>
-        <a href="/live-scores" class="view-all-link">View All Matches →</a>
-    </div>
     {% if matches %}
     <div class="match-category">
         <div class="slider-wrapper">
@@ -262,35 +258,6 @@
     margin-bottom: 0;
     margin-top: 0;
     overflow: visible;
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto 15px;
-    padding: 0 15px;
-}
-
-.section-title {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: #1a472a;
-    margin: 0;
-}
-
-.view-all-link {
-    color: #047857;
-    font-weight: 500;
-    text-decoration: none;
-    font-size: 0.95rem;
-    transition: color 0.2s;
-}
-
-.view-all-link:hover {
-    color: #065f46;
-    text-decoration: underline;
 }
 
 .match-category {
@@ -584,19 +551,6 @@
     .matches-section {
         padding: 10px 0;
         overflow: visible;
-    }
-    
-    .section-header {
-        padding: 0 10px;
-        margin-bottom: 10px;
-    }
-    
-    .section-title {
-        font-size: 1.1rem;
-    }
-    
-    .view-all-link {
-        font-size: 0.85rem;
     }
     
     .match-category {
