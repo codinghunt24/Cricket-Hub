@@ -1,0 +1,557 @@
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# journalctl -u cricbuzz --since "5 min ago" | grep -i "error\|traceback" -A 10
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: ERROR:app:Exception on /api/scrape/category/international/players [POST]
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: Traceback (most recent call last):
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 1585, in scrape_category_players
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:     db.session.commit()
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/scoping.py", line 597, in commit
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:     return self._proxied.commit()
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:     trans.commit(_to_root=True)
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:   File "<string>", line 2, in commit
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py", line 101, in _go
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:     self._raise_for_prerequisite_state(fn.__name__, current_state)
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 971, in _raise_for_prerequisite_state
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:     raise sa_exc.PendingRollbackError(
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: (sqlite3.OperationalError) database is locked
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: [SQL: UPDATE players SET role=?, updated_at=? WHERE players.id = ?]
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: [parameters: (None, '2026-01-29 12:38:09.793918', 1)]
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: During handling of the above exception, another exception occurred:
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: Traceback (most recent call last):
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:     response = self.full_dispatch_request()
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:     rv = self.handle_user_exception(e)
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:     rv = self.dispatch_request()
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 1611, in scrape_category_players
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:     db.session.commit()
+--
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]:     raise sa_exc.PendingRollbackError(
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: (sqlite3.OperationalError) database is locked
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: [SQL: UPDATE players SET role=?, updated_at=? WHERE players.id = ?]
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: [parameters: (None, '2026-01-29 12:38:09.793918', 1)]
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/india/2/players HTTP/11" 200 52640
+Jan 29 13:38:14 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 37 players from https://www.cricbuzz.com/cricket-team/india/2
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/oman/304/players HTTP/11" 200 50315
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 15 players from https://www.cricbuzz.com/cricket-team/oman/304
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]: ERROR:app:Exception on /api/scrape/category/international/players [POST]
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 1585, in scrape_category_players
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:     db.session.commit()
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/scoping.py", line 597, in commit
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:     return self._proxied.commit()
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:     trans.commit(_to_root=True)
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:   File "<string>", line 2, in commit
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py", line 101, in _go
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:     self._raise_for_prerequisite_state(fn.__name__, current_state)
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 971, in _raise_for_prerequisite_state
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:     raise sa_exc.PendingRollbackError(
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]: sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]: (sqlite3.OperationalError) database is locked
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]: [SQL: UPDATE players SET role=?, updated_at=? WHERE players.id = ?]
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]: [parameters: (None, '2026-01-29 12:38:10.430598', 1)]
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]: During handling of the above exception, another exception occurred:
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:     response = self.full_dispatch_request()
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:     rv = self.handle_user_exception(e)
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:     rv = self.dispatch_request()
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 1611, in scrape_category_players
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:     db.session.commit()
+--
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]:     raise sa_exc.PendingRollbackError(
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]: sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]: (sqlite3.OperationalError) database is locked
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]: [SQL: UPDATE players SET role=?, updated_at=? WHERE players.id = ?]
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]: [parameters: (None, '2026-01-29 12:38:10.430598', 1)]
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098239]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/fiji/343/players HTTP/11" 200 47253
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 0 players from https://www.cricbuzz.com/cricket-team/fiji/343
+Jan 29 13:38:15 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:16 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/italy/527/players HTTP/11" 200 46962
+Jan 29 13:38:16 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 0 players from https://www.cricbuzz.com/cricket-team/italy/527
+Jan 29 13:38:16 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:16 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/botswana/529/players HTTP/11" 200 47247
+Jan 29 13:38:16 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 0 players from https://www.cricbuzz.com/cricket-team/botswana/529
+Jan 29 13:38:16 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:16 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/belgium/541/players HTTP/11" 200 46976
+--
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: ERROR:app:Exception on /api/scrape/category/international/players [POST]
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: Traceback (most recent call last):
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 1585, in scrape_category_players
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:     db.session.commit()
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/scoping.py", line 597, in commit
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:     return self._proxied.commit()
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:     trans.commit(_to_root=True)
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:   File "<string>", line 2, in commit
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py", line 101, in _go
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:     self._raise_for_prerequisite_state(fn.__name__, current_state)
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 971, in _raise_for_prerequisite_state
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:     raise sa_exc.PendingRollbackError(
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: (sqlite3.OperationalError) database is locked
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: [SQL: UPDATE players SET role=?, updated_at=? WHERE players.id = ?]
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: [parameters: (None, '2026-01-29 12:38:14.970144', 1)]
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: During handling of the above exception, another exception occurred:
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: Traceback (most recent call last):
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:     response = self.full_dispatch_request()
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:     rv = self.handle_user_exception(e)
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:     rv = self.dispatch_request()
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 1611, in scrape_category_players
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:     db.session.commit()
+--
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]:     raise sa_exc.PendingRollbackError(
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: (sqlite3.OperationalError) database is locked
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: [SQL: UPDATE players SET role=?, updated_at=? WHERE players.id = ?]
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: [parameters: (None, '2026-01-29 12:38:14.970144', 1)]
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 20 players from https://www.cricbuzz.com/cricket-team/united-states-of-america/15
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/scotland/23/players HTTP/11" 200 None
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 16 players from https://www.cricbuzz.com/cricket-team/scotland/23
+Jan 29 13:38:20 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:21 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/netherlands/24/players HTTP/11" 200 51894
+Jan 29 13:38:21 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 30 players from https://www.cricbuzz.com/cricket-team/netherlands/24
+Jan 29 13:38:21 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/bermuda/25/players HTTP/11" 200 52676
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 29 players from https://www.cricbuzz.com/cricket-team/bermuda/25
+--
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]: ERROR:app:Exception on /player/1 [GET]
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:     response = self.full_dispatch_request()
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:     rv = self.handle_user_exception(e)
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:     rv = self.dispatch_request()
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 615, in player_detail
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:     return render_template('player_detail.html', player=player)
+--
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:     raise rewrite_traceback_stack(source=source)
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:     {% extends 'base.html' %}
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:     {% block content %}{% endblock %}
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098239]: TypeError: '>' not supported between instances of 'str' and 'int'
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/india/2/players HTTP/11" 200 52640
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 37 players from https://www.cricbuzz.com/cricket-team/india/2
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/afghanistan/96/players HTTP/11" 200 52259
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 33 players from https://www.cricbuzz.com/cricket-team/afghanistan/96
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:22 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/ireland/27/players HTTP/11" 200 51224
+Jan 29 13:38:23 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 25 players from https://www.cricbuzz.com/cricket-team/ireland/27
+Jan 29 13:38:23 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:23 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/pakistan/3/players HTTP/11" 200 53190
+--
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]: ERROR:app:Exception on /player/1 [GET]
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:     response = self.full_dispatch_request()
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:     rv = self.handle_user_exception(e)
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:     rv = self.dispatch_request()
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 615, in player_detail
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:     return render_template('player_detail.html', player=player)
+--
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:     raise rewrite_traceback_stack(source=source)
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:     {% extends 'base.html' %}
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:     {% block content %}{% endblock %}
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098239]: TypeError: '>' not supported between instances of 'str' and 'int'
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/germany/77/players HTTP/11" 200 47254
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 0 players from https://www.cricbuzz.com/cricket-team/germany/77
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/namibia/161/players HTTP/11" 200 50226
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 14 players from https://www.cricbuzz.com/cricket-team/namibia/161
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/denmark/185/players HTTP/11" 200 47043
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 0 players from https://www.cricbuzz.com/cricket-team/denmark/185
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:27 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/singapore/190/players HTTP/11" 200 46984
+--
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]: ERROR:app:Exception on /player/4 [GET]
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:     self.dialect.do_execute(
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:     cursor.execute(statement, parameters)
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]: sqlite3.OperationalError: database is locked
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]: The above exception was the direct cause of the following exception:
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:     response = self.full_dispatch_request()
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:     rv = self.handle_user_exception(e)
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 878, in full_dispatch_request
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:     rv = self.preprocess_request()
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1253, in preprocess_request
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:     rv = self.ensure_sync(before_func)()
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 3723, in check_redirects
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:     redirect_rule = Redirect.query.filter_by(old_url=path, is_active=True).first()
+--
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:     self.dialect.do_execute(
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:     cursor.execute(statement, parameters)
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]: sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) database is locked
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]: [SQL: SELECT redirects.id AS redirects_id, redirects.old_url AS redirects_old_url, redirects.new_url AS redirects_new_url, redirects.redirect_type AS redirects_redirect_type, redirects.is_active AS redirects_is_active, redirects.hit_count AS redirects_hit_count, redirects.created_at AS redirects_created_at, redirects.updated_at AS redirects_updated_at
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]: FROM redirects
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]: WHERE redirects.old_url = ? AND redirects.is_active = 1
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]:  LIMIT ? OFFSET ?]
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]: [parameters: ('/player/4', 1, 0)]
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098239]: (Background on this error at: https://sqlalche.me/e/20/e3q8)
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/finland/556/players HTTP/11" 200 46934
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 0 players from https://www.cricbuzz.com/cricket-team/finland/556
+Jan 29 13:38:45 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:46 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/isle-of-man/557/players HTTP/11" 200 None
+Jan 29 13:38:46 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 0 players from https://www.cricbuzz.com/cricket-team/isle-of-man/557
+Jan 29 13:38:46 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:47 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/bulgaria/558/players HTTP/11" 200 None
+Jan 29 13:38:47 mail.digitalcash24.com gunicorn[4098240]: INFO:scraper:Scraped 0 players from https://www.cricbuzz.com/cricket-team/bulgaria/558
+Jan 29 13:38:47 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:48 mail.digitalcash24.com gunicorn[4098240]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-team/lesotho/570/players HTTP/11" 200 None
+--
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: ERROR:app:Exception on /player/4 [GET]
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     response = self.full_dispatch_request()
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     rv = self.handle_user_exception(e)
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     rv = self.dispatch_request()
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 615, in player_detail
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     return render_template('player_detail.html', player=player)
+--
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     raise rewrite_traceback_stack(source=source)
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% extends 'base.html' %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% block content %}{% endblock %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: TypeError: '>' not supported between instances of 'str' and 'int'
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: ERROR:app:Exception on /player/4 [GET]
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     response = self.full_dispatch_request()
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     rv = self.handle_user_exception(e)
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     rv = self.dispatch_request()
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 615, in player_detail
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     return render_template('player_detail.html', player=player)
+--
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     raise rewrite_traceback_stack(source=source)
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% extends 'base.html' %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% block content %}{% endblock %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: TypeError: '>' not supported between instances of 'str' and 'int'
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098240]: [2026-01-29 13:38:50 +0100] [4098240] [ERROR] Error handling request /api/scrape/all-players
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098240]: Traceback (most recent call last):
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/workers/sync.py", line 134, in handle
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098240]:     self.handle_request(listener, req, client, addr)
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/workers/sync.py", line 177, in handle_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098240]:     respiter = self.wsgi(environ, resp.start_response)
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1498, in __call__
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098240]:     return self.wsgi_app(environ, start_response)
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098240]:     response = self.full_dispatch_request()
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098240]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098240]:     rv = self.dispatch_request()
+--
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: ERROR:app:Exception on /player/4 [GET]
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     response = self.full_dispatch_request()
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     rv = self.handle_user_exception(e)
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     rv = self.dispatch_request()
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 615, in player_detail
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     return render_template('player_detail.html', player=player)
+--
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     raise rewrite_traceback_stack(source=source)
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% extends 'base.html' %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% block content %}{% endblock %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: TypeError: '>' not supported between instances of 'str' and 'int'
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: ERROR:app:Exception on /player/21 [GET]
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     response = self.full_dispatch_request()
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     rv = self.handle_user_exception(e)
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     rv = self.dispatch_request()
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 615, in player_detail
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     return render_template('player_detail.html', player=player)
+--
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     raise rewrite_traceback_stack(source=source)
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% extends 'base.html' %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% block content %}{% endblock %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: TypeError: '>' not supported between instances of 'str' and 'int'
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: ERROR:app:Exception on /player/21 [GET]
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     response = self.full_dispatch_request()
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     rv = self.handle_user_exception(e)
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     rv = self.dispatch_request()
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 615, in player_detail
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     return render_template('player_detail.html', player=player)
+--
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     raise rewrite_traceback_stack(source=source)
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% extends 'base.html' %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% block content %}{% endblock %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: TypeError: '>' not supported between instances of 'str' and 'int'
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4099646]: [2026-01-29 13:38:50 +0100] [4099646] [INFO] Booting worker with pid: 4099646
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 62290
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: INFO:scraper:Live Scores: Found 20 matches in first container
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 62290
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: INFO:scraper:Live Scores: Found 20 matches in first container
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4098239]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4099646]: DEBUG:tzlocal:/etc/timezone found, contents:
+Jan 29 13:38:50 mail.digitalcash24.com gunicorn[4099646]:  Europe/Berlin
+--
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]: ERROR:app:Exception on /player/39 [GET]
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:     response = self.full_dispatch_request()
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:     rv = self.handle_user_exception(e)
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:     rv = self.dispatch_request()
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 615, in player_detail
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:     return render_template('player_detail.html', player=player)
+--
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:     raise rewrite_traceback_stack(source=source)
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:     {% extends 'base.html' %}
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:     {% block content %}{% endblock %}
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 13:39:06 mail.digitalcash24.com gunicorn[4098239]: TypeError: '>' not supported between instances of 'str' and 'int'
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]: ERROR:app:Exception on /player/38 [GET]
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:     response = self.full_dispatch_request()
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:     rv = self.handle_user_exception(e)
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:     rv = self.dispatch_request()
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 615, in player_detail
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:     return render_template('player_detail.html', player=player)
+--
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:     raise rewrite_traceback_stack(source=source)
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:     {% extends 'base.html' %}
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:     {% block content %}{% endblock %}
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 13:39:09 mail.digitalcash24.com gunicorn[4098239]: TypeError: '>' not supported between instances of 'str' and 'int'
+Jan 29 13:39:47 mail.digitalcash24.com gunicorn[4098239]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:39:47 mail.digitalcash24.com gunicorn[4098239]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 62320
+Jan 29 13:39:47 mail.digitalcash24.com gunicorn[4098239]: INFO:scraper:Live Scores: Found 20 matches in first container
+Jan 29 13:39:53 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:39:53 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/11808/shubman-gill HTTP/11" 200 66142
+Jan 29 13:39:54 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/11808/shubman-gill: Born=September 08, 1999, Role=Batsman
+Jan 29 13:39:54 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:39:54 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/13940/yashasvi-jaiswal HTTP/11" 200 60843
+Jan 29 13:39:54 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/13940/yashasvi-jaiswal: Born=December 28, 2001, Role=Batsman
+Jan 29 13:39:54 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+--
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]: ERROR:app:Exception on /player/2 [GET]
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:     response = self.full_dispatch_request()
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:     rv = self.handle_user_exception(e)
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:     rv = self.dispatch_request()
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 615, in player_detail
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:     return render_template('player_detail.html', player=player)
+--
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:     raise rewrite_traceback_stack(source=source)
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:     {% extends 'base.html' %}
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:     {% block content %}{% endblock %}
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4098239]: TypeError: '>' not supported between instances of 'str' and 'int'
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/9716/abhimanyu-easwaran HTTP/11" 200 51980
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/9716/abhimanyu-easwaran: Born=September 06, 1995, Role=Batsman
+Jan 29 13:40:01 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:40:02 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/8257/karun-nair HTTP/11" 200 59884
+Jan 29 13:40:02 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/8257/karun-nair: Born=December 06, 1991, Role=Batsman
+Jan 29 13:40:02 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:40:03 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/14701/nitish-kumar-reddy HTTP/11" 200 None
+Jan 29 13:40:03 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/14701/nitish-kumar-reddy: Born=May 26, 2003, Role=Batting Allrounder
+Jan 29 13:40:03 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+--
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]: ERROR:app:Exception on /player/2 [GET]
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]: Traceback (most recent call last):
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:     response = self.full_dispatch_request()
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:     rv = self.handle_user_exception(e)
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:     rv = self.dispatch_request()
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 615, in player_detail
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:     return render_template('player_detail.html', player=player)
+--
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:     raise rewrite_traceback_stack(source=source)
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:     {% extends 'base.html' %}
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:     {% block content %}{% endblock %}
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]: TypeError: '>' not supported between instances of 'str' and 'int'
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/14281/zahir-shehzad: Born=September 23, 1998, Role=Bowling Allrounder
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/10738/rashid-khan HTTP/11" 200 60375
+Jan 29 13:40:28 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/10738/rashid-khan: Born=September 20, 1998, Role=Bowling Allrounder
+Jan 29 13:40:29 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:40:29 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/53160/bashir-ahmad HTTP/11" 200 49086
+Jan 29 13:40:29 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/53160/bashir-ahmad: Born=July 12, 2005, Role=Bowling Allrounder
+Jan 29 13:40:30 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:40:30 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/3007/mohammad-nabi HTTP/11" 200 60503
+Jan 29 13:40:30 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/3007/mohammad-nabi: Born=January 01, 1985, Role=Bowling Allrounder
+--
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]: ERROR:app:Exception on /player/2 [GET]
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]: Traceback (most recent call last):
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:     response = self.full_dispatch_request()
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:     rv = self.handle_user_exception(e)
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:     rv = self.dispatch_request()
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 615, in player_detail
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:     return render_template('player_detail.html', player=player)
+--
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:     raise rewrite_traceback_stack(source=source)
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:     {% extends 'base.html' %}
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:     {% block content %}{% endblock %}
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4098239]: TypeError: '>' not supported between instances of 'str' and 'int'
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/47000/zubaid-akbari HTTP/11" 200 None
+Jan 29 13:40:32 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/47000/zubaid-akbari: Born=May 01, 2000, Role=Bowling Allrounder
+Jan 29 13:40:33 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:40:33 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/11071/ikram-alikhil HTTP/11" 200 52431
+Jan 29 13:40:33 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/11071/ikram-alikhil: Born=September 29, 2000, Role=WK-Batsman
+Jan 29 13:40:33 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:40:34 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/8278/afsar-zazai HTTP/11" 200 None
+Jan 29 13:40:34 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/8278/afsar-zazai: Born=August 10, 1993, Role=WK-Batsman
+Jan 29 13:40:34 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:40:35 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/14195/mohammad-ishaq HTTP/11" 200 None
+--
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]: ERROR:app:Exception on /player/1 [GET]
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]: Traceback (most recent call last):
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:     response = self.full_dispatch_request()
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:     rv = self.handle_user_exception(e)
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:     rv = self.dispatch_request()
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 615, in player_detail
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:     return render_template('player_detail.html', player=player)
+--
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:     raise rewrite_traceback_stack(source=source)
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:     {% extends 'base.html' %}
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:     {% block content %}{% endblock %}
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]: TypeError: '>' not supported between instances of 'str' and 'int'
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/10045/liam-livingstone HTTP/11" 200 60270
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/10045/liam-livingstone: Born=August 04, 1993, Role=Batting Allrounder
+Jan 29 13:42:42 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:42:43 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/6670/chris-woakes HTTP/11" 200 63748
+Jan 29 13:42:43 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/6670/chris-woakes: Born=March 02, 1989, Role=Bowling Allrounder
+Jan 29 13:42:43 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Jan 29 13:42:43 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /profiles/8512/jamie-overton HTTP/11" 200 57573
+Jan 29 13:42:43 mail.digitalcash24.com gunicorn[4099646]: INFO:scraper:Scraped player profile from https://www.cricbuzz.com/profiles/8512/jamie-overton: Born=April 10, 1994, Role=Bowling Allrounder
+Jan 29 13:42:44 mail.digitalcash24.com gunicorn[4099646]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
