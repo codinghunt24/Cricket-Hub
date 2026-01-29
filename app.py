@@ -175,9 +175,12 @@ def upsert_series(series_data, category_id):
         existing.category_id = category_id
         return existing
     else:
+        series_name = series_data.get('name', '')
+        series_id = series_data['series_id']
         new_series = Series(
-            series_id=series_data['series_id'],
-            name=series_data.get('name', ''),
+            series_id=series_id,
+            name=series_name,
+            slug=generate_slug(series_name + '-' + str(series_id)) if series_name else None,
             series_url=series_data.get('series_url', ''),
             start_date=series_data.get('start_date'),
             end_date=series_data.get('end_date'),
@@ -2412,10 +2415,14 @@ def save_series_matches():
                     existing.series_url = s.get('url', '')
                     existing.date_range = s.get('month_year', '')
                     existing.category_id = category.id
+                    if not existing.slug and existing.name:
+                        existing.slug = generate_slug(existing.name + '-' + str(series_id))
                 else:
+                    series_name = s.get('name', '')
                     new_series = Series(
                         series_id=series_id,
-                        name=s.get('name', ''),
+                        name=series_name,
+                        slug=generate_slug(series_name + '-' + str(series_id)) if series_name else None,
                         series_url=s.get('url', ''),
                         date_range=s.get('month_year', ''),
                         category_id=category.id if category else 1
@@ -2517,11 +2524,15 @@ def save_series_bulk():
                 existing.series_url = s.get('url', existing.series_url)
                 existing.date_range = s.get('month_year', existing.date_range)
                 existing.category_id = category.id
+                if not existing.slug and existing.name:
+                    existing.slug = generate_slug(existing.name + '-' + str(series_id))
                 updated += 1
             else:
+                series_name = s.get('name', '')
                 new_series = Series(
                     series_id=series_id,
-                    name=s.get('name', ''),
+                    name=series_name,
+                    slug=generate_slug(series_name + '-' + str(series_id)) if series_name else None,
                     series_url=s.get('url', ''),
                     date_range=s.get('month_year', ''),
                     category_id=category.id if category else 1
@@ -2592,7 +2603,8 @@ def scrape_series(category_slug):
             if not series_data.get('series_id'):
                 continue
             
-            existing = Series.query.filter_by(series_id=series_data['series_id']).first()
+            sid = series_data['series_id']
+            existing = Series.query.filter_by(series_id=sid).first()
             if existing:
                 existing.name = series_data.get('name', existing.name)
                 existing.series_url = series_data.get('series_url', existing.series_url)
@@ -2601,11 +2613,15 @@ def scrape_series(category_slug):
                 existing.date_range = series_data.get('date_range', existing.date_range)
                 existing.category_id = category.id
                 existing.updated_at = datetime.utcnow()
+                if not existing.slug and existing.name:
+                    existing.slug = generate_slug(existing.name + '-' + str(sid))
                 series_updated += 1
             else:
+                series_name = series_data['name']
                 series = Series(
-                    series_id=series_data['series_id'],
-                    name=series_data['name'],
+                    series_id=sid,
+                    name=series_name,
+                    slug=generate_slug(series_name + '-' + str(sid)) if series_name else None,
                     series_url=series_data['series_url'],
                     start_date=series_data.get('start_date'),
                     end_date=series_data.get('end_date'),

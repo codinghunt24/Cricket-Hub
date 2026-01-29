@@ -52,6 +52,7 @@
                         </thead>
                         <tbody>
                             {% for series in data.series %}
+                            {% if series.slug %}
                             <tr>
                                 <td>
                                     <a href="{{ url_for('series_detail', slug=series.slug) }}" class="series-link">
@@ -63,6 +64,7 @@
                                     <span class="category-badge {{ series.category.slug }}">{{ series.category.name }}</span>
                                 </td>
                             </tr>
+                            {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>
@@ -93,6 +95,7 @@
                     </thead>
                     <tbody>
                         {% for series in data.series %}
+                        {% if series.slug %}
                         <tr>
                             <td>
                                 <a href="{{ url_for('series_detail', slug=series.slug) }}" class="series-link">
@@ -101,6 +104,7 @@
                             </td>
                             <td class="date-cell">{{ series.date_range or '-' }}</td>
                         </tr>
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>
