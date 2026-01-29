@@ -287,6 +287,8 @@ def upsert_team(team_data, category_id):
     if not team_data.get('team_id'):
         return None
     
+    existing_slugs = set(t.slug for t in Team.query.filter(Team.slug.isnot(None)).all())
+    
     existing = Team.query.filter_by(team_id=team_data['team_id']).first()
     if existing:
         existing.name = team_data.get('name', existing.name)
@@ -294,14 +296,15 @@ def upsert_team(team_data, category_id):
         existing.team_url = team_data.get('team_url', existing.team_url)
         existing.category_id = category_id
         if not existing.slug and existing.name:
-            existing.slug = generate_slug(existing.name)
+            existing.slug = generate_slug(existing.name, existing_slugs)
         return existing
     else:
         team_name = team_data.get('name', '')
+        new_slug = generate_slug(team_name, existing_slugs) if team_name else None
         new_team = Team(
             team_id=team_data['team_id'],
             name=team_name,
-            slug=generate_slug(team_name) if team_name else None,
+            slug=new_slug,
             flag_url=team_data.get('flag_url'),
             team_url=team_data.get('team_url'),
             category_id=category_id
@@ -314,6 +317,8 @@ def upsert_player(player_data, db_team_id):
     if not player_data.get('player_id'):
         return None
     
+    existing_slugs = set(p.slug for p in Player.query.filter(Player.slug.isnot(None)).all())
+    
     existing = Player.query.filter_by(player_id=player_data['player_id']).first()
     if existing:
         existing.name = player_data.get('name', existing.name)
@@ -322,14 +327,15 @@ def upsert_player(player_data, db_team_id):
         existing.player_url = player_data.get('player_url', existing.player_url)
         existing.team_id = db_team_id
         if not existing.slug and existing.name:
-            existing.slug = generate_slug(existing.name)
+            existing.slug = generate_slug(existing.name, existing_slugs)
         return existing
     else:
         player_name = player_data.get('name', '')
+        new_slug = generate_slug(player_name, existing_slugs) if player_name else None
         new_player = Player(
             player_id=player_data['player_id'],
             name=player_name,
-            slug=generate_slug(player_name) if player_name else None,
+            slug=new_slug,
             role=player_data.get('role'),
             photo_url=player_data.get('photo_url'),
             player_url=player_data.get('player_url'),
