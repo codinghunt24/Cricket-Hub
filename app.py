@@ -873,24 +873,12 @@ def admin_automation():
 def admin_matches():
     from datetime import datetime
     today = datetime.now()
-    today_patterns = [
-        today.strftime('%b %d'),
-        today.strftime('%d %b'),
-        today.strftime('%B %d'),
-        today.strftime('%d %B'),
-        f"{today.strftime('%b')} {today.day}",
-        f"{today.day} {today.strftime('%b')}"
-    ]
-    all_matches = Match.query.order_by(Match.id.desc()).all()
-    matches = []
-    for m in all_matches:
-        if m.match_date:
-            for pattern in today_patterns:
-                if pattern.lower() in m.match_date.lower():
-                    matches.append(m)
-                    break
-        else:
-            matches.append(m)
+    
+    # Show all Live/Preview/Upcoming matches first, then rest ordered by id desc
+    live_states = ['Live', 'In Progress', 'Innings Break', 'Stumps', 'Lunch', 'Tea', 'Drinks', 'Preview', 'Upcoming']
+    live_matches = Match.query.filter(Match.state.in_(live_states)).order_by(Match.id.desc()).all()
+    other_matches = Match.query.filter(~Match.state.in_(live_states)).order_by(Match.id.desc()).limit(100).all()
+    matches = live_matches + other_matches
     live_count = len([m for m in matches if m.state == 'Live'])
     in_progress_count = len([m for m in matches if m.state == 'In Progress'])
     innings_count = len([m for m in matches if m.state == 'Innings Break'])
