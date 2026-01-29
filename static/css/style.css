@@ -1451,10 +1451,13 @@ body {
 
 .footer-pages ul {
     list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
 }
 
 .footer-pages li {
-    margin-bottom: 8px;
+    margin-bottom: 0;
 }
 
 .footer-pages a {
@@ -1469,10 +1472,13 @@ body {
 
 .footer-links ul {
     list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
 }
 
 .footer-links li {
-    margin-bottom: 8px;
+    margin-bottom: 0;
 }
 
 .footer-links a {
