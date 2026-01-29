@@ -1,0 +1,38 @@
+        counter = 1
+        while f"{text}-{counter}" in existing_slugs:
+            counter += 1
+        text = f"{text}-{counter}"
+    return text
+
+class Base(DeclarativeBase):
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# root@mail:/home/digitalcash24/cricbuzz-live-score.com# sed -n '14,30p' /home/digitalcash24/cricbuzz-live-score.com/app.py
+bash: root@mail:/home/digitalcash24/cricbuzz-live-score.com#: No such file or directory
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# def generate_slug(text, existing_slugs=None):
+bash: syntax error near unexpected token `('
+root@mail:/home/digitalcash24/cricbuzz-live-score.com#     """Generate SEO-friendly slug from text"""
+
+Generate SEO-friendly slug from text: command not found
+root@mail:/home/digitalcash24/cricbuzz-live-score.com#     if not text:
+>         return None
+>     text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+bash: syntax error near unexpected token `('
+root@mail:/home/digitalcash24/cricbuzz-live-score.com#     text = text.lower().strip()
+bash: syntax error near unexpected token `('
+root@mail:/home/digitalcash24/cricbuzz-live-score.com#     text = re.sub(r'[^\w\s-]', '', text)
+bash: syntax error near unexpected token `('
+root@mail:/home/digitalcash24/cricbuzz-live-score.com#     text = re.sub(r'[-\s]+', '-', text)
+bash: syntax error near unexpected token `('
+root@mail:/home/digitalcash24/cricbuzz-live-score.com#     text = text.strip('-')
+bash: syntax error near unexpected token `('
+root@mail:/home/digitalcash24/cricbuzz-live-score.com#     if existing_slugs and text in existing_slugs:
+>         counter = 1
+>         while f"{text}-{counter}" in existing_slugs:
+>             counter += 1
+>         text = f"{text}-{counter}"
+>     return text
+> 
+> class Base(DeclarativeBase):
+bash: syntax error near unexpected token `('
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
+bash: root@mail:/home/digitalcash24/cricbuzz-live-score.com#: No such file or directory
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
