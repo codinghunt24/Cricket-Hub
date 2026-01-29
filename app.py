@@ -3636,35 +3636,41 @@ def api_get_scorecard(match_id):
 def generate_all_slugs():
     """Generate SEO-friendly slugs for all teams, players, and series"""
     try:
+        force = request.args.get('force', 'false').lower() == 'true'
+        
         team_slugs = set()
         teams_updated = 0
         for team in Team.query.all():
-            if not team.slug:
+            if force or not team.slug:
                 team.slug = generate_slug(team.name, team_slugs)
-                team_slugs.add(team.slug)
+                if team.slug:
+                    team_slugs.add(team.slug)
                 teams_updated += 1
         
         player_slugs = set()
         players_updated = 0
         for player in Player.query.all():
-            if not player.slug:
+            if force or not player.slug:
                 player.slug = generate_slug(player.name, player_slugs)
-                player_slugs.add(player.slug)
+                if player.slug:
+                    player_slugs.add(player.slug)
                 players_updated += 1
         
         series_slugs = set()
         series_updated = 0
         for s in Series.query.all():
-            if not s.slug:
+            if force or not s.slug:
                 s.slug = generate_slug(s.name, series_slugs)
-                series_slugs.add(s.slug)
+                if s.slug:
+                    series_slugs.add(s.slug)
                 series_updated += 1
         
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'message': f'Slugs generated: {teams_updated} teams, {players_updated} players, {series_updated} series'
+            'message': f'Slugs generated: {teams_updated} teams, {players_updated} players, {series_updated} series',
+            'force': force
         })
     except Exception as e:
         db.session.rollback()
