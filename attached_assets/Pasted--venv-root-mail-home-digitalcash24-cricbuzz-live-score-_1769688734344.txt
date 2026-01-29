@@ -1,0 +1,40 @@
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# gunicorn --bind 0.0.0.0:5000 --workers 2 main:app
+[2026-01-29 13:11:02 +0100] [4084101] [INFO] Starting gunicorn 23.0.0
+[2026-01-29 13:11:02 +0100] [4084101] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2026-01-29 13:11:02 +0100] [4084101] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 98] Address already in use
+[2026-01-29 13:11:03 +0100] [4084101] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2026-01-29 13:11:03 +0100] [4084101] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 98] Address already in use
+[2026-01-29 13:11:04 +0100] [4084101] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2026-01-29 13:11:04 +0100] [4084101] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 98] Address already in use
+[2026-01-29 13:11:05 +0100] [4084101] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2026-01-29 13:11:05 +0100] [4084101] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 98] Address already in use
+[2026-01-29 13:11:06 +0100] [4084101] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2026-01-29 13:11:06 +0100] [4084101] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 98] Address already in use
+[2026-01-29 13:11:07 +0100] [4084101] [ERROR] Can't connect to ('0.0.0.0', 5000)
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# gunicorn --bind 0.0.0.0:8000 --workers 2 main:app
+[2026-01-29 13:11:32 +0100] [4084377] [INFO] Starting gunicorn 23.0.0
+[2026-01-29 13:11:32 +0100] [4084377] [INFO] Listening at: http://0.0.0.0:8000 (4084377)
+[2026-01-29 13:11:32 +0100] [4084377] [INFO] Using worker: sync
+[2026-01-29 13:11:32 +0100] [4084379] [INFO] Booting worker with pid: 4084379
+[2026-01-29 13:11:32 +0100] [4084380] [INFO] Booting worker with pid: 4084380
+DEBUG:tzlocal:/etc/timezone found, contents:
+ Europe/Berlin
+
+DEBUG:tzlocal:/etc/localtime found
+DEBUG:tzlocal:2 found:
+ {'/etc/timezone': 'Europe/Berlin', '/etc/localtime is a symlink to': 'Europe/Berlin'}
+DEBUG:tzlocal:/etc/timezone found, contents:
+ Europe/Berlin
+
+DEBUG:tzlocal:/etc/localtime found
+DEBUG:tzlocal:2 found:
+ {'/etc/timezone': 'Europe/Berlin', '/etc/localtime is a symlink to': 'Europe/Berlin'}
+INFO:apscheduler.scheduler:Scheduler started
+DEBUG:apscheduler.scheduler:Looking for jobs to run
+DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+INFO:apscheduler.scheduler:Scheduler started
+DEBUG:apscheduler.scheduler:Looking for jobs to run
+DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 62516
+INFO:scraper:Live Scores: Found 20 matches in first container
