@@ -1,0 +1,27 @@
+-------------------+-----------------------------+-----------+----------+-------------------------------------
+ id                 | integer                     |           | not null | nextval('players_id_seq'::regclass)
+ player_id          | character varying(50)       |           |          | 
+ name               | character varying(100)      |           | not null | 
+ slug               | character varying(150)      |           |          | 
+ role               | character varying(50)       |           |          | 
+ photo_url          | character varying(500)      |           |          | 
+ player_url         | character varying(500)      |           |          | 
+ team_id            | integer                     |           | not null | 
+ born               | character varying(100)      |           |          | 
+ birth_place        | character varying(200)      |           |          | 
+ nickname           | character varying(100)      |           |          | 
+ batting_style      | character varying(100)      |           |          | 
+ bowling_style      | character varying(100)      |           |          | 
+ bat_matches        | character varying(50)       |           |          | 
+ bat_innings        | character varying(50)       |           |          | 
+ bat_runs           | character varying(50)       |           |          | 
+ bat_balls          | character varying(50)       |           |          | 
+ bat_highest        | character varying(50)       |           |          | 
+ bat_average        | character varying(50)       |           |          | 
+ bat_strike_rate    | character varying(50)       |           |          | 
+ bat_not_outs       | character varying(50)       |           |          | 
+ bat_fours          | character varying(50)       |           |          | 
+ bat_sixes          | character varying(50)       |           |          | 
+ bat_ducks          | character varying(50)       |           |          | 
+ bat_fifties        | character varying(50)       |           |          | 
+:
