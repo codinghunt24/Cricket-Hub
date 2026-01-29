@@ -149,6 +149,39 @@ with app.app_context():
         db.session.add(admin)
     
     db.session.commit()
+    
+    # Generate slugs for teams/players/series without slugs
+    # Get existing slugs first to avoid duplicates
+    existing_team_slugs = set(t.slug for t in Team.query.filter(Team.slug.isnot(None)).all())
+    teams_updated = 0
+    for team in Team.query.filter(Team.slug.is_(None)).all():
+        if team.name:
+            team.slug = generate_slug(team.name, existing_team_slugs)
+            if team.slug:
+                existing_team_slugs.add(team.slug)
+            teams_updated += 1
+    
+    existing_player_slugs = set(p.slug for p in Player.query.filter(Player.slug.isnot(None)).all())
+    players_updated = 0
+    for player in Player.query.filter(Player.slug.is_(None)).all():
+        if player.name:
+            player.slug = generate_slug(player.name, existing_player_slugs)
+            if player.slug:
+                existing_player_slugs.add(player.slug)
+            players_updated += 1
+    
+    existing_series_slugs = set(s.slug for s in Series.query.filter(Series.slug.isnot(None)).all())
+    series_updated = 0
+    for s in Series.query.filter(Series.slug.is_(None)).all():
+        if s.name:
+            s.slug = generate_slug(s.name, existing_series_slugs)
+            if s.slug:
+                existing_series_slugs.add(s.slug)
+            series_updated += 1
+    
+    if teams_updated or players_updated or series_updated:
+        db.session.commit()
+        logging.info(f"Generated slugs: {teams_updated} teams, {players_updated} players, {series_updated} series")
 
 def admin_required(f):
     @wraps(f)
@@ -260,11 +293,15 @@ def upsert_team(team_data, category_id):
         existing.flag_url = team_data.get('flag_url', existing.flag_url)
         existing.team_url = team_data.get('team_url', existing.team_url)
         existing.category_id = category_id
+        if not existing.slug and existing.name:
+            existing.slug = generate_slug(existing.name)
         return existing
     else:
+        team_name = team_data.get('name', '')
         new_team = Team(
             team_id=team_data['team_id'],
-            name=team_data.get('name', ''),
+            name=team_name,
+            slug=generate_slug(team_name) if team_name else None,
             flag_url=team_data.get('flag_url'),
             team_url=team_data.get('team_url'),
             category_id=category_id
@@ -284,11 +321,15 @@ def upsert_player(player_data, db_team_id):
         existing.photo_url = player_data.get('photo_url', existing.photo_url)
         existing.player_url = player_data.get('player_url', existing.player_url)
         existing.team_id = db_team_id
+        if not existing.slug and existing.name:
+            existing.slug = generate_slug(existing.name)
         return existing
     else:
+        player_name = player_data.get('name', '')
         new_player = Player(
             player_id=player_data['player_id'],
-            name=player_data.get('name', ''),
+            name=player_name,
+            slug=generate_slug(player_name) if player_name else None,
             role=player_data.get('role'),
             photo_url=player_data.get('photo_url'),
             player_url=player_data.get('player_url'),
