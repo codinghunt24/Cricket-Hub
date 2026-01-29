@@ -142,13 +142,8 @@
             </div>
             <div class="footer-bottom">
                 <div class="footer-bottom-menu">
-                    <a href="/live-scores">Live Score</a>
-                    <span>|</span>
-                    <a href="/teams">Teams</a>
-                    <span>|</span>
-                    <a href="/series">Series</a>
                     {% for page in footer_pages %}
-                    <span>|</span>
+                    {% if not loop.first %}<span>|</span>{% endif %}
                     <a href="/page/{{ page.slug }}">{{ page.title }}</a>
                     {% endfor %}
                 </div>
