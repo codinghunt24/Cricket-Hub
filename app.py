@@ -3773,13 +3773,51 @@ def check_redirects():
     if request.path.startswith('/static/') or request.path.startswith('/api/') or request.path.startswith('/admin/'):
         return None
     
-    # Normalize path (remove trailing slash except for root)
-    path = request.path.rstrip('/') if request.path != '/' else request.path
+    # Get original path
+    original_path = request.path
     
-    redirect_rule = Redirect.query.filter_by(old_url=path, is_active=True).first()
-    if not redirect_rule and request.path != path:
-        # Try with original path if normalized didn't match
-        redirect_rule = Redirect.query.filter_by(old_url=request.path, is_active=True).first()
+    # Try multiple URL variations to find a match
+    paths_to_try = []
+    
+    # 1. Original path as-is
+    paths_to_try.append(original_path)
+    
+    # 2. Without trailing slash (if not root)
+    if original_path != '/' and original_path.endswith('/'):
+        paths_to_try.append(original_path.rstrip('/'))
+    
+    # 3. With trailing slash
+    if not original_path.endswith('/'):
+        paths_to_try.append(original_path + '/')
+    
+    # 4. Without leading slash
+    if original_path.startswith('/'):
+        paths_to_try.append(original_path[1:])
+    
+    # 5. Lowercase version
+    paths_to_try.append(original_path.lower())
+    
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_paths = []
+    for p in paths_to_try:
+        if p not in seen:
+            seen.add(p)
+            unique_paths.append(p)
+    
+    # Try to find a matching redirect
+    redirect_rule = None
+    for path in unique_paths:
+        redirect_rule = Redirect.query.filter_by(old_url=path, is_active=True).first()
+        if redirect_rule:
+            break
+    
+    # Also try case-insensitive match if still not found
+    if not redirect_rule:
+        redirect_rule = Redirect.query.filter(
+            db.func.lower(Redirect.old_url) == original_path.lower(),
+            Redirect.is_active == True
+        ).first()
     
     if redirect_rule:
         # Update hit count safely
