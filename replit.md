@@ -20,6 +20,17 @@ A professional cricket website (Cricbuzz Live Score) built with Python Flask fea
   - Each player page now has 200+ words of unique descriptive content
   - Prevents Google thin content penalty for similar player profiles
 
+## Sitemap Index Structure (January 29, 2026)
+- **Sitemap Index**: /sitemap.xml links to all category sitemaps
+- **Category Sitemaps**:
+  - /sitemap-main.xml: Homepage, live scores, teams page, series page, post categories
+  - /sitemap-teams.xml: All team pages
+  - /sitemap-players.xml: All player profile pages
+  - /sitemap-series.xml: All series pages
+  - /sitemap-posts.xml: All published blog posts
+  - /sitemap-pages.xml: All static pages (About, Privacy, etc.)
+- **Benefits**: Better crawling, faster indexing, avoids 50k URL limit per file
+
 ## 301 Redirect Management (January 29, 2026)
 - **Admin Panel Feature**: Full redirect management at /admin/redirects
 - **Features**:
