@@ -1,0 +1,28 @@
+an 29 14:51:15 mail.digitalcash24.com systemd[1]: Stopping Cricbuzz Live Score...
+Jan 29 14:51:15 mail.digitalcash24.com gunicorn[4130660]: [2026-01-29 14:51:15 +0100] [4130660] [INFO] Worker exiting (pid: 41>
+Jan 29 14:51:15 mail.digitalcash24.com gunicorn[4130660]: [SCHEDULER] Daily scrape scheduled at 13:24
+Jan 29 14:51:15 mail.digitalcash24.com gunicorn[4130660]: [SCHEDULER] All series scrape scheduled at 14:22
+Jan 29 14:51:15 mail.digitalcash24.com gunicorn[4130660]: [SCHEDULER] Women series scrape scheduled at 14:26
+Jan 29 14:51:15 mail.digitalcash24.com gunicorn[4130660]: INFO:apscheduler.scheduler:Scheduler has been shut down
+Jan 29 14:51:15 mail.digitalcash24.com gunicorn[4130660]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Jan 29 14:51:15 mail.digitalcash24.com gunicorn[4130646]: [2026-01-29 14:51:15 +0100] [4130646] [INFO] Handling signal: term
+Jan 29 14:51:15 mail.digitalcash24.com gunicorn[4130660]: DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+Jan 29 14:51:15 mail.digitalcash24.com gunicorn[4130646]: [2026-01-29 14:51:15 +0100] [4130646] [INFO] Shutting down: Master
+Jan 29 14:51:15 mail.digitalcash24.com systemd[1]: cricbuzz.service: Succeeded.
+Jan 29 14:51:15 mail.digitalcash24.com systemd[1]: Stopped Cricbuzz Live Score.
+Jan 29 14:51:15 mail.digitalcash24.com systemd[1]: Started Cricbuzz Live Score.
+Jan 29 14:51:15 mail.digitalcash24.com systemd[4139852]: cricbuzz.service: Changing to the requested working directory failed:>
+Jan 29 14:51:15 mail.digitalcash24.com systemd[4139852]: cricbuzz.service: Failed at step CHDIR spawning /home/digitalcash24/c>
+Jan 29 14:51:15 mail.digitalcash24.com systemd[1]: cricbuzz.service: Main process exited, code=exited, status=200/CHDIR
+Jan 29 14:51:15 mail.digitalcash24.com systemd[1]: cricbuzz.service: Failed with result 'exit-code'.
+Jan 29 14:51:15 mail.digitalcash24.com systemd[1]: cricbuzz.service: Scheduled restart job, restart counter is at 1.
+Jan 29 14:51:15 mail.digitalcash24.com systemd[1]: Stopped Cricbuzz Live Score.
+Jan 29 14:51:15 mail.digitalcash24.com systemd[1]: Started Cricbuzz Live Score.
+Jan 29 14:51:15 mail.digitalcash24.com systemd[4139871]: cricbuzz.service: Changing to the requested working directory failed:>
+Jan 29 14:51:15 mail.digitalcash24.com systemd[4139871]: cricbuzz.service: Failed at step CHDIR spawning /home/digitalcash24/c>
+Jan 29 14:51:15 mail.digitalcash24.com systemd[1]: cricbuzz.service: Main process exited, code=exited, status=200/CHDIR
+Jan 29 14:51:15 mail.digitalcash24.com systemd[1]: cricbuzz.service: Failed with result 'exit-code'.
+Jan 29 14:51:15 mail.digitalcash24.com systemd[1]: cricbuzz.service: Scheduled restart job, restart counter is at 2.
+Jan 29 14:51:15 mail.digitalcash24.com systemd[1]: Stopped Cricbuzz Live Score.
+Jan 29 14:51:15 mail.digitalcash24.com systemd[1]: Started Cricbuzz Live Score.
+lines 1-28
