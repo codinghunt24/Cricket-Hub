@@ -326,36 +326,43 @@
 }
 
 @media (max-width: 768px) {
-    .post-main { padding: 15px; }
+    .post-container { padding: 0 10px; }
+    .post-main { padding: 12px; }
     .post-content { font-size: 15px; line-height: 1.7; }
-    .live-scorecard-section { padding: 12px; margin-top: 20px; border-radius: 8px; }
-    .live-scorecard-section h3 { font-size: 16px; margin-bottom: 15px; }
-    .scorecard-header { flex-direction: column; gap: 10px; padding: 12px; }
+    .live-scorecard-section { padding: 8px; margin-top: 15px; margin-left: -12px; margin-right: -12px; border-radius: 0; border-left: none; border-right: none; }
+    .live-scorecard-section h3 { font-size: 15px; margin-bottom: 12px; }
+    .scorecard-header { flex-direction: column; gap: 8px; padding: 10px; margin: 0 -8px; }
     .match-info .team-name { font-size: 14px; }
     .match-info .score { font-size: 18px; }
     .vs-text { font-size: 12px; }
-    .innings-card { padding: 10px; margin-bottom: 10px; overflow-x: auto; }
-    .innings-card h4 { font-size: 14px; margin-bottom: 10px; }
-    .scorecard-table { font-size: 12px; min-width: 100%; display: block; overflow-x: auto; }
-    .scorecard-table th, .scorecard-table td { padding: 6px 4px; white-space: nowrap; }
-    .scorecard-table th:first-child, .scorecard-table td:first-child { position: sticky; left: 0; background: #fff; z-index: 1; }
-    .match-result { padding: 10px 12px; font-size: 13px; margin-bottom: 15px; }
-    .faq-section { padding: 15px; margin-top: 20px; }
-    .faq-section h2 { font-size: 1.2rem; }
-    .faq-item { padding: 12px; }
-    .faq-question { font-size: 14px; }
+    .innings-card { padding: 0; margin-bottom: 10px; margin-left: -8px; margin-right: -8px; box-shadow: none; border-radius: 0; background: transparent; }
+    .innings-card h4 { font-size: 13px; margin-bottom: 8px; padding: 0 8px; }
+    .scorecard-table { font-size: 12px; width: 100%; table-layout: fixed; }
+    .scorecard-table th, .scorecard-table td { padding: 8px 4px; white-space: normal; word-wrap: break-word; text-align: center; }
+    .scorecard-table th:first-child, .scorecard-table td:first-child { text-align: left; width: 35%; }
+    .scorecard-table th:not(:first-child), .scorecard-table td:not(:first-child) { width: 13%; }
+    .match-result { padding: 10px; font-size: 13px; margin: 0 -8px 15px -8px; border-radius: 0; }
+    .faq-section { padding: 12px; margin-top: 15px; margin-left: -12px; margin-right: -12px; border-radius: 0; }
+    .faq-section h2 { font-size: 1.1rem; }
+    .faq-item { padding: 10px; }
+    .faq-question { font-size: 13px; }
     .faq-answer p { font-size: 13px; }
 }
 
 @media (max-width: 480px) {
-    .post-main { padding: 10px; }
-    .live-scorecard-section { padding: 10px; }
-    .scorecard-header { padding: 10px; gap: 8px; }
+    .post-container { padding: 0 5px; }
+    .post-main { padding: 8px; }
+    .live-scorecard-section { padding: 5px; margin-left: -8px; margin-right: -8px; }
+    .scorecard-header { padding: 8px; margin: 0 -5px; }
     .match-info .team-name { font-size: 13px; }
     .match-info .score { font-size: 16px; }
-    .innings-card { padding: 8px; }
+    .innings-card { margin-left: -5px; margin-right: -5px; }
+    .innings-card h4 { padding: 0 5px; font-size: 12px; }
     .scorecard-table { font-size: 11px; }
-    .scorecard-table th, .scorecard-table td { padding: 5px 3px; }
+    .scorecard-table th, .scorecard-table td { padding: 6px 2px; }
+    .scorecard-table th:first-child, .scorecard-table td:first-child { width: 32%; }
+    .match-result { margin: 0 -5px 12px -5px; }
+    .faq-section { padding: 10px; margin-left: -8px; margin-right: -8px; }
 }
 </style>
 {% endblock %}
