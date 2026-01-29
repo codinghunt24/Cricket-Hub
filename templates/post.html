@@ -120,7 +120,7 @@
                             <tbody>
                                 {% for b in innings.batsmen %}
                                 <tr>
-                                    <td><strong>{{ b.name }}</strong><br><small>{{ b.dismissal or '' }}</small></td>
+                                    <td><strong>{{ b.player or b.name or 'Unknown' }}</strong><br><small>{{ b.dismissal or '' }}</small></td>
                                     <td><strong>{{ b.runs or 0 }}</strong></td>
                                     <td>{{ b.balls or 0 }}</td>
                                     <td>{{ b.fours or 0 }}</td>
@@ -152,7 +152,7 @@
                             <tbody>
                                 {% for b in innings.bowlers %}
                                 <tr>
-                                    <td><strong>{{ b.name }}</strong></td>
+                                    <td><strong>{{ b.bowler or b.name or 'Unknown' }}</strong></td>
                                     <td>{{ b.overs or 0 }}</td>
                                     <td>{{ b.maidens or 0 }}</td>
                                     <td>{{ b.runs or 0 }}</td>
