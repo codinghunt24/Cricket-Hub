@@ -6,19 +6,19 @@
 {% block content %}
 <div class="admin-section">
     {% if message %}
-    <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+    <div class="alert alert-success" style="background: #14532d; color: #4ade80; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #166534;">
         {{ message }}
     </div>
     {% endif %}
     
     <form method="POST" action="/admin/adsense">
-        <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-            <h2>AdSense Approval Code</h2>
-            <p style="color: #666; margin-bottom: 15px;">Paste the verification code from Google AdSense here. This code will be added to the &lt;head&gt; section of all pages for approval.</p>
+        <div style="background: var(--admin-card); padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid var(--admin-border);">
+            <h2 style="color: var(--admin-text);">AdSense Approval Code</h2>
+            <p style="color: var(--admin-text-muted); margin-bottom: 15px;">Paste the verification code from Google AdSense here. This code will be added to the &lt;head&gt; section of all pages for approval.</p>
             
             <div class="form-group">
                 <label>AdSense Verification Code</label>
-                <textarea name="adsense_verification_code" rows="4" style="width: 100%; font-family: monospace; font-size: 12px;" placeholder='<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXX" crossorigin="anonymous"></script>'>{{ settings.adsense_verification_code or '' }}</textarea>
+                <textarea name="adsense_verification_code" rows="4" placeholder='<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXX" crossorigin="anonymous"></script>'>{{ settings.adsense_verification_code or '' }}</textarea>
             </div>
             
             <div class="form-group">
@@ -41,18 +41,18 @@
             </div>
         </div>
         
-        <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-            <h2>Manual Ad Placements</h2>
-            <p style="color: #666; margin-bottom: 15px;">After AdSense approval, paste your ad unit codes here. Recommended sizes shown below.</p>
+        <div style="background: var(--admin-card); padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid var(--admin-border);">
+            <h2 style="color: var(--admin-text);">Manual Ad Placements</h2>
+            <p style="color: var(--admin-text-muted); margin-bottom: 15px;">After AdSense approval, paste your ad unit codes here. Recommended sizes shown below.</p>
             
-            <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-                <strong>Recommended Ad Sizes:</strong>
-                <ul style="margin: 10px 0 0 20px;">
-                    <li><strong>Header:</strong> 728x90 (Leaderboard) or 970x90 (Large Leaderboard)</li>
-                    <li><strong>Sidebar:</strong> 300x250 (Medium Rectangle) or 336x280 (Large Rectangle)</li>
-                    <li><strong>In-Content:</strong> 336x280 or Responsive</li>
-                    <li><strong>Footer:</strong> 728x90 or Responsive</li>
-                    <li><strong>Between Posts:</strong> 300x250 or Responsive</li>
+            <div style="background: #433d14; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #6b5e1a;">
+                <strong style="color: #fbbf24;">Recommended Ad Sizes:</strong>
+                <ul style="margin: 10px 0 0 20px; color: var(--admin-text-muted);">
+                    <li><strong style="color: var(--admin-text);">Header:</strong> 728x90 (Leaderboard) or 970x90 (Large Leaderboard)</li>
+                    <li><strong style="color: var(--admin-text);">Sidebar:</strong> 300x250 (Medium Rectangle) or 336x280 (Large Rectangle)</li>
+                    <li><strong style="color: var(--admin-text);">In-Content:</strong> 336x280 or Responsive</li>
+                    <li><strong style="color: var(--admin-text);">Footer:</strong> 728x90 or Responsive</li>
+                    <li><strong style="color: var(--admin-text);">Between Posts:</strong> 300x250 or Responsive</li>
                 </ul>
             </div>
             
@@ -61,7 +61,7 @@
                     <input type="checkbox" name="ad_header_enabled" {% if settings.ad_header_enabled %}checked{% endif %}>
                     Header Ad (below navbar)
                 </label>
-                <textarea name="ad_header_code" rows="3" style="width: 100%; font-family: monospace; font-size: 11px; margin-top: 10px;" placeholder="Paste 728x90 ad code here">{{ settings.ad_header_code or '' }}</textarea>
+                <textarea name="ad_header_code" rows="3" class="code-textarea" placeholder="Paste 728x90 ad code here">{{ settings.ad_header_code or '' }}</textarea>
             </div>
             
             <div class="form-group">
@@ -69,7 +69,7 @@
                     <input type="checkbox" name="ad_sidebar_enabled" {% if settings.ad_sidebar_enabled %}checked{% endif %}>
                     Sidebar Ad (right column)
                 </label>
-                <textarea name="ad_sidebar_code" rows="3" style="width: 100%; font-family: monospace; font-size: 11px; margin-top: 10px;" placeholder="Paste 300x250 ad code here">{{ settings.ad_sidebar_code or '' }}</textarea>
+                <textarea name="ad_sidebar_code" rows="3" class="code-textarea" placeholder="Paste 300x250 ad code here">{{ settings.ad_sidebar_code or '' }}</textarea>
             </div>
             
             <div class="form-group">
@@ -77,7 +77,7 @@
                     <input type="checkbox" name="ad_content_enabled" {% if settings.ad_content_enabled %}checked{% endif %}>
                     In-Content Ad (after 2nd paragraph in posts)
                 </label>
-                <textarea name="ad_content_code" rows="3" style="width: 100%; font-family: monospace; font-size: 11px; margin-top: 10px;" placeholder="Paste responsive ad code here">{{ settings.ad_content_code or '' }}</textarea>
+                <textarea name="ad_content_code" rows="3" class="code-textarea" placeholder="Paste responsive ad code here">{{ settings.ad_content_code or '' }}</textarea>
             </div>
             
             <div class="form-group">
@@ -85,7 +85,7 @@
                     <input type="checkbox" name="ad_footer_enabled" {% if settings.ad_footer_enabled %}checked{% endif %}>
                     Footer Ad (above footer)
                 </label>
-                <textarea name="ad_footer_code" rows="3" style="width: 100%; font-family: monospace; font-size: 11px; margin-top: 10px;" placeholder="Paste 728x90 ad code here">{{ settings.ad_footer_code or '' }}</textarea>
+                <textarea name="ad_footer_code" rows="3" class="code-textarea" placeholder="Paste 728x90 ad code here">{{ settings.ad_footer_code or '' }}</textarea>
             </div>
             
             <div class="form-group">
@@ -93,7 +93,7 @@
                     <input type="checkbox" name="ad_between_posts_enabled" {% if settings.ad_between_posts_enabled %}checked{% endif %}>
                     Between Posts Ad (on listing pages)
                 </label>
-                <textarea name="ad_between_posts_code" rows="3" style="width: 100%; font-family: monospace; font-size: 11px; margin-top: 10px;" placeholder="Paste 300x250 ad code here">{{ settings.ad_between_posts_code or '' }}</textarea>
+                <textarea name="ad_between_posts_code" rows="3" class="code-textarea" placeholder="Paste 300x250 ad code here">{{ settings.ad_between_posts_code or '' }}</textarea>
             </div>
             
             <div class="form-group">
@@ -101,7 +101,7 @@
                     <input type="checkbox" name="ad_match_page_enabled" {% if settings.ad_match_page_enabled %}checked{% endif %}>
                     Match Page Ad (on scorecard pages)
                 </label>
-                <textarea name="ad_match_page_code" rows="3" style="width: 100%; font-family: monospace; font-size: 11px; margin-top: 10px;" placeholder="Paste ad code here">{{ settings.ad_match_page_code or '' }}</textarea>
+                <textarea name="ad_match_page_code" rows="3" class="code-textarea" placeholder="Paste ad code here">{{ settings.ad_match_page_code or '' }}</textarea>
             </div>
         </div>
         
@@ -111,11 +111,19 @@
 
 <style>
 .form-group { margin-bottom: 20px; }
-.form-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--admin-text); }
 .form-group input[type="text"], .form-group textarea {
-    width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;
+    width: 100%; padding: 10px; 
+    border: 1px solid var(--admin-border); border-radius: 5px;
+    background: var(--admin-input-bg); color: var(--admin-text);
 }
-.checkbox-label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-.checkbox-label input[type="checkbox"] { width: 18px; height: 18px; }
+.form-group input[type="text"]:focus, .form-group textarea:focus {
+    outline: none; border-color: var(--admin-accent);
+}
+.code-textarea {
+    font-family: monospace; font-size: 11px; margin-top: 10px;
+}
+.checkbox-label { display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--admin-text); }
+.checkbox-label input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--admin-accent); }
 </style>
 {% endblock %}

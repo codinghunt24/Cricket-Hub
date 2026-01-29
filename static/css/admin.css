@@ -587,11 +587,12 @@
 }
 
 .scrape-progress {
-    background: #fff3cd;
-    color: #856404;
+    background: #433d14;
+    color: #fbbf24;
     padding: 10px 15px;
     border-radius: 6px;
     animation: pulse 1.5s infinite;
+    border: 1px solid #6b5e1a;
 }
 
 .scrape-progress-bar {
@@ -630,17 +631,19 @@
 }
 
 .scrape-success {
-    background: #d4edda;
-    color: #155724;
+    background: #14532d;
+    color: #4ade80;
     padding: 10px 15px;
     border-radius: 6px;
+    border: 1px solid #166534;
 }
 
 .scrape-error {
-    background: #f8d7da;
-    color: #721c24;
+    background: #450a0a;
+    color: #f87171;
     padding: 10px 15px;
     border-radius: 6px;
+    border: 1px solid #7f1d1d;
 }
 
 @keyframes pulse {
@@ -881,13 +884,15 @@
 }
 
 .status-badge.success {
-    background: #d4edda;
-    color: #155724;
+    background: #14532d;
+    color: #4ade80;
+    border: 1px solid #166534;
 }
 
 .status-badge.error {
-    background: #f8d7da;
-    color: #721c24;
+    background: #450a0a;
+    color: #f87171;
+    border: 1px solid #7f1d1d;
 }
 
 .no-logs {

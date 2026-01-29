@@ -86,26 +86,26 @@
 <style>
 .admin-section { padding: 20px; }
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.section-header h2 { margin: 0; color: #333; }
-.table-container { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow-x: auto; }
+.section-header h2 { margin: 0; color: var(--admin-text); }
+.table-container { background: var(--admin-card); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); overflow-x: auto; border: 1px solid var(--admin-border); }
 .admin-table { width: 100%; border-collapse: collapse; }
-.admin-table th, .admin-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
-.admin-table th { background: #f8f9fa; font-weight: 600; color: #333; }
-.admin-table tr:hover { background: #f8f9fa; }
+.admin-table th, .admin-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--admin-border); color: var(--admin-text); }
+.admin-table th { background: var(--admin-table-header); font-weight: 600; color: var(--admin-text); }
+.admin-table tr:hover { background: var(--admin-hover); }
 .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
-.btn-primary { background: #1a472a; color: #fff; }
-.btn-primary:hover { background: #0d2818; }
-.btn-secondary { background: #6c757d; color: #fff; }
-.btn-danger { background: #dc3545; color: #fff; }
-.btn-edit { background: #007bff; color: #fff; }
+.btn-primary { background: var(--admin-accent); color: #fff; }
+.btn-primary:hover { background: var(--admin-accent-dark); }
+.btn-secondary { background: var(--admin-input-bg); color: var(--admin-text); border: 1px solid var(--admin-border); }
+.btn-danger { background: #dc2626; color: #fff; }
+.btn-edit { background: #2563eb; color: #fff; }
 .btn-sm { padding: 4px 8px; font-size: 12px; }
-.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.modal-content { background: #fff; padding: 30px; border-radius: 8px; width: 100%; max-width: 500px; position: relative; }
-.modal-close { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #666; }
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal-content { background: var(--admin-card); padding: 30px; border-radius: 8px; width: 100%; max-width: 500px; position: relative; border: 1px solid var(--admin-border); }
+.modal-close { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: var(--admin-text-muted); }
 .form-group { margin-bottom: 15px; }
-.form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #333; }
-.form-group input[type="text"], .form-group input[type="number"], .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-.form-group input[type="checkbox"] { margin-right: 8px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--admin-text); }
+.form-group input[type="text"], .form-group input[type="number"], .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--admin-border); border-radius: 4px; font-size: 14px; background: var(--admin-input-bg); color: var(--admin-text); }
+.form-group input[type="checkbox"] { margin-right: 8px; accent-color: var(--admin-accent); }
 .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
 </style>
 

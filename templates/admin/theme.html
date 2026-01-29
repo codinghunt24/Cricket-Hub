@@ -6,14 +6,14 @@
 {% block content %}
 <div class="admin-section">
     {% if message %}
-    <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+    <div class="alert alert-success" style="background: #14532d; color: #4ade80; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #166534;">
         {{ message }}
     </div>
     {% endif %}
     
     <form method="POST" action="/admin/theme">
-        <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-            <h2>Site Identity</h2>
+        <div style="background: var(--admin-card); padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid var(--admin-border);">
+            <h2 style="color: var(--admin-text);">Site Identity</h2>
             
             <div class="form-group">
                 <label>Site Name</label>
@@ -28,7 +28,7 @@
             <div class="form-group">
                 <label>Logo URL</label>
                 <input type="text" name="logo_url" value="{{ settings.logo_url or '' }}" placeholder="https://example.com/logo.png">
-                <small style="color: #666;">Leave empty to use text logo</small>
+                <small style="color: var(--admin-text-muted);">Leave empty to use text logo</small>
             </div>
             
             <div class="form-group">
@@ -37,9 +37,9 @@
             </div>
         </div>
         
-        <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-            <h2>Color Scheme</h2>
-            <p style="color: #666; margin-bottom: 20px;">Customize your website colors. Click on color boxes to pick colors.</p>
+        <div style="background: var(--admin-card); padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid var(--admin-border);">
+            <h2 style="color: var(--admin-text);">Color Scheme</h2>
+            <p style="color: var(--admin-text-muted); margin-bottom: 20px;">Customize your website colors. Click on color boxes to pick colors.</p>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
                 <div class="color-group">
@@ -141,25 +141,34 @@
 
 <style>
 .form-group { margin-bottom: 20px; }
-.form-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--admin-text); }
 .form-group input[type="text"] {
-    width: 100%; max-width: 400px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;
+    width: 100%; max-width: 400px; padding: 10px; 
+    border: 1px solid var(--admin-border); border-radius: 5px;
+    background: var(--admin-input-bg); color: var(--admin-text);
+}
+.form-group input[type="text"]:focus {
+    outline: none; border-color: var(--admin-accent);
 }
 .color-group { margin-bottom: 15px; }
-.color-group label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px; }
+.color-group label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px; color: var(--admin-text); }
 .color-input-wrapper {
     display: flex; align-items: center; gap: 10px;
 }
 .color-input-wrapper input[type="color"] {
-    width: 50px; height: 40px; border: none; border-radius: 5px; cursor: pointer;
-    padding: 0; background: none;
+    width: 50px; height: 40px; border: 1px solid var(--admin-border); border-radius: 5px; cursor: pointer;
+    padding: 2px; background: var(--admin-input-bg);
 }
 .color-input-wrapper .color-text {
-    width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 5px;
-    font-family: monospace; font-size: 12px;
+    width: 100px; padding: 8px; border: 1px solid var(--admin-border); border-radius: 5px;
+    font-family: monospace; font-size: 12px; background: var(--admin-input-bg); color: var(--admin-text);
 }
 .btn-secondary {
-    background: #6c757d; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;
+    background: var(--admin-input-bg); color: var(--admin-text); padding: 10px 20px; 
+    border: 1px solid var(--admin-border); border-radius: 5px; cursor: pointer;
+}
+.btn-secondary:hover {
+    background: var(--admin-hover);
 }
 </style>
 
