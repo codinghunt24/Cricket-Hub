@@ -23,6 +23,9 @@
             <button class="btn-scrape-all" onclick="scrapeAllSeriesMatches()">
                 <i class="fas fa-sync"></i> Scrape All Matches
             </button>
+            <button class="btn-clear-all" onclick="clearAllSeries()">
+                <i class="fas fa-trash"></i> Clear All Series
+            </button>
         </div>
     </div>
     
@@ -288,6 +291,29 @@ input:checked + .slider:before {
 }
 
 .btn-scrape-all:disabled {
+    background: #374151;
+    cursor: not-allowed;
+}
+
+.btn-clear-all {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.btn-clear-all:hover {
+    background: #dc2626;
+}
+
+.btn-clear-all:disabled {
     background: #374151;
     cursor: not-allowed;
 }
@@ -757,6 +783,43 @@ async function scrapeAllSeriesMatches() {
     } catch (e) {
         alert('Error: ' + e.message);
         btn.innerHTML = '<i class="fas fa-sync"></i> Scrape All Matches';
+        btn.disabled = false;
+    }
+}
+
+async function clearAllSeries() {
+    if (!confirm('Are you sure you want to delete ALL series? This will also delete all associated matches!')) {
+        return;
+    }
+    
+    const btn = document.querySelector('.btn-clear-all');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Clearing...';
+    
+    try {
+        const response = await fetch('/api/clear/all-series', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            btn.innerHTML = '<i class="fas fa-check"></i> Cleared';
+            btn.style.background = '#10b981';
+            alert('Deleted ' + data.deleted_series + ' series and ' + data.deleted_matches + ' matches');
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-trash"></i> Clear All Series';
+                btn.style.background = '#ef4444';
+                btn.disabled = false;
+            }, 2000);
+        } else {
+            alert('Error: ' + data.message);
+            btn.innerHTML = '<i class="fas fa-trash"></i> Clear All Series';
+            btn.disabled = false;
+        }
+    } catch (e) {
+        alert('Error: ' + e.message);
+        btn.innerHTML = '<i class="fas fa-trash"></i> Clear All Series';
         btn.disabled = false;
     }
 }

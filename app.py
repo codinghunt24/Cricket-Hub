@@ -2542,6 +2542,34 @@ def save_series_bulk():
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/api/clear/all-series', methods=['POST'])
+@admin_required
+def clear_all_series():
+    """Delete all series and their associated matches"""
+    try:
+        # Count before deleting
+        series_count = Series.query.count()
+        matches_count = Match.query.count()
+        
+        # Delete all matches first (foreign key constraint)
+        Match.query.delete()
+        
+        # Delete all series
+        Series.query.delete()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'deleted_series': series_count,
+            'deleted_matches': matches_count,
+            'message': f'Deleted {series_count} series and {matches_count} matches'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/scrape/series/<category_slug>', methods=['POST'])
 def scrape_series(category_slug):
     try:
