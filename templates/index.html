@@ -1038,6 +1038,25 @@
     color: #666;
 }
 
+.batting-table tr.currently-batting {
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+}
+
+.batting-table tr.currently-batting td {
+    color: #047857;
+    font-weight: 600;
+}
+
+.batting-table tr.currently-batting .player-name {
+    color: #047857;
+    font-weight: 700;
+}
+
+.batting-table tr.currently-batting .runs {
+    color: #047857;
+    font-weight: 800;
+}
+
 .extras-row, .total-row {
     display: flex;
     justify-content: space-between;
@@ -1255,10 +1274,13 @@ function displayScorecard(scorecard) {
                         <tbody>
                 `;
                 inning.batting.forEach(batter => {
+                    const dismissalText = (batter.dismissal || '').toLowerCase();
+                    const isBatting = dismissalText === 'batting' || dismissalText === 'not out' || dismissalText === 'batting *' || dismissalText.includes('not out');
+                    const rowClass = isBatting ? 'currently-batting' : '';
                     html += `
-                        <tr>
+                        <tr class="${rowClass}">
                             <td>
-                                <span class="player-name">${batter.player || batter.name || ''}</span>
+                                <span class="player-name">${batter.player || batter.name || ''}${isBatting ? ' *' : ''}</span>
                                 <div class="dismissal">${batter.dismissal || ''}</div>
                             </td>
                             <td class="runs">${batter.runs || '0'}</td>

@@ -106,8 +106,9 @@
                         </thead>
                         <tbody>
                             {% for batter in innings.batting %}
-                            <tr>
-                                <td class="batter-name">{{ batter.player }}</td>
+                            {% set is_batting = batter.dismissal and (batter.dismissal.lower() == 'batting' or 'not out' in batter.dismissal.lower()) %}
+                            <tr class="{{ 'currently-batting' if is_batting else '' }}">
+                                <td class="batter-name">{{ batter.player }}{{ ' *' if is_batting else '' }}</td>
                                 <td class="dismissal">{{ batter.dismissal }}</td>
                                 <td class="runs">{{ batter.runs }}</td>
                                 <td>{{ batter.balls }}</td>
@@ -383,6 +384,25 @@
 .runs {
     font-weight: 700;
     color: #046a38;
+}
+
+tr.currently-batting {
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.05) 100%);
+}
+
+tr.currently-batting td {
+    color: #047857 !important;
+    font-weight: 600;
+}
+
+tr.currently-batting .batter-name {
+    color: #047857 !important;
+    font-weight: 700;
+}
+
+tr.currently-batting .runs {
+    color: #047857 !important;
+    font-weight: 800;
 }
 
 .wickets {
