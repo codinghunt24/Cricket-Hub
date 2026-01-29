@@ -824,7 +824,7 @@ def admin_profile():
     
     return render_template('admin/profile.html', admin=admin)
 
-@app.route('/admin')
+@app.route('/admin', strict_slashes=False)
 @admin_required
 def admin_dashboard():
     teams_count = Team.query.count()
