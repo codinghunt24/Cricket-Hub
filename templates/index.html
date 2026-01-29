@@ -59,7 +59,7 @@
                             </div>
                         </div>
                         {% if match.result %}
-                        <div class="match-result {% if 'opt to' in match.result.lower() %}result-toss{% elif 'won' in match.result.lower() or 'win' in match.result.lower() %}result-won{% elif 'need' in match.result.lower() %}result-need{% elif 'match starts' in match.result.lower() or 'start' in match.result.lower() %}result-upcoming{% endif %}">{{ match.result }}</div>
+                        <div class="match-result {% if 'session' in match.result.lower() or 'lunch' in match.result.lower() or 'tea' in match.result.lower() or 'stumps' in match.result.lower() or 'break' in match.result.lower() %}result-session{% elif 'opt to' in match.result.lower() or 'delayed' in match.result.lower() %}result-toss{% elif 'won' in match.result.lower() or 'win' in match.result.lower() %}result-won{% elif 'need' in match.result.lower() %}result-need{% elif 'match starts' in match.result.lower() or 'start' in match.result.lower() %}result-upcoming{% endif %}">{{ match.result }}</div>
                         {% endif %}
                     </div>
                 </div>
@@ -518,8 +518,13 @@
     color: #FF9800;
 }
 
-.match-result.result-toss {
+.match-result.result-session {
     color: #e53935;
+    font-weight: 600;
+}
+
+.match-result.result-toss {
+    color: #FF9800;
     font-weight: 600;
 }
 
