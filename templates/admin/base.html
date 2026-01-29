@@ -44,6 +44,12 @@
                             <span class="sidebar-text">Series</span>
                         </a>
                     </li>
+                    <li class="sidebar-item {% if request.path == '/admin/matches' %}active{% endif %}">
+                        <a href="/admin/matches" class="sidebar-link">
+                            <span class="sidebar-icon">&#127951;</span>
+                            <span class="sidebar-text">Matches</span>
+                        </a>
+                    </li>
                     <li class="sidebar-item {% if '/admin/posts' in request.path and 'auto' not in request.path %}active{% endif %}">
                         <a href="/admin/posts" class="sidebar-link">
                             <span class="sidebar-icon">&#128240;</span>
