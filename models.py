@@ -225,6 +225,7 @@ def init_models(db):
         name = db.Column(db.String(100), unique=True, nullable=False)
         slug = db.Column(db.String(100), unique=True, nullable=False)
         description = db.Column(db.Text, nullable=True)
+        custom_url = db.Column(db.String(500), nullable=True)  # External/custom URL
         show_in_navbar = db.Column(db.Boolean, default=True)
         navbar_order = db.Column(db.Integer, default=0)
         created_at = db.Column(db.DateTime, default=datetime.utcnow)

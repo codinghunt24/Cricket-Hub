@@ -17,6 +17,7 @@
                     <th>ID</th>
                     <th>Name</th>
                     <th>Slug</th>
+                    <th>Custom URL</th>
                     <th>Show in Navbar</th>
                     <th>Order</th>
                     <th>Posts</th>
@@ -29,17 +30,18 @@
                     <td>{{ cat.id }}</td>
                     <td>{{ cat.name }}</td>
                     <td>{{ cat.slug }}</td>
+                    <td>{% if cat.custom_url %}<a href="{{ cat.custom_url }}" target="_blank" style="color: var(--admin-accent);">{{ cat.custom_url[:30] }}...</a>{% else %}-{% endif %}</td>
                     <td>{{ 'Yes' if cat.show_in_navbar else 'No' }}</td>
                     <td>{{ cat.navbar_order }}</td>
                     <td>{{ cat.posts|length }}</td>
                     <td>
-                        <button class="btn btn-sm btn-edit" onclick="editCategory({{ cat.id }}, '{{ cat.name }}', '{{ cat.slug }}', '{{ cat.description or '' }}', {{ 'true' if cat.show_in_navbar else 'false' }}, {{ cat.navbar_order }})">Edit</button>
+                        <button class="btn btn-sm btn-edit" onclick="editCategory({{ cat.id }}, '{{ cat.name }}', '{{ cat.slug }}', '{{ cat.description or '' }}', '{{ cat.custom_url or '' }}', {{ 'true' if cat.show_in_navbar else 'false' }}, {{ cat.navbar_order }})">Edit</button>
                         <button class="btn btn-sm btn-danger" onclick="deleteCategory({{ cat.id }})">Delete</button>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" style="text-align: center;">No categories found. Add your first category!</td>
+                    <td colspan="8" style="text-align: center;">No categories found. Add your first category!</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -64,6 +66,11 @@
             <div class="form-group">
                 <label for="categoryDesc">Description</label>
                 <textarea id="categoryDesc" name="description" rows="3" placeholder="Category description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="customUrl">Custom URL (Optional)</label>
+                <input type="url" id="customUrl" name="custom_url" placeholder="https://example.com">
+                <small style="color: var(--admin-muted);">If set, clicking this category will open this URL instead of category page</small>
             </div>
             <div class="form-group">
                 <label>
@@ -114,16 +121,18 @@ function showAddModal() {
     document.getElementById('modalTitle').textContent = 'Add Category';
     document.getElementById('categoryForm').reset();
     document.getElementById('categoryId').value = '';
+    document.getElementById('customUrl').value = '';
     document.getElementById('showInNavbar').checked = true;
     document.getElementById('categoryModal').style.display = 'flex';
 }
 
-function editCategory(id, name, slug, desc, showNav, order) {
+function editCategory(id, name, slug, desc, customUrl, showNav, order) {
     document.getElementById('modalTitle').textContent = 'Edit Category';
     document.getElementById('categoryId').value = id;
     document.getElementById('categoryName').value = name;
     document.getElementById('categorySlug').value = slug;
     document.getElementById('categoryDesc').value = desc;
+    document.getElementById('customUrl').value = customUrl || '';
     document.getElementById('showInNavbar').checked = showNav;
     document.getElementById('navbarOrder').value = order;
     document.getElementById('categoryModal').style.display = 'flex';
@@ -147,6 +156,7 @@ document.getElementById('categoryForm').addEventListener('submit', async functio
         name: document.getElementById('categoryName').value,
         slug: document.getElementById('categorySlug').value,
         description: document.getElementById('categoryDesc').value,
+        custom_url: document.getElementById('customUrl').value || null,
         show_in_navbar: document.getElementById('showInNavbar').checked,
         navbar_order: parseInt(document.getElementById('navbarOrder').value) || 0
     };

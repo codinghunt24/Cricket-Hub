@@ -132,7 +132,11 @@
                 <ul class="sub-nav-menu">
                     <li><a href="/">Home</a></li>
                     {% for cat in nav_categories %}
+                    {% if cat.custom_url %}
+                    <li><a href="{{ cat.custom_url }}" target="_blank" rel="noopener">{{ cat.name }}</a></li>
+                    {% else %}
                     <li><a href="/category/{{ cat.slug }}">{{ cat.name }}</a></li>
+                    {% endif %}
                     {% endfor %}
                 </ul>
             </div>

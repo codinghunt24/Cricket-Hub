@@ -3220,6 +3220,7 @@ def api_create_category():
             name=data['name'],
             slug=data['slug'],
             description=data.get('description', ''),
+            custom_url=data.get('custom_url') or None,
             show_in_navbar=data.get('show_in_navbar', True),
             navbar_order=data.get('navbar_order', 0)
         )
@@ -3244,6 +3245,7 @@ def api_update_category(cat_id):
         category.name = data.get('name', category.name)
         category.slug = data.get('slug', category.slug)
         category.description = data.get('description', category.description)
+        category.custom_url = data.get('custom_url') or None
         category.show_in_navbar = data.get('show_in_navbar', category.show_in_navbar)
         category.navbar_order = data.get('navbar_order', category.navbar_order)
         
