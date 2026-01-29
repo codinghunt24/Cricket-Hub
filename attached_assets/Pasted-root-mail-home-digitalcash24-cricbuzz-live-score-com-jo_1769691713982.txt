@@ -1,0 +1,39 @@
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# journalctl -u cricbuzz -f
+-- Logs begin at Mon 2025-11-10 12:47:14 CET. --
+Jan 29 14:00:21 mail.digitalcash24.com gunicorn[4111668]:     self.environment.handle_exception()
+Jan 29 14:00:21 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/jinja2/environment.py", line 942, in handle_exception
+Jan 29 14:00:21 mail.digitalcash24.com gunicorn[4111668]:     raise rewrite_traceback_stack(source=source)
+Jan 29 14:00:21 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 14:00:21 mail.digitalcash24.com gunicorn[4111668]:     {% extends 'base.html' %}
+Jan 29 14:00:21 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 14:00:21 mail.digitalcash24.com gunicorn[4111668]:     {% block content %}{% endblock %}
+Jan 29 14:00:21 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 14:00:21 mail.digitalcash24.com gunicorn[4111668]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 14:00:21 mail.digitalcash24.com gunicorn[4111668]: TypeError: '>' not supported between instances of 'str' and 'int'
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]: ERROR:app:Exception on /player/1 [GET]
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]: Traceback (most recent call last):
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 1473, in wsgi_app
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:     response = self.full_dispatch_request()
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 882, in full_dispatch_request
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:     rv = self.handle_user_exception(e)
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 880, in full_dispatch_request
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:     rv = self.dispatch_request()
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/app.py", line 865, in dispatch_request
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 615, in player_detail
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:     return render_template('player_detail.html', player=player)
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/templating.py", line 150, in render_template
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:     return _render(app, template, context)
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/flask/templating.py", line 131, in _render
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:     rv = template.render(context)
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/jinja2/environment.py", line 1295, in render
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:     self.environment.handle_exception()
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/jinja2/environment.py", line 942, in handle_exception
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:     raise rewrite_traceback_stack(source=source)
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 1, in top-level template code
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:     {% extends 'base.html' %}
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/base.html", line 157, in top-level template code
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:     {% block content %}{% endblock %}
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:   File "/home/digitalcash24/cricbuzz-live-score.com/templates/player_detail.html", line 85, in block 'content'
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]:     {% if player.bat_matches and player.bat_matches > 0 %}
+Jan 29 14:01:31 mail.digitalcash24.com gunicorn[4111668]: TypeError: '>' not supported between instances of 'str' and 'int'
