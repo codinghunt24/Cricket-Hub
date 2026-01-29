@@ -88,7 +88,7 @@ def utility_processor():
     return dict(get_team_flag=get_team_flag)
 
 from models import init_models
-TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect = init_models(db)
+TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect, SiteSettings = init_models(db)
 
 import scraper
 from scheduler import init_scheduler, update_schedule, update_player_schedule, update_category_profile_schedule, update_category_series_schedule, update_category_matches_schedule
@@ -3807,6 +3807,128 @@ def admin_delete_redirect(redirect_id):
     except Exception as e:
         db.session.rollback()
         return redirect(url_for('admin_redirects', message=str(e), type='error'))
+
+def get_site_settings():
+    """Get or create site settings"""
+    settings = SiteSettings.query.first()
+    if not settings:
+        settings = SiteSettings()
+        db.session.add(settings)
+        db.session.commit()
+    return settings
+
+@app.route('/admin/seo')
+@admin_required
+def admin_seo():
+    main_count = 4 + PostCategory.query.count()
+    teams_count = Team.query.count()
+    players_count = Player.query.count()
+    series_count = Series.query.count()
+    posts_count = Post.query.filter_by(is_published=True).count()
+    pages_count = Page.query.filter_by(is_published=True).count()
+    total_urls = main_count + teams_count + players_count + series_count + posts_count + pages_count
+    
+    robots_content = ""
+    try:
+        with open('static/robots.txt', 'r') as f:
+            robots_content = f.read()
+    except:
+        robots_content = "File not found"
+    
+    return render_template('admin/seo.html',
+        main_count=main_count,
+        teams_count=teams_count,
+        players_count=players_count,
+        series_count=series_count,
+        posts_count=posts_count,
+        pages_count=pages_count,
+        total_urls=total_urls,
+        robots_content=robots_content
+    )
+
+@app.route('/admin/adsense', methods=['GET', 'POST'])
+@admin_required
+def admin_adsense():
+    settings = get_site_settings()
+    message = None
+    
+    if request.method == 'POST':
+        settings.adsense_verification_code = request.form.get('adsense_verification_code', '').strip()
+        settings.adsense_publisher_id = request.form.get('adsense_publisher_id', '').strip()
+        settings.adsense_enabled = 'adsense_enabled' in request.form
+        settings.adsense_auto_ads = 'adsense_auto_ads' in request.form
+        
+        settings.ad_header_enabled = 'ad_header_enabled' in request.form
+        settings.ad_header_code = request.form.get('ad_header_code', '').strip()
+        settings.ad_sidebar_enabled = 'ad_sidebar_enabled' in request.form
+        settings.ad_sidebar_code = request.form.get('ad_sidebar_code', '').strip()
+        settings.ad_content_enabled = 'ad_content_enabled' in request.form
+        settings.ad_content_code = request.form.get('ad_content_code', '').strip()
+        settings.ad_footer_enabled = 'ad_footer_enabled' in request.form
+        settings.ad_footer_code = request.form.get('ad_footer_code', '').strip()
+        settings.ad_between_posts_enabled = 'ad_between_posts_enabled' in request.form
+        settings.ad_between_posts_code = request.form.get('ad_between_posts_code', '').strip()
+        settings.ad_match_page_enabled = 'ad_match_page_enabled' in request.form
+        settings.ad_match_page_code = request.form.get('ad_match_page_code', '').strip()
+        
+        db.session.commit()
+        message = "AdSense settings saved successfully!"
+    
+    return render_template('admin/adsense.html', settings=settings, message=message)
+
+@app.route('/admin/analytics', methods=['GET', 'POST'])
+@admin_required
+def admin_analytics():
+    settings = get_site_settings()
+    message = None
+    
+    if request.method == 'POST':
+        settings.ga_tracking_id = request.form.get('ga_tracking_id', '').strip()
+        settings.ga_enabled = 'ga_enabled' in request.form
+        db.session.commit()
+        message = "Analytics settings saved successfully!"
+    
+    return render_template('admin/analytics.html', settings=settings, message=message)
+
+@app.route('/admin/theme', methods=['GET', 'POST'])
+@admin_required
+def admin_theme():
+    settings = get_site_settings()
+    message = None
+    
+    if request.method == 'POST':
+        settings.site_name = request.form.get('site_name', 'Cricbuzz Live Score').strip()
+        settings.site_tagline = request.form.get('site_tagline', '').strip()
+        settings.logo_url = request.form.get('logo_url', '').strip()
+        settings.favicon_url = request.form.get('favicon_url', '').strip()
+        
+        settings.primary_color = request.form.get('primary_color', '#1a472a')
+        settings.secondary_color = request.form.get('secondary_color', '#2d5a3d')
+        settings.accent_color = request.form.get('accent_color', '#4CAF50')
+        settings.header_bg_color = request.form.get('header_bg_color', '#1a472a')
+        settings.header_text_color = request.form.get('header_text_color', '#ffffff')
+        settings.footer_bg_color = request.form.get('footer_bg_color', '#1a472a')
+        settings.footer_text_color = request.form.get('footer_text_color', '#ffffff')
+        settings.body_bg_color = request.form.get('body_bg_color', '#f5f5f5')
+        settings.card_bg_color = request.form.get('card_bg_color', '#ffffff')
+        settings.text_color = request.form.get('text_color', '#333333')
+        settings.link_color = request.form.get('link_color', '#1a472a')
+        
+        db.session.commit()
+        message = "Theme settings saved successfully!"
+    
+    return render_template('admin/theme.html', settings=settings, message=message)
+
+@app.context_processor
+def inject_site_settings():
+    """Inject site settings into all templates"""
+    try:
+        settings = SiteSettings.query.first()
+        if not settings:
+            settings = SiteSettings()
+    except:
+        settings = None
+    return dict(site_settings=settings)
 
 if __name__ == '__main__':
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'

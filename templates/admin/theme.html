@@ -1,0 +1,197 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Theme Customization - Admin{% endblock %}
+{% block page_title %}Theme Customization{% endblock %}
+
+{% block content %}
+<div class="admin-section">
+    {% if message %}
+    <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+        {{ message }}
+    </div>
+    {% endif %}
+    
+    <form method="POST" action="/admin/theme">
+        <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+            <h2>Site Identity</h2>
+            
+            <div class="form-group">
+                <label>Site Name</label>
+                <input type="text" name="site_name" value="{{ settings.site_name or 'Cricbuzz Live Score' }}">
+            </div>
+            
+            <div class="form-group">
+                <label>Site Tagline</label>
+                <input type="text" name="site_tagline" value="{{ settings.site_tagline or '' }}" placeholder="Live Cricket Scores & Updates">
+            </div>
+            
+            <div class="form-group">
+                <label>Logo URL</label>
+                <input type="text" name="logo_url" value="{{ settings.logo_url or '' }}" placeholder="https://example.com/logo.png">
+                <small style="color: #666;">Leave empty to use text logo</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Favicon URL</label>
+                <input type="text" name="favicon_url" value="{{ settings.favicon_url or '' }}" placeholder="https://example.com/favicon.ico">
+            </div>
+        </div>
+        
+        <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+            <h2>Color Scheme</h2>
+            <p style="color: #666; margin-bottom: 20px;">Customize your website colors. Click on color boxes to pick colors.</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+                <div class="color-group">
+                    <label>Primary Color</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" name="primary_color" value="{{ settings.primary_color or '#1a472a' }}">
+                        <input type="text" class="color-text" value="{{ settings.primary_color or '#1a472a' }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="color-group">
+                    <label>Secondary Color</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" name="secondary_color" value="{{ settings.secondary_color or '#2d5a3d' }}">
+                        <input type="text" class="color-text" value="{{ settings.secondary_color or '#2d5a3d' }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="color-group">
+                    <label>Accent Color</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" name="accent_color" value="{{ settings.accent_color or '#4CAF50' }}">
+                        <input type="text" class="color-text" value="{{ settings.accent_color or '#4CAF50' }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="color-group">
+                    <label>Header Background</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" name="header_bg_color" value="{{ settings.header_bg_color or '#1a472a' }}">
+                        <input type="text" class="color-text" value="{{ settings.header_bg_color or '#1a472a' }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="color-group">
+                    <label>Header Text</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" name="header_text_color" value="{{ settings.header_text_color or '#ffffff' }}">
+                        <input type="text" class="color-text" value="{{ settings.header_text_color or '#ffffff' }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="color-group">
+                    <label>Footer Background</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" name="footer_bg_color" value="{{ settings.footer_bg_color or '#1a472a' }}">
+                        <input type="text" class="color-text" value="{{ settings.footer_bg_color or '#1a472a' }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="color-group">
+                    <label>Footer Text</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" name="footer_text_color" value="{{ settings.footer_text_color or '#ffffff' }}">
+                        <input type="text" class="color-text" value="{{ settings.footer_text_color or '#ffffff' }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="color-group">
+                    <label>Body Background</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" name="body_bg_color" value="{{ settings.body_bg_color or '#f5f5f5' }}">
+                        <input type="text" class="color-text" value="{{ settings.body_bg_color or '#f5f5f5' }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="color-group">
+                    <label>Card Background</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" name="card_bg_color" value="{{ settings.card_bg_color or '#ffffff' }}">
+                        <input type="text" class="color-text" value="{{ settings.card_bg_color or '#ffffff' }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="color-group">
+                    <label>Text Color</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" name="text_color" value="{{ settings.text_color or '#333333' }}">
+                        <input type="text" class="color-text" value="{{ settings.text_color or '#333333' }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="color-group">
+                    <label>Link Color</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" name="link_color" value="{{ settings.link_color or '#1a472a' }}">
+                        <input type="text" class="color-text" value="{{ settings.link_color or '#1a472a' }}" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 15px;">
+            <button type="submit" class="btn btn-primary">Save Theme Settings</button>
+            <button type="button" onclick="resetColors()" class="btn btn-secondary">Reset to Default</button>
+        </div>
+    </form>
+</div>
+
+<style>
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+.form-group input[type="text"] {
+    width: 100%; max-width: 400px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;
+}
+.color-group { margin-bottom: 15px; }
+.color-group label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px; }
+.color-input-wrapper {
+    display: flex; align-items: center; gap: 10px;
+}
+.color-input-wrapper input[type="color"] {
+    width: 50px; height: 40px; border: none; border-radius: 5px; cursor: pointer;
+    padding: 0; background: none;
+}
+.color-input-wrapper .color-text {
+    width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 5px;
+    font-family: monospace; font-size: 12px;
+}
+.btn-secondary {
+    background: #6c757d; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;
+}
+</style>
+
+<script>
+document.querySelectorAll('input[type="color"]').forEach(function(colorInput) {
+    colorInput.addEventListener('input', function() {
+        this.nextElementSibling.value = this.value;
+    });
+});
+
+function resetColors() {
+    const defaults = {
+        'primary_color': '#1a472a',
+        'secondary_color': '#2d5a3d',
+        'accent_color': '#4CAF50',
+        'header_bg_color': '#1a472a',
+        'header_text_color': '#ffffff',
+        'footer_bg_color': '#1a472a',
+        'footer_text_color': '#ffffff',
+        'body_bg_color': '#f5f5f5',
+        'card_bg_color': '#ffffff',
+        'text_color': '#333333',
+        'link_color': '#1a472a'
+    };
+    
+    for (const [name, value] of Object.entries(defaults)) {
+        const input = document.querySelector('input[name="' + name + '"]');
+        if (input) {
+            input.value = value;
+            input.nextElementSibling.value = value;
+        }
+    }
+}
+</script>
+{% endblock %}

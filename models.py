@@ -302,4 +302,64 @@ def init_models(db):
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
         updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect
+    class SiteSettings(db.Model):
+        __tablename__ = 'site_settings'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        
+        # Basic Site Info
+        site_name = db.Column(db.String(200), default='Cricbuzz Live Score')
+        site_tagline = db.Column(db.String(300), nullable=True)
+        logo_url = db.Column(db.String(500), nullable=True)
+        favicon_url = db.Column(db.String(500), nullable=True)
+        
+        # Theme Colors
+        primary_color = db.Column(db.String(20), default='#1a472a')
+        secondary_color = db.Column(db.String(20), default='#2d5a3d')
+        accent_color = db.Column(db.String(20), default='#4CAF50')
+        header_bg_color = db.Column(db.String(20), default='#1a472a')
+        header_text_color = db.Column(db.String(20), default='#ffffff')
+        footer_bg_color = db.Column(db.String(20), default='#1a472a')
+        footer_text_color = db.Column(db.String(20), default='#ffffff')
+        body_bg_color = db.Column(db.String(20), default='#f5f5f5')
+        card_bg_color = db.Column(db.String(20), default='#ffffff')
+        text_color = db.Column(db.String(20), default='#333333')
+        link_color = db.Column(db.String(20), default='#1a472a')
+        
+        # Google Analytics
+        ga_tracking_id = db.Column(db.String(50), nullable=True)  # GA4: G-XXXXXXXXXX
+        ga_enabled = db.Column(db.Boolean, default=False)
+        
+        # Google AdSense
+        adsense_publisher_id = db.Column(db.String(50), nullable=True)  # ca-pub-XXXXXXXX
+        adsense_enabled = db.Column(db.Boolean, default=False)
+        adsense_auto_ads = db.Column(db.Boolean, default=False)
+        adsense_verification_code = db.Column(db.Text, nullable=True)  # Full <script> for approval
+        
+        # Ad Slots - Header
+        ad_header_enabled = db.Column(db.Boolean, default=False)
+        ad_header_code = db.Column(db.Text, nullable=True)
+        
+        # Ad Slots - Sidebar
+        ad_sidebar_enabled = db.Column(db.Boolean, default=False)
+        ad_sidebar_code = db.Column(db.Text, nullable=True)
+        
+        # Ad Slots - In-Content (after paragraphs)
+        ad_content_enabled = db.Column(db.Boolean, default=False)
+        ad_content_code = db.Column(db.Text, nullable=True)
+        
+        # Ad Slots - Footer
+        ad_footer_enabled = db.Column(db.Boolean, default=False)
+        ad_footer_code = db.Column(db.Text, nullable=True)
+        
+        # Ad Slots - Between Posts
+        ad_between_posts_enabled = db.Column(db.Boolean, default=False)
+        ad_between_posts_code = db.Column(db.Text, nullable=True)
+        
+        # Ad Slots - Match Page
+        ad_match_page_enabled = db.Column(db.Boolean, default=False)
+        ad_match_page_code = db.Column(db.Text, nullable=True)
+        
+        updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect, SiteSettings

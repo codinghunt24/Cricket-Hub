@@ -74,6 +74,30 @@
                             <span class="sidebar-text">Redirects</span>
                         </a>
                     </li>
+                    <li class="sidebar-item {% if '/admin/seo' in request.path %}active{% endif %}">
+                        <a href="/admin/seo" class="sidebar-link">
+                            <span class="sidebar-icon">&#128269;</span>
+                            <span class="sidebar-text">SEO & Sitemap</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% if '/admin/adsense' in request.path %}active{% endif %}">
+                        <a href="/admin/adsense" class="sidebar-link">
+                            <span class="sidebar-icon">&#128176;</span>
+                            <span class="sidebar-text">AdSense</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% if '/admin/analytics' in request.path %}active{% endif %}">
+                        <a href="/admin/analytics" class="sidebar-link">
+                            <span class="sidebar-icon">&#128200;</span>
+                            <span class="sidebar-text">Analytics</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% if '/admin/theme' in request.path %}active{% endif %}">
+                        <a href="/admin/theme" class="sidebar-link">
+                            <span class="sidebar-icon">&#127912;</span>
+                            <span class="sidebar-text">Theme</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             

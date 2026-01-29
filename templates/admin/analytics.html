@@ -1,0 +1,62 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Google Analytics - Admin{% endblock %}
+{% block page_title %}Google Analytics{% endblock %}
+
+{% block content %}
+<div class="admin-section">
+    {% if message %}
+    <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+        {{ message }}
+    </div>
+    {% endif %}
+    
+    <form method="POST" action="/admin/analytics">
+        <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+            <h2>Google Analytics Setup</h2>
+            <p style="color: #666; margin-bottom: 15px;">Enter your Google Analytics 4 (GA4) Measurement ID to track website traffic.</p>
+            
+            <div class="form-group">
+                <label>GA4 Measurement ID</label>
+                <input type="text" name="ga_tracking_id" value="{{ settings.ga_tracking_id or '' }}" placeholder="G-XXXXXXXXXX">
+                <small style="color: #666; display: block; margin-top: 5px;">Find this in Google Analytics > Admin > Data Streams > Your Website</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="ga_enabled" {% if settings.ga_enabled %}checked{% endif %}>
+                    Enable Google Analytics tracking
+                </label>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Save Analytics Settings</button>
+    </form>
+    
+    <div style="background: #fff; padding: 20px; border-radius: 8px; margin-top: 30px;">
+        <h2>How to Setup Google Analytics</h2>
+        <ol style="line-height: 2; color: #555;">
+            <li>Go to <a href="https://analytics.google.com" target="_blank">analytics.google.com</a></li>
+            <li>Create a new property for your website</li>
+            <li>Select "Web" as your platform</li>
+            <li>Enter your website URL: <code>https://cricbuzz-live-score.com</code></li>
+            <li>Copy the Measurement ID (starts with G-)</li>
+            <li>Paste it in the field above and enable tracking</li>
+        </ol>
+        
+        <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 5px;">
+            <strong>Note:</strong> After enabling, it may take 24-48 hours for data to appear in your Google Analytics dashboard.
+        </div>
+    </div>
+</div>
+
+<style>
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+.form-group input[type="text"] {
+    width: 100%; max-width: 400px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;
+}
+.checkbox-label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.checkbox-label input[type="checkbox"] { width: 18px; height: 18px; }
+</style>
+{% endblock %}
