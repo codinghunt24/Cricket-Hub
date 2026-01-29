@@ -1,0 +1,261 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Redirects - Admin Panel{% endblock %}
+{% block page_title %}301 Redirects{% endblock %}
+
+{% block content %}
+{% if message %}
+<div class="alert alert-{{ message_type or 'info' }}">{{ message }}</div>
+{% endif %}
+
+<div class="admin-card">
+    <div class="card-header">
+        <h3>{{ 'Edit Redirect' if edit_redirect else 'Add New Redirect' }}</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="/admin/redirects/save" class="redirect-form">
+            <input type="hidden" name="redirect_id" value="{{ edit_redirect.id if edit_redirect else '' }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="old_url">Old URL (without domain)</label>
+                    <input type="text" id="old_url" name="old_url" placeholder="/old-page-url" value="{{ edit_redirect.old_url if edit_redirect else '' }}" required>
+                    <small>Example: /team/123 or /player/old-slug</small>
+                </div>
+                <div class="form-group">
+                    <label for="new_url">New URL (without domain)</label>
+                    <input type="text" id="new_url" name="new_url" placeholder="/new-page-url" value="{{ edit_redirect.new_url if edit_redirect else '' }}" required>
+                    <small>Example: /team/india-1871 or /player/virat-kohli-123</small>
+                </div>
+                <div class="form-group" style="flex: 0 0 150px;">
+                    <label for="redirect_type">Type</label>
+                    <select id="redirect_type" name="redirect_type">
+                        <option value="301" {% if edit_redirect and edit_redirect.redirect_type == 301 %}selected{% endif %}>301 (Permanent)</option>
+                        <option value="302" {% if edit_redirect and edit_redirect.redirect_type == 302 %}selected{% endif %}>302 (Temporary)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 0 0 100px; align-self: flex-end;">
+                    <button type="submit" class="btn btn-primary">{{ 'Update' if edit_redirect else 'Add' }}</button>
+                </div>
+            </div>
+            {% if edit_redirect %}
+            <a href="/admin/redirects" class="btn btn-secondary" style="margin-top: 10px;">Cancel Edit</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="card-header">
+        <h3>All Redirects ({{ redirects|length }})</h3>
+        <div class="header-actions">
+            <input type="text" id="searchRedirects" placeholder="Search URLs..." class="search-input">
+        </div>
+    </div>
+    <div class="card-body">
+        {% if redirects %}
+        <table class="admin-table" id="redirectsTable">
+            <thead>
+                <tr>
+                    <th>Old URL</th>
+                    <th>New URL</th>
+                    <th>Type</th>
+                    <th>Hits</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in redirects %}
+                <tr data-id="{{ r.id }}">
+                    <td class="url-cell">{{ r.old_url }}</td>
+                    <td class="url-cell">{{ r.new_url }}</td>
+                    <td>{{ r.redirect_type }}</td>
+                    <td>{{ r.hit_count }}</td>
+                    <td>
+                        <span class="status-badge {% if r.is_active %}active{% else %}inactive{% endif %}">
+                            {{ 'Active' if r.is_active else 'Inactive' }}
+                        </span>
+                    </td>
+                    <td class="actions-cell">
+                        <a href="/admin/redirects/edit/{{ r.id }}" class="btn btn-sm btn-primary">Edit</a>
+                        <form method="POST" action="/admin/redirects/toggle/{{ r.id }}" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-toggle">
+                                {{ 'Disable' if r.is_active else 'Enable' }}
+                            </button>
+                        </form>
+                        <form method="POST" action="/admin/redirects/delete/{{ r.id }}" style="display: inline;" onsubmit="return confirm('Are you sure?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <p>No redirects added yet.</p>
+            <p>Add redirects above to preserve your SEO when changing URLs.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="card-header">
+        <h3>Bulk Import</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="/admin/redirects/bulk">
+            <div class="form-group">
+                <label>Paste CSV (old_url,new_url per line)</label>
+                <textarea id="bulkCsv" name="bulk_csv" rows="5" placeholder="/old-url-1,/new-url-1
+/old-url-2,/new-url-2
+/old-url-3,/new-url-3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Import All</button>
+        </form>
+    </div>
+</div>
+
+<style>
+.redirect-form .form-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.redirect-form .form-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.redirect-form .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #333;
+}
+
+.redirect-form .form-group input,
+.redirect-form .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 0.95rem;
+}
+
+.redirect-form .form-group small {
+    display: block;
+    margin-top: 4px;
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.url-cell {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.actions-cell {
+    white-space: nowrap;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+}
+
+.btn-toggle {
+    background: #6c757d;
+    color: #fff;
+}
+
+.btn-toggle:hover {
+    background: #5a6268;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: #fff;
+}
+
+.search-input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 200px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+#bulkCsv {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.alert {
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+</style>
+
+<script>
+document.getElementById('searchRedirects').addEventListener('input', function() {
+    const search = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#redirectsTable tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(search) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}

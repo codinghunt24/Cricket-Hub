@@ -68,6 +68,12 @@
                             <span class="sidebar-text">Pages</span>
                         </a>
                     </li>
+                    <li class="sidebar-item {% if '/admin/redirects' in request.path %}active{% endif %}">
+                        <a href="/admin/redirects" class="sidebar-link">
+                            <span class="sidebar-icon">&#8634;</span>
+                            <span class="sidebar-text">Redirects</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             

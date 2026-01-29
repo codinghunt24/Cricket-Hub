@@ -290,4 +290,16 @@ def init_models(db):
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
         updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page
+    class Redirect(db.Model):
+        __tablename__ = 'redirects'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        old_url = db.Column(db.String(500), unique=True, nullable=False, index=True)
+        new_url = db.Column(db.String(500), nullable=False)
+        redirect_type = db.Column(db.Integer, default=301)  # 301 permanent, 302 temporary
+        is_active = db.Column(db.Boolean, default=True)
+        hit_count = db.Column(db.Integer, default=0)
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+        updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect

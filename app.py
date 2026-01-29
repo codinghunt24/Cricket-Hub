@@ -32,7 +32,7 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SESSION_SECRET', os.urandom(24))
+app.secret_key = os.environ.get("SESSION_SECRET")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
@@ -88,7 +88,7 @@ def utility_processor():
     return dict(get_team_flag=get_team_flag)
 
 from models import init_models
-TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page = init_models(db)
+TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect = init_models(db)
 
 import scraper
 from scheduler import init_scheduler, update_schedule, update_player_schedule, update_category_profile_schedule, update_category_series_schedule, update_category_matches_schedule
@@ -3549,6 +3549,171 @@ def api_delete_page(page_id):
 def view_page(slug):
     page = Page.query.filter_by(slug=slug, is_published=True).first_or_404()
     return render_template('page.html', page=page)
+
+# ============== REDIRECT MANAGEMENT ==============
+
+@app.before_request
+def check_redirects():
+    """Check if current URL has a redirect rule"""
+    if request.path.startswith('/static/') or request.path.startswith('/api/') or request.path.startswith('/admin/'):
+        return None
+    
+    # Normalize path (remove trailing slash except for root)
+    path = request.path.rstrip('/') if request.path != '/' else request.path
+    
+    redirect_rule = Redirect.query.filter_by(old_url=path, is_active=True).first()
+    if not redirect_rule and request.path != path:
+        # Try with original path if normalized didn't match
+        redirect_rule = Redirect.query.filter_by(old_url=request.path, is_active=True).first()
+    
+    if redirect_rule:
+        # Update hit count safely
+        try:
+            redirect_rule.hit_count += 1
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+        return redirect(redirect_rule.new_url, code=redirect_rule.redirect_type)
+    return None
+
+@app.route('/admin/redirects')
+@admin_required
+def admin_redirects():
+    redirects = Redirect.query.order_by(Redirect.created_at.desc()).all()
+    message = request.args.get('message')
+    message_type = request.args.get('type', 'info')
+    return render_template('admin/redirects.html', redirects=redirects, message=message, message_type=message_type)
+
+@app.route('/admin/redirects/edit/<int:redirect_id>')
+@admin_required
+def admin_edit_redirect(redirect_id):
+    edit_redirect = Redirect.query.get_or_404(redirect_id)
+    redirects = Redirect.query.order_by(Redirect.created_at.desc()).all()
+    return render_template('admin/redirects.html', redirects=redirects, edit_redirect=edit_redirect)
+
+@app.route('/admin/redirects/save', methods=['POST'])
+@admin_required
+def admin_save_redirect():
+    try:
+        redirect_id = request.form.get('redirect_id', '').strip()
+        old_url = request.form.get('old_url', '').strip()
+        new_url = request.form.get('new_url', '').strip()
+        redirect_type = int(request.form.get('redirect_type', 301))
+        
+        if not old_url or not new_url:
+            return redirect(url_for('admin_redirects', message='Both URLs are required', type='error'))
+        
+        # Ensure URLs start with /
+        if not old_url.startswith('/'):
+            old_url = '/' + old_url
+        if not new_url.startswith('/'):
+            new_url = '/' + new_url
+        
+        if redirect_id:
+            # Update existing
+            redirect_obj = Redirect.query.get_or_404(int(redirect_id))
+            # Check for duplicate old_url on different redirect
+            existing = Redirect.query.filter(Redirect.old_url == old_url, Redirect.id != int(redirect_id)).first()
+            if existing:
+                return redirect(url_for('admin_redirects', message='Another redirect with this old URL already exists', type='error'))
+            redirect_obj.old_url = old_url
+            redirect_obj.new_url = new_url
+            redirect_obj.redirect_type = redirect_type
+            message = 'Redirect updated successfully'
+        else:
+            # Check if old URL already exists
+            existing = Redirect.query.filter_by(old_url=old_url).first()
+            if existing:
+                return redirect(url_for('admin_redirects', message='Redirect for this old URL already exists', type='error'))
+            
+            new_redirect = Redirect(
+                old_url=old_url,
+                new_url=new_url,
+                redirect_type=redirect_type
+            )
+            db.session.add(new_redirect)
+            message = 'Redirect added successfully'
+        
+        db.session.commit()
+        return redirect(url_for('admin_redirects', message=message, type='success'))
+    except Exception as e:
+        db.session.rollback()
+        return redirect(url_for('admin_redirects', message=str(e), type='error'))
+
+@app.route('/admin/redirects/bulk', methods=['POST'])
+@admin_required
+def admin_bulk_import_redirects():
+    try:
+        bulk_csv = request.form.get('bulk_csv', '').strip()
+        
+        if not bulk_csv:
+            return redirect(url_for('admin_redirects', message='Please paste CSV data', type='error'))
+        
+        lines = bulk_csv.split('\n')
+        imported = 0
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            parts = line.split(',')
+            if len(parts) < 2:
+                continue
+            
+            old_url = parts[0].strip()
+            new_url = parts[1].strip()
+            
+            if not old_url or not new_url:
+                continue
+            
+            if not old_url.startswith('/'):
+                old_url = '/' + old_url
+            if not new_url.startswith('/'):
+                new_url = '/' + new_url
+            
+            existing = Redirect.query.filter_by(old_url=old_url).first()
+            if existing:
+                continue
+            
+            new_redirect = Redirect(
+                old_url=old_url,
+                new_url=new_url,
+                redirect_type=301
+            )
+            db.session.add(new_redirect)
+            imported += 1
+        
+        db.session.commit()
+        return redirect(url_for('admin_redirects', message=f'Imported {imported} redirects', type='success'))
+    except Exception as e:
+        db.session.rollback()
+        return redirect(url_for('admin_redirects', message=str(e), type='error'))
+
+@app.route('/admin/redirects/toggle/<int:redirect_id>', methods=['POST'])
+@admin_required
+def admin_toggle_redirect(redirect_id):
+    try:
+        redirect_obj = Redirect.query.get_or_404(redirect_id)
+        redirect_obj.is_active = not redirect_obj.is_active
+        db.session.commit()
+        status = 'enabled' if redirect_obj.is_active else 'disabled'
+        return redirect(url_for('admin_redirects', message=f'Redirect {status}', type='success'))
+    except Exception as e:
+        db.session.rollback()
+        return redirect(url_for('admin_redirects', message=str(e), type='error'))
+
+@app.route('/admin/redirects/delete/<int:redirect_id>', methods=['POST'])
+@admin_required
+def admin_delete_redirect(redirect_id):
+    try:
+        redirect_obj = Redirect.query.get_or_404(redirect_id)
+        db.session.delete(redirect_obj)
+        db.session.commit()
+        return redirect(url_for('admin_redirects', message='Redirect deleted', type='success'))
+    except Exception as e:
+        db.session.rollback()
+        return redirect(url_for('admin_redirects', message=str(e), type='error'))
 
 if __name__ == '__main__':
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
