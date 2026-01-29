@@ -12,6 +12,7 @@ dependencies = [
     "flask-sqlalchemy>=3.1.1",
     "gunicorn>=24.1.1",
     "psycopg2-binary>=2.9.11",
+    "pywebpush>=2.2.0",
     "requests>=2.32.5",
     "sqlalchemy>=2.0.46",
     "werkzeug>=3.1.5",

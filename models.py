@@ -363,4 +363,29 @@ def init_models(db):
         
         updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect, SiteSettings
+    class PushSubscription(db.Model):
+        __tablename__ = 'push_subscriptions'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        endpoint = db.Column(db.Text, unique=True, nullable=False)
+        p256dh_key = db.Column(db.Text, nullable=False)
+        auth_key = db.Column(db.Text, nullable=False)
+        user_agent = db.Column(db.String(500), nullable=True)
+        ip_address = db.Column(db.String(50), nullable=True)
+        is_active = db.Column(db.Boolean, default=True)
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+        last_used = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    class NotificationLog(db.Model):
+        __tablename__ = 'notification_logs'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        title = db.Column(db.String(200), nullable=False)
+        body = db.Column(db.Text, nullable=False)
+        icon_url = db.Column(db.String(500), nullable=True)
+        click_url = db.Column(db.String(500), nullable=True)
+        sent_count = db.Column(db.Integer, default=0)
+        failed_count = db.Column(db.Integer, default=0)
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect, SiteSettings, PushSubscription, NotificationLog
