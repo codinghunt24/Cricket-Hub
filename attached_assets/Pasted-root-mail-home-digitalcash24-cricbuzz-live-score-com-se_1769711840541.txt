@@ -1,0 +1,49 @@
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# sed -n '1614,1660p' /home/digitalcash24/cricbuzz-live-score.com/app.py
+        total_players = 0
+        teams = Team.query.filter_by(category_id=category.id).filter(Team.team_url.isnot(None)).all()
+        total_teams = len(teams)
+        existing_player_slugs = set(p.slug for p in Player.query.filter(Player.slug.isnot(None)).all())
+        
+        scrape_progress[category_slug] = {'percent': 0, 'current': 0, 'total': total_teams, 'status': 'running'}
+        
+        for idx, team in enumerate(teams):
+            try:
+                players_data = scraper.scrape_players_from_team(team.team_url)
+                for player_data in players_data:
+                    existing = Player.query.filter_by(name=player_data['name'], team_id=team.id).first()
+                    if existing:
+                        existing.player_id = player_data.get('player_id')
+                        existing.photo_url = player_data.get('photo_url')
+                        existing.player_url = player_data.get('player_url')
+                        existing.role = player_data.get('role')
+                        existing.updated_at = datetime.utcnow()
+                        if not existing.slug and existing.name:
+                            existing.slug = generate_slug(existing.name, existing_player_slugs)
+                            if existing.slug:
+                                existing_player_slugs.add(existing.slug)
+                    else:
+                        player_name = player_data.get('name', '')
+                        new_slug = generate_slug(player_name, existing_player_slugs) if player_name else None
+                        if new_slug:
+                            existing_player_slugs.add(new_slug)
+                        player = Player(
+                            player_id=player_data.get('player_id'),
+                            name=player_name,
+                            slug=new_slug,
+                            photo_url=player_data.get('photo_url'),
+                            player_url=player_data.get('player_url'),
+                            role=player_data.get('role'),
+                            team_id=team.id
+                        )
+                        db.session.add(player)
+                    total_players += 1
+                
+                percent = int(((idx + 1) / total_teams) * 100)
+                scrape_progress[category_slug] = {'percent': percent, 'current': idx + 1, 'total': total_teams, 'status': 'running', 'team': team.name}
+            except Exception as e:
+                continue
+        
+        db.session.commit()
+        scrape_progress[category_slug] = {'percent': 100, 'current': total_teams, 'total': total_teams, 'status': 'complete'}
+        
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
