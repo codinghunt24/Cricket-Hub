@@ -2386,21 +2386,32 @@ def save_series_matches():
         saved_series = 0
         saved_matches = 0
         
+        # Determine category from URL
+        category_slug = 'international'
+        if series_url:
+            if '/domestic' in series_url:
+                category_slug = 'domestic'
+            elif '/league' in series_url:
+                category_slug = 'league'
+            elif '/women' in series_url:
+                category_slug = 'women'
+        
+        category = SeriesCategory.query.filter_by(slug=category_slug).first()
+        if not category:
+            category = SeriesCategory.query.first()
+        
         if series_list:
             for s in series_list:
                 series_id = s.get('id', '')
                 if not series_id:
                     continue
                 
-                category = SeriesCategory.query.filter_by(slug='international').first()
-                if not category:
-                    category = SeriesCategory.query.first()
-                
                 existing = Series.query.filter_by(series_id=series_id).first()
                 if existing:
                     existing.name = s.get('name', '')
                     existing.series_url = s.get('url', '')
                     existing.date_range = s.get('month_year', '')
+                    existing.category_id = category.id
                 else:
                     new_series = Series(
                         series_id=series_id,
@@ -2505,6 +2516,7 @@ def save_series_bulk():
                 existing.name = s.get('name', existing.name)
                 existing.series_url = s.get('url', existing.series_url)
                 existing.date_range = s.get('month_year', existing.date_range)
+                existing.category_id = category.id
                 updated += 1
             else:
                 new_series = Series(
