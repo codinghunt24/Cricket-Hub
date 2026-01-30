@@ -1,0 +1,22 @@
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo journalctl -u cricketlive -f --no-pager | head -20
+-- Logs begin at Mon 2025-11-10 12:47:14 CET. --
+Jan 30 23:07:25 mail.digitalcash24.com gunicorn[969162]: [2026-01-30 23:07:25 +0100] [969162] [ERROR] Connection in use: ('127.0.0.1', 8000)
+Jan 30 23:07:25 mail.digitalcash24.com gunicorn[969162]: [2026-01-30 23:07:25 +0100] [969162] [ERROR] connection to ('127.0.0.1', 8000) failed: [Errno 98] Address already in use
+Jan 30 23:07:26 mail.digitalcash24.com gunicorn[969162]: [2026-01-30 23:07:26 +0100] [969162] [ERROR] Connection in use: ('127.0.0.1', 8000)
+Jan 30 23:07:26 mail.digitalcash24.com gunicorn[969162]: [2026-01-30 23:07:26 +0100] [969162] [ERROR] connection to ('127.0.0.1', 8000) failed: [Errno 98] Address already in use
+Jan 30 23:07:27 mail.digitalcash24.com gunicorn[969162]: [2026-01-30 23:07:27 +0100] [969162] [ERROR] Connection in use: ('127.0.0.1', 8000)
+Jan 30 23:07:27 mail.digitalcash24.com gunicorn[969162]: [2026-01-30 23:07:27 +0100] [969162] [ERROR] connection to ('127.0.0.1', 8000) failed: [Errno 98] Address already in use
+Jan 30 23:07:28 mail.digitalcash24.com gunicorn[969162]: [2026-01-30 23:07:28 +0100] [969162] [ERROR] Connection in use: ('127.0.0.1', 8000)
+Jan 30 23:07:28 mail.digitalcash24.com gunicorn[969162]: [2026-01-30 23:07:28 +0100] [969162] [ERROR] connection to ('127.0.0.1', 8000) failed: [Errno 98] Address already in use
+Jan 30 23:07:29 mail.digitalcash24.com gunicorn[969162]: [2026-01-30 23:07:29 +0100] [969162] [ERROR] Connection in use: ('127.0.0.1', 8000)
+Jan 30 23:07:29 mail.digitalcash24.com gunicorn[969162]: [2026-01-30 23:07:29 +0100] [969162] [ERROR] connection to ('127.0.0.1', 8000) failed: [Errno 98] Address already in use
+Jan 30 23:07:30 mail.digitalcash24.com gunicorn[969162]: [2026-01-30 23:07:30 +0100] [969162] [ERROR] Can't connect to ('127.0.0.1', 8000)
+Jan 30 23:07:30 mail.digitalcash24.com systemd[1]: cricketlive.service: Main process exited, code=exited, status=1/FAILURE
+Jan 30 23:07:30 mail.digitalcash24.com systemd[1]: cricketlive.service: Failed with result 'exit-code'.
+Jan 30 23:07:30 mail.digitalcash24.com systemd[1]: cricketlive.service: Scheduled restart job, restart counter is at 51.
+Jan 30 23:07:30 mail.digitalcash24.com systemd[1]: Stopped CricketLive Flask Application.
+Jan 30 23:07:30 mail.digitalcash24.com systemd[1]: Started CricketLive Flask Application.
+Jan 30 23:07:30 mail.digitalcash24.com gunicorn[969212]: [2026-01-30 23:07:30 +0100] [969212] [INFO] Starting gunicorn 23.0.0
+Jan 30 23:07:30 mail.digitalcash24.com gunicorn[969212]: [2026-01-30 23:07:30 +0100] [969212] [ERROR] Connection in use: ('127.0.0.1', 8000)
+Jan 30 23:07:30 mail.digitalcash24.com gunicorn[969212]: [2026-01-30 23:07:30 +0100] [969212] [ERROR] connection to ('127.0.0.1', 8000) failed: [Errno 98] Address already in use
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
