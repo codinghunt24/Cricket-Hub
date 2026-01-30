@@ -48,7 +48,7 @@
                                 {% endif %}
                                 <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
                             </div>
-                            {% if match.team1_score %}<span class="team-score">{{ match.team1_score }}</span>{% endif %}
+                            <span class="team-score">{{ match.team1_score or '-' }}</span>
                         </div>
                         <div class="team-row">
                             <div class="team-info">
@@ -59,7 +59,7 @@
                                 {% endif %}
                                 <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
                             </div>
-                            {% if match.team2_score %}<span class="team-score">{{ match.team2_score }}</span>{% endif %}
+                            <span class="team-score">{{ match.team2_score or '-' }}</span>
                         </div>
                     </div>
                     {% if match.result %}
@@ -85,7 +85,7 @@
                                 {% endif %}
                                 <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
                             </div>
-                            {% if match.team1_score %}<span class="team-score">{{ match.team1_score }}</span>{% endif %}
+                            <span class="team-score">{{ match.team1_score or '-' }}</span>
                         </div>
                         <div class="team-row">
                             <div class="team-info">
@@ -96,7 +96,7 @@
                                 {% endif %}
                                 <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
                             </div>
-                            {% if match.team2_score %}<span class="team-score">{{ match.team2_score }}</span>{% endif %}
+                            <span class="team-score">{{ match.team2_score or '-' }}</span>
                         </div>
                     </div>
                     {% if match.result %}
