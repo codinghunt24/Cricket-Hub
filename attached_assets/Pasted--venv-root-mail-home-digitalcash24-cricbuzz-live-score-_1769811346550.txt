@@ -1,0 +1,24 @@
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo systemctl status cricketlive
+● cricketlive.service - CricketLive Flask Application
+     Loaded: loaded (/etc/systemd/system/cricketlive.service; enabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-01-30 23:15:08 CET; 34s ago
+   Main PID: 974038 (gunicorn)
+      Tasks: 7 (limit: 9493)
+     Memory: 162.6M
+     CGroup: /system.slice/cricketlive.service
+             ├─974038 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 ->
+             ├─974040 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 ->
+             ├─974048 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 ->
+             └─974049 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 ->
+
+Jan 30 23:15:08 mail.digitalcash24.com gunicorn[974049]:  {'/etc/timezone': 'Europe/Berlin', '/etc/localtime is a symlink to': 'Europe/Berlin'}
+Jan 30 23:15:09 mail.digitalcash24.com gunicorn[974048]: INFO:apscheduler.scheduler:Scheduler started
+Jan 30 23:15:09 mail.digitalcash24.com gunicorn[974048]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Jan 30 23:15:09 mail.digitalcash24.com gunicorn[974048]: DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+Jan 30 23:15:09 mail.digitalcash24.com gunicorn[974040]: INFO:apscheduler.scheduler:Scheduler started
+Jan 30 23:15:09 mail.digitalcash24.com gunicorn[974040]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Jan 30 23:15:09 mail.digitalcash24.com gunicorn[974040]: DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+Jan 30 23:15:09 mail.digitalcash24.com gunicorn[974049]: INFO:apscheduler.scheduler:Scheduler started
+Jan 30 23:15:09 mail.digitalcash24.com gunicorn[974049]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Jan 30 23:15:09 mail.digitalcash24.com gunicorn[974049]: DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+lines 1-22/22 (END)
