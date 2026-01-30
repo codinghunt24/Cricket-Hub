@@ -429,8 +429,12 @@ def run_live_score_scrape(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scr
                     # Update result only if not empty
                     if match_data.get('result'):
                         existing.result = match_data.get('result')
-                    if match_data.get('status'):
-                        existing.state = match_data.get('status')
+                    if match_data.get('state'):
+                        state_val = match_data.get('state')
+                        # Convert Preview to Upcoming for consistency
+                        if state_val == 'Preview':
+                            state_val = 'Upcoming'
+                        existing.state = state_val
                     if match_data.get('match_format'):
                         existing.match_format = match_data.get('match_format')
                     if match_data.get('match_url'):
@@ -439,6 +443,11 @@ def run_live_score_scrape(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scr
                         existing.cricbuzz_series_id = match_data.get('series_id')
                     existing.updated_at = datetime.utcnow()
                 else:
+                    # Convert Preview to Upcoming for new matches
+                    new_state = match_data.get('state', '')
+                    if new_state == 'Preview':
+                        new_state = 'Upcoming'
+                    
                     new_match = Match(
                         match_id=match_id,
                         team1_name=match_data.get('team1', ''),
@@ -446,7 +455,7 @@ def run_live_score_scrape(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scr
                         team2_name=match_data.get('team2', ''),
                         team2_score=match_data.get('team2_score', ''),
                         result=match_data.get('result', ''),
-                        state=match_data.get('status', ''),
+                        state=new_state,
                         match_format=match_data.get('match_format', ''),
                         match_url=match_data.get('match_url', ''),
                         cricbuzz_series_id=match_data.get('series_id', '')
