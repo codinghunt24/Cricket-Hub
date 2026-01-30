@@ -619,34 +619,10 @@ def live_scores():
 
 @app.route('/recent-matches')
 def recent_matches_page():
-    # Get completed matches from database
-    db_matches = Match.query.filter(Match.state == 'Complete').order_by(Match.updated_at.desc()).limit(50).all()
+    # Get ALL matches from database (scraped from admin), ordered by most recent
+    db_matches = Match.query.order_by(Match.updated_at.desc()).limit(100).all()
     
-    # Scrape recent matches from Cricbuzz
-    scrape_result = scraper.scrape_recent_matches()
-    
-    live_matches = []
     match_flags = {}
-    
-    if scrape_result.get('success'):
-        for m in scrape_result.get('matches', []):
-            match_data = {
-                'match_id': m.get('match_id'),
-                'match_format': m.get('series_name', 'Match'),
-                'team1_name': m.get('team1_name', 'Team 1'),
-                'team2_name': m.get('team2_name', 'Team 2'),
-                'team1_score': m.get('team1_score', ''),
-                'team2_score': m.get('team2_score', ''),
-                'state': m.get('state', 'Complete'),
-                'result': m.get('result', ''),
-                'from_live': True
-            }
-            live_matches.append(type('Match', (), match_data)())
-            
-            if m.get('team1_flag'):
-                match_flags[f"{m.get('match_id')}_1"] = m.get('team1_flag')
-            if m.get('team2_flag'):
-                match_flags[f"{m.get('match_id')}_2"] = m.get('team2_flag')
     
     # Add flags for DB matches
     teams = Team.query.all()
@@ -654,6 +630,9 @@ def recent_matches_page():
         if m.match_id:
             match_flags[f"{m.match_id}_1"] = m.team1_flag if m.team1_flag else get_team_flag_from_list(m.team1_name, teams)
             match_flags[f"{m.match_id}_2"] = m.team2_flag if m.team2_flag else get_team_flag_from_list(m.team2_name, teams)
+    
+    # No live scraping - show only database matches scraped from admin
+    live_matches = []
     
     return render_template('recent_matches.html', live_matches=live_matches, db_matches=db_matches, match_flags=match_flags)
 
