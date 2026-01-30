@@ -376,12 +376,12 @@ def scrape_recent_matches():
                             break
                         parent = parent.parent
     
-    # Extract scores - look for score patterns like "247/5" or "170/9 (20 Ov)"
+    # Extract scores - look for score patterns like "247/5", "170/9 (20 Ov)", "247", "247 & 180/5"
     score_map = {}
     for span in main_container.find_all('span'):
         text = span.get_text(strip=True)
-        # Match score patterns: 247/5, 170/9 (20), 125-3 etc
-        if text and re.match(r'^\d+[/-]\d+', text):
+        # Match score patterns: 247/5, 170/9 (20), 125-3, 247, 247 & 180, 247 & 180/5 (Test match formats)
+        if text and (re.match(r'^\d+[/-]\d+', text) or re.match(r'^\d+(\s*&\s*\d+)?([/-]\d+)?$', text)):
             parent = span.parent
             for _ in range(10):
                 if parent:
