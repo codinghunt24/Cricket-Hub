@@ -510,19 +510,26 @@ function saveProfileAuto(category) {
     .catch(err => alert('Error: ' + err.message));
 }
 
-fetch('/api/settings/profile-scrape')
-    .then(res => res.json())
-    .then(settings => {
-        const catMap = { 'international': 'Intl', 'domestic': 'Domestic', 'league': 'League', 'women': 'Women' };
-        for (const [cat, data] of Object.entries(settings)) {
-            const suffix = catMap[cat];
-            if (suffix) {
-                const checkbox = document.getElementById('profileAuto' + suffix);
-                const timeInput = document.getElementById('profileTime' + suffix);
-                if (checkbox) checkbox.checked = data.enabled;
-                if (timeInput) timeInput.value = data.time;
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/settings/profile-scrape')
+        .then(res => res.json())
+        .then(settings => {
+            console.log('Profile scrape settings loaded:', settings);
+            const catMap = { 'international': 'Intl', 'domestic': 'Domestic', 'league': 'League', 'women': 'Women' };
+            for (const [cat, data] of Object.entries(settings)) {
+                const suffix = catMap[cat];
+                if (suffix) {
+                    const checkbox = document.getElementById('profileAuto' + suffix);
+                    const timeInput = document.getElementById('profileTime' + suffix);
+                    if (checkbox) {
+                        checkbox.checked = data.enabled;
+                        console.log('Set', cat, 'checkbox to', data.enabled);
+                    }
+                    if (timeInput) timeInput.value = data.time;
+                }
             }
-        }
-    });
+        })
+        .catch(err => console.error('Error loading profile settings:', err));
+});
 </script>
 {% endblock %}
