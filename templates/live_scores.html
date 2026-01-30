@@ -107,42 +107,47 @@
         
         <div class="sidebar-box">
             <div class="section-block">
-                <h4>Recent Match</h4>
-                <div class="recent-matches-list" id="recent-matches-container">
+                <h4>Recent Matches</h4>
+                <div class="recent-matches-grid" id="recent-matches-container">
                     {% for match in recent_matches %}
-                    <div class="recent-match-card" onclick="loadScorecard('{{ match.match_id }}')" data-match-item>
-                        <div class="recent-match-teams vertical">
-                            <div class="recent-team-row">
-                                <div class="recent-team-left">
-                                    <img src="{{ match_flags.get(match.team1_name, '') }}" alt="" class="recent-team-flag" onerror="this.style.display='none'">
-                                    <span class="team-name">{{ match.team1_name }}</span>
-                                </div>
-                                {% if match.team1_score %}<span class="team-score">{{ normalize_score(match.team1_score) }}</span>{% endif %}
-                            </div>
-                            <div class="recent-team-row">
-                                <div class="recent-team-left">
-                                    <img src="{{ match_flags.get(match.team2_name, '') }}" alt="" class="recent-team-flag" onerror="this.style.display='none'">
-                                    <span class="team-name">{{ match.team2_name }}</span>
-                                </div>
-                                {% if match.team2_score %}<span class="team-score">{{ normalize_score(match.team2_score) }}</span>{% endif %}
-                            </div>
+                    <div class="match-card recent-card" onclick="loadScorecard('{{ match.match_id }}')" data-match-item>
+                        <div class="card-header">
+                            <span class="series-name">{{ match.match_format or 'Match' }}</span>
+                            <span class="status-badge {% if match.state in ['Live', 'In Progress'] %}live{% elif match.state in ['Stumps', 'Lunch', 'Tea', 'Drinks'] %}break{% elif match.state == 'Innings Break' %}innings{% elif match.state == 'Complete' %}complete{% elif match.state == 'Preview' %}preview{% elif match.state == 'Abandon' %}abandon{% else %}upcoming{% endif %}">
+                                {{ match.state|upper if match.state else 'UPCOMING' }}
+                            </span>
                         </div>
-                        {% if match.result %}
-                        <div class="recent-match-result">{{ match.result }}</div>
-                        {% endif %}
-                        {% if match.series %}
-                        <div class="recent-match-series">{{ match.series.name }}</div>
-                        {% elif match.series_name %}
-                        <div class="recent-match-series">{{ match.series_name }}</div>
-                        {% endif %}
-                        <div class="recent-match-footer">
-                            <span class="recent-match-format">{{ match.match_format }}</span>
-                            {% if match.match_date %}<span class="recent-match-date">{{ match.match_date }}</span>{% endif %}
+                        <div class="card-body">
+                            <div class="teams-container">
+                                <div class="team-row">
+                                    {% if match_flags.get(match.match_id ~ '_1') or match_flags.get(match.team1_name) %}
+                                    <img src="{{ match_flags.get(match.match_id ~ '_1') or match_flags.get(match.team1_name) }}" alt="" class="team-flag">
+                                    {% else %}
+                                    <span class="team-flag-placeholder"></span>
+                                    {% endif %}
+                                    <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
+                                    <span class="team-score">{{ normalize_score(match.team1_score) or '' }}</span>
+                                </div>
+                                <div class="team-row">
+                                    {% if match_flags.get(match.match_id ~ '_2') or match_flags.get(match.team2_name) %}
+                                    <img src="{{ match_flags.get(match.match_id ~ '_2') or match_flags.get(match.team2_name) }}" alt="" class="team-flag">
+                                    {% else %}
+                                    <span class="team-flag-placeholder"></span>
+                                    {% endif %}
+                                    <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
+                                    <span class="team-score">{{ normalize_score(match.team2_score) or '' }}</span>
+                                </div>
+                            </div>
+                            {% if match.result %}
+                            <div class="match-result {% if 'opt to' in match.result.lower() %}result-toss{% elif 'won' in match.result.lower() or 'win' in match.result.lower() %}result-won{% elif 'need' in match.result.lower() %}result-need{% elif 'match starts' in match.result.lower() or 'start' in match.result.lower() %}result-upcoming{% endif %}">{{ match.result }}</div>
+                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}
                 </div>
-                <button class="load-more-btn" id="load-more-matches" onclick="loadMoreMatches()">Load More</button>
+                {% if recent_matches|length > 10 %}
+                <button class="load-more-btn" id="load-more-matches" onclick="toggleMoreMatches()">Show More</button>
+                {% endif %}
             </div>
             <div class="section-block">
                 <h4>Quick Links</h4>
@@ -497,7 +502,41 @@
     text-decoration: underline;
 }
 
-/* Recent Match Cards in Sidebar */
+/* Recent Match Cards in Sidebar - Grid Layout */
+.recent-matches-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.recent-matches-grid.expanded {
+    max-height: none;
+}
+
+.recent-matches-grid .match-card.recent-card {
+    width: 100%;
+    min-width: auto;
+}
+
+.recent-matches-grid .match-card.recent-card .card-header {
+    padding: 8px 10px;
+}
+
+.recent-matches-grid .match-card.recent-card .card-body {
+    padding: 10px;
+}
+
+.recent-matches-grid .match-card.recent-card .team-name {
+    font-size: 0.85rem;
+}
+
+.recent-matches-grid .match-card.recent-card .team-score {
+    font-size: 0.85rem;
+}
+
+/* Legacy Recent Match Cards */
 .recent-matches-list {
     display: flex;
     flex-direction: column;
@@ -1515,6 +1554,19 @@ function loadMoreMatches() {
             btn.disabled = false;
             btn.textContent = 'Load More';
         });
+}
+
+function toggleMoreMatches() {
+    const container = document.getElementById('recent-matches-container');
+    const btn = document.getElementById('load-more-matches');
+    if (container.classList.contains('expanded')) {
+        container.classList.remove('expanded');
+        btn.textContent = 'Show More';
+        container.scrollTop = 0;
+    } else {
+        container.classList.add('expanded');
+        btn.textContent = 'Show Less';
+    }
 }
 </script>
 {% endblock %}

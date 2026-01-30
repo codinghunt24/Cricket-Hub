@@ -596,8 +596,8 @@ def live_scores():
             if m.get('team2_flag'):
                 match_flags[f"{m.get('match_id')}_2"] = m.get('team2_flag')
     
-    # Recent completed matches for sidebar from database
-    recent_matches = Match.query.filter(Match.state == 'Complete').order_by(Match.updated_at.desc()).limit(5).all()
+    # Recent matches for sidebar from database - ALL scraped matches
+    recent_matches = Match.query.order_by(Match.updated_at.desc()).limit(50).all()
     
     teams = Team.query.all()
     for m in recent_matches:
