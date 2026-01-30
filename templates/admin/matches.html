@@ -26,19 +26,7 @@
     
     <div class="filter-tabs" style="display: flex; gap: 4px; margin-bottom: 15px; flex-wrap: nowrap; overflow-x: auto;">
         <button class="filter-tab active" data-filter="all" onclick="filterMatches('all')">All<span class="tab-count">{{ matches|length }}</span></button>
-        <button class="filter-tab" data-filter="Live" onclick="filterMatches('Live')" style="border-color: #ff4444;">Live<span class="tab-count" style="background: #ff4444;">{{ live_count }}</span></button>
-        <button class="filter-tab" data-filter="In Progress" onclick="filterMatches('In Progress')" style="border-color: #e74c3c;">Progress<span class="tab-count" style="background: #e74c3c;">{{ in_progress_count }}</span></button>
-        <button class="filter-tab" data-filter="Innings Break" onclick="filterMatches('Innings Break')" style="border-color: #ffaa00;">Break<span class="tab-count" style="background: #ffaa00; color: #333;">{{ innings_count }}</span></button>
-        <button class="filter-tab" data-filter="Stumps" onclick="filterMatches('Stumps')" style="border-color: #8e44ad;">Stumps<span class="tab-count" style="background: #8e44ad;">{{ stumps_count }}</span></button>
-        <button class="filter-tab" data-filter="Lunch" onclick="filterMatches('Lunch')" style="border-color: #f39c12;">Lunch<span class="tab-count" style="background: #f39c12; color: #333;">{{ lunch_count }}</span></button>
-        <button class="filter-tab" data-filter="Tea" onclick="filterMatches('Tea')" style="border-color: #d35400;">Tea<span class="tab-count" style="background: #d35400;">{{ tea_count }}</span></button>
-        <button class="filter-tab" data-filter="Drinks" onclick="filterMatches('Drinks')" style="border-color: #1abc9c;">Drinks<span class="tab-count" style="background: #1abc9c;">{{ drinks_count }}</span></button>
-        <button class="filter-tab" data-filter="Complete" onclick="filterMatches('Complete')" style="border-color: #00cc66;">Done<span class="tab-count" style="background: #00cc66;">{{ complete_count }}</span></button>
-        <button class="filter-tab" data-filter="Preview" onclick="filterMatches('Preview')" style="border-color: #9b59b6;">Preview<span class="tab-count" style="background: #9b59b6;">{{ preview_count }}</span></button>
-        <button class="filter-tab" data-filter="Upcoming" onclick="filterMatches('Upcoming')" style="border-color: #3498db;">Soon<span class="tab-count" style="background: #3498db;">{{ upcoming_count }}</span></button>
-        <button class="filter-tab" data-filter="Abandon" onclick="filterMatches('Abandon')" style="border-color: #7f8c8d;">Abandon<span class="tab-count" style="background: #7f8c8d;">{{ abandon_count }}</span></button>
-        <button class="filter-tab" data-filter="has-result" onclick="filterMatches('has-result')" style="border-color: #2ecc71;">Result<span class="tab-count" style="background: #2ecc71;">{{ result_count }}</span></button>
-        <button class="filter-tab" data-filter="has-status" onclick="filterMatches('has-status')" style="border-color: #e67e22;">Status<span class="tab-count" style="background: #e67e22;">{{ status_count }}</span></button>
+        <button class="filter-tab" data-filter="Complete" onclick="filterMatches('Complete')" style="border-color: #00cc66;">Complete<span class="tab-count" style="background: #00cc66;">{{ complete_count }}</span></button>
     </div>
     
     <div class="tables-container">
