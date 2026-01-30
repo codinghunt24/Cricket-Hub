@@ -736,6 +736,7 @@ def series_detail(slug):
     category = SeriesCategory.query.get(series.category_id)
     return render_template('series_detail.html', series=series, matches=matches, category=category)
 
+@app.route('/cricket-match/<slug>')
 @app.route('/match/<slug>')
 def match_detail(slug):
     # First try to find by slug

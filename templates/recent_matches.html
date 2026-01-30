@@ -32,7 +32,7 @@
     <div class="matches-grid-container">
         <div class="matches-grid">
             {% for match in live_matches %}
-            <div class="match-card" onclick="window.location.href='/match/{{ match.slug or match.match_id }}'">
+            <div class="match-card" onclick="window.location.href='/cricket-match/{{ match.slug or match.match_id }}'">
                 <div class="card-header">
                     <span class="series-name">{{ match.match_format or 'Match' }}{% if match.venue %} • {{ match.venue }}{% endif %}</span>
                     <span class="status-badge complete">RESULT</span>
@@ -69,7 +69,7 @@
             </div>
             {% endfor %}
             {% for match in db_matches %}
-            <div class="match-card" onclick="window.location.href='/match/{{ match.slug or match.match_id }}'">
+            <div class="match-card" onclick="window.location.href='/cricket-match/{{ match.slug or match.match_id }}'">
                 <div class="card-header">
                     <span class="series-name">{{ match.match_format or 'Match' }}{% if match.venue %} • {{ match.venue }}{% endif %}</span>
                     <span class="status-badge complete">RESULT</span>
