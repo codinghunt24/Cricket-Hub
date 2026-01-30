@@ -78,6 +78,27 @@
     {% endif %}
 </section>
 
+{% if series %}
+<section class="series-section">
+    <div class="series-container">
+        <div class="series-header">
+            <h3>Popular Series</h3>
+            <a href="/series" class="view-all-btn">View All <i class="fas fa-chevron-right"></i></a>
+        </div>
+        <div class="series-grid">
+            {% for s in series[:8] %}
+            <a href="/series/{{ s.slug or s.id }}" class="series-card">
+                <div class="series-name">{{ s.name }}</div>
+                {% if s.start_date %}
+                <div class="series-date">{{ s.start_date.strftime('%b %Y') if s.start_date else '' }}</div>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <section class="main-container">
     <div class="content-wrapper">
         <!-- Recent News / Scorecard - Separate Box -->
