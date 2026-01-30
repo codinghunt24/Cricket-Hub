@@ -169,6 +169,7 @@ def init_models(db):
         
         id = db.Column(db.Integer, primary_key=True)
         match_id = db.Column(db.String(50), unique=True, nullable=False, index=True)
+        slug = db.Column(db.String(300), unique=True, nullable=True, index=True)
         cricbuzz_series_id = db.Column(db.String(50), nullable=True, index=True)
         team1_id = db.Column(db.String(50), nullable=True)
         team2_id = db.Column(db.String(50), nullable=True)

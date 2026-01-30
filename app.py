@@ -204,9 +204,21 @@ with app.app_context():
                 existing_series_slugs.add(s.slug)
             series_updated += 1
     
-    if teams_updated or players_updated or series_updated:
+    existing_match_slugs = set(m.slug for m in Match.query.filter(Match.slug.isnot(None)).all())
+    matches_updated = 0
+    for m in Match.query.filter(Match.slug.is_(None)).all():
+        if m.team1_name and m.team2_name:
+            match_title = f"{m.team1_name} vs {m.team2_name}"
+            if m.match_format:
+                match_title += f" {m.match_format}"
+            m.slug = generate_slug(match_title, existing_match_slugs)
+            if m.slug:
+                existing_match_slugs.add(m.slug)
+            matches_updated += 1
+    
+    if teams_updated or players_updated or series_updated or matches_updated:
         db.session.commit()
-        logging.info(f"Generated slugs: {teams_updated} teams, {players_updated} players, {series_updated} series")
+        logging.info(f"Generated slugs: {teams_updated} teams, {players_updated} players, {series_updated} series, {matches_updated} matches")
 
 def admin_required(f):
     @wraps(f)
@@ -724,13 +736,25 @@ def series_detail(slug):
     category = SeriesCategory.query.get(series.category_id)
     return render_template('series_detail.html', series=series, matches=matches, category=category)
 
-@app.route('/match/<match_id>')
-def match_detail(match_id):
-    # Scrape scorecard from Cricbuzz
-    scorecard = scraper.scrape_scorecard(match_id)
+@app.route('/match/<slug>')
+def match_detail(slug):
+    # First try to find by slug
+    match = Match.query.filter_by(slug=slug).first()
     
-    # Try to get match from database
-    match = Match.query.filter_by(match_id=match_id).first()
+    # If not found by slug, try match_id (for backward compatibility)
+    if not match:
+        match = Match.query.filter_by(match_id=slug).first()
+    
+    # If found by match_id but has slug, redirect to slug URL
+    if match and match.slug and match.slug != slug:
+        return redirect(url_for('match_detail', slug=match.slug), code=301)
+    
+    # Get match_id for scorecard scraping
+    actual_match_id = match.match_id if match else slug
+    
+    # Scrape scorecard from Cricbuzz
+    scorecard = scraper.scrape_scorecard(actual_match_id)
+    
     series = None
     
     if match:
