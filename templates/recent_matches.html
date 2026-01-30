@@ -34,7 +34,7 @@
             {% for match in live_matches %}
             <div class="match-card" onclick="window.location.href='/match/{{ match.match_id }}'">
                 <div class="card-header">
-                    <span class="series-name">{{ match.match_format or 'Match' }}</span>
+                    <span class="series-name">{{ match.match_format or 'Match' }}{% if match.venue %} • {{ match.venue }}{% endif %}</span>
                     <span class="status-badge complete">RESULT</span>
                 </div>
                 <div class="card-body">
@@ -71,7 +71,7 @@
             {% for match in db_matches %}
             <div class="match-card" onclick="window.location.href='/match/{{ match.match_id }}'">
                 <div class="card-header">
-                    <span class="series-name">{{ match.match_format or 'Match' }}</span>
+                    <span class="series-name">{{ match.match_format or 'Match' }}{% if match.venue %} • {{ match.venue }}{% endif %}</span>
                     <span class="status-badge complete">RESULT</span>
                 </div>
                 <div class="card-body">

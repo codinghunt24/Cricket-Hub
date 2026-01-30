@@ -399,6 +399,29 @@ def scrape_recent_matches():
                             break
                     parent = parent.parent
     
+    # Extract match format and venue from text-cbTxtSec spans
+    # Format: "1st T20I • Pallekele, Pallekele International Cricket Stadium"
+    match_info_map = {}
+    for span in main_container.find_all('span', class_=re.compile(r'text-cbTxtSec')):
+        text = span.get_text(strip=True)
+        if '•' in text:
+            # Find parent match link
+            parent = span.parent
+            for _ in range(10):
+                if parent:
+                    link = parent.find('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
+                    if link:
+                        m = re.search(r'/live-cricket-scores/(\d+)/', link.get('href', ''))
+                        if m:
+                            mid = m.group(1)
+                            if mid not in match_info_map:
+                                parts = text.split('•', 1)
+                                match_format = parts[0].strip() if len(parts) > 0 else ''
+                                venue = parts[1].strip() if len(parts) > 1 else ''
+                                match_info_map[mid] = {'match_format': match_format, 'venue': venue}
+                            break
+                    parent = parent.parent
+    
     # Get ALL unique match IDs
     all_match_links = main_container.find_all('a', href=re.compile(r'/live-cricket-scores/(\d+)/'))
     seen_match_ids = set()
@@ -476,6 +499,11 @@ def scrape_recent_matches():
                 team1_score = scores.get('team1_score', '')
                 team2_score = scores.get('team2_score', '')
                 
+                # Get match format and venue
+                match_info = match_info_map.get(mid, {})
+                match_format = match_info.get('match_format', '')
+                venue = match_info.get('venue', '')
+                
                 match_title = link.get_text(strip=True) or ''
                 
                 matches.append({
@@ -490,7 +518,9 @@ def scrape_recent_matches():
                     'team1_flag': team1_flag,
                     'team2_flag': team2_flag,
                     'series_id': series_id,
-                    'series_name': series_name
+                    'series_name': series_name,
+                    'match_format': match_format,
+                    'venue': venue
                 })
     
     logger.info(f"Recent Matches: Found {len(matches)} matches")

@@ -3344,6 +3344,7 @@ def api_scrape_recent_matches():
                     existing.state = m.get('state', existing.state)
                     existing.result = m.get('result', existing.result)
                     existing.match_format = m.get('match_format') or m.get('series_name', existing.match_format)
+                    existing.venue = m.get('venue', existing.venue)
                     existing.team1_flag = m.get('team1_flag', existing.team1_flag)
                     existing.team2_flag = m.get('team2_flag', existing.team2_flag)
                     existing.updated_at = datetime.utcnow()
@@ -3357,6 +3358,7 @@ def api_scrape_recent_matches():
                         state=m.get('state', 'Complete'),
                         result=m.get('result'),
                         match_format=m.get('match_format') or m.get('series_name'),
+                        venue=m.get('venue'),
                         team1_flag=m.get('team1_flag'),
                         team2_flag=m.get('team2_flag')
                     )
