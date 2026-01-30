@@ -3324,11 +3324,51 @@ def clear_all_matches():
 
 @app.route('/api/matches/scrape-recent', methods=['POST'])
 def api_scrape_recent_matches():
-    """API endpoint to scrape recent matches from Cricbuzz"""
+    """API endpoint to scrape recent matches from Cricbuzz and save to database"""
     try:
         result = scraper.scrape_recent_matches()
+        
+        if result.get('success') and result.get('matches'):
+            saved_count = 0
+            for m in result.get('matches', []):
+                match_id = m.get('match_id')
+                if not match_id:
+                    continue
+                    
+                existing = Match.query.filter_by(match_id=match_id).first()
+                if existing:
+                    existing.team1_name = m.get('team1_name', existing.team1_name)
+                    existing.team2_name = m.get('team2_name', existing.team2_name)
+                    existing.team1_score = m.get('team1_score', existing.team1_score)
+                    existing.team2_score = m.get('team2_score', existing.team2_score)
+                    existing.state = m.get('state', existing.state)
+                    existing.result = m.get('result', existing.result)
+                    existing.match_format = m.get('match_format') or m.get('series_name', existing.match_format)
+                    existing.team1_flag = m.get('team1_flag', existing.team1_flag)
+                    existing.team2_flag = m.get('team2_flag', existing.team2_flag)
+                    existing.updated_at = datetime.utcnow()
+                else:
+                    new_match = Match(
+                        match_id=match_id,
+                        team1_name=m.get('team1_name', 'Team 1'),
+                        team2_name=m.get('team2_name', 'Team 2'),
+                        team1_score=m.get('team1_score'),
+                        team2_score=m.get('team2_score'),
+                        state=m.get('state', 'Complete'),
+                        result=m.get('result'),
+                        match_format=m.get('match_format') or m.get('series_name'),
+                        team1_flag=m.get('team1_flag'),
+                        team2_flag=m.get('team2_flag')
+                    )
+                    db.session.add(new_match)
+                saved_count += 1
+            
+            db.session.commit()
+            result['saved_to_db'] = saved_count
+        
         return jsonify(result)
     except Exception as e:
+        db.session.rollback()
         return jsonify({'success': False, 'message': str(e), 'matches': []}), 500
 
 
