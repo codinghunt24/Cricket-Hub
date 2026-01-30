@@ -208,14 +208,17 @@
 .teams-container {
     margin-bottom: 8px;
     min-height: 60px;
+    display: block !important;
+    visibility: visible !important;
 }
 
 .team-row {
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: space-between;
     padding: 8px 0;
     gap: 10px;
+    visibility: visible !important;
 }
 
 .team-row:first-child {
@@ -225,9 +228,21 @@
 }
 
 .team-info {
-    display: flex;
+    display: flex !important;
     align-items: center;
     gap: 10px;
+    visibility: visible !important;
+}
+
+.match-card .team-name {
+    display: inline !important;
+    visibility: visible !important;
+    color: #333 !important;
+}
+
+.match-card .team-score {
+    display: inline-block !important;
+    visibility: visible !important;
 }
 
 .team-flag {
