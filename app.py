@@ -158,9 +158,12 @@ with app.app_context():
             ss = SeriesScrapeSetting(category_slug=slug, auto_scrape_enabled=False, scrape_time='08:00')
             db.session.add(ss)
     
-    if not MatchScrapeSetting.query.first():
-        ms = MatchScrapeSetting(auto_scrape_enabled=False, scrape_time='10:00')
-        db.session.add(ms)
+    # Initialize per-category match scrape settings
+    match_categories = ['all', 'international', 'domestic', 'league', 'women']
+    for slug in match_categories:
+        if not MatchScrapeSetting.query.filter_by(category_slug=slug).first():
+            ms = MatchScrapeSetting(category_slug=slug, auto_scrape_enabled=False, scrape_time='10:00')
+            db.session.add(ms)
     
     if not AdminUser.query.first():
         admin = AdminUser(

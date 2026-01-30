@@ -687,9 +687,20 @@ def run_category_matches_scrape(app, db, SeriesCategory, Series, Match, ScrapeLo
                                 if match_data.get('team2_score'):
                                     existing.team2_score = match_data.get('team2_score')
                                 existing.result = match_data.get('result', existing.result)
+                                # Update state - convert Preview to Upcoming
+                                if match_data.get('state'):
+                                    state_val = match_data.get('state')
+                                    if state_val == 'Preview':
+                                        state_val = 'Upcoming'
+                                    existing.state = state_val
                                 existing.series_id = series.id
                                 existing.updated_at = datetime.utcnow()
                             else:
+                                # Convert state for new matches
+                                new_state = match_data.get('state', '')
+                                if new_state == 'Preview':
+                                    new_state = 'Upcoming'
+                                
                                 match = Match(
                                     match_id=match_id,
                                     match_format=match_data.get('match_format', ''),
@@ -700,6 +711,7 @@ def run_category_matches_scrape(app, db, SeriesCategory, Series, Match, ScrapeLo
                                     team1_score=match_data.get('team1_score', ''),
                                     team2_score=match_data.get('team2_score', ''),
                                     result=match_data.get('result', ''),
+                                    state=new_state,
                                     series_id=series.id
                                 )
                                 db.session.add(match)
