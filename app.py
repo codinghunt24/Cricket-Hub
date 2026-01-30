@@ -1625,6 +1625,7 @@ def scrape_category_players(category_slug):
         for idx, team in enumerate(teams):
             try:
                 players_data = scraper.scrape_players_from_team(team.team_url)
+                team_players = 0
                 for player_data in players_data:
                     existing = Player.query.filter_by(name=player_data['name'], team_id=team.id).first()
                     if existing:
@@ -1652,14 +1653,17 @@ def scrape_category_players(category_slug):
                             team_id=team.id
                         )
                         db.session.add(player)
+                    team_players += 1
                     total_players += 1
                 
+                db.session.commit()
+                
                 percent = int(((idx + 1) / total_teams) * 100)
-                scrape_progress[category_slug] = {'percent': percent, 'current': idx + 1, 'total': total_teams, 'status': 'running', 'team': team.name}
+                scrape_progress[category_slug] = {'percent': percent, 'current': idx + 1, 'total': total_teams, 'status': 'running', 'team': team.name, 'team_players': team_players}
             except Exception as e:
+                db.session.rollback()
                 continue
         
-        db.session.commit()
         scrape_progress[category_slug] = {'percent': 100, 'current': total_teams, 'total': total_teams, 'status': 'complete'}
         
         log = ScrapeLog(
