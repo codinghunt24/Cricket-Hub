@@ -455,15 +455,27 @@ def run_live_score_scrape(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scr
                     if new_state == 'Preview':
                         new_state = 'Upcoming'
                     
+                    # Generate slug for new match
+                    team1 = match_data.get('team1_name', '')
+                    team2 = match_data.get('team2_name', '')
+                    match_format = match_data.get('match_format', '')
+                    match_slug = None
+                    if team1 and team2:
+                        match_title = f"{team1} vs {team2}"
+                        if match_format:
+                            match_title += f" {match_format}"
+                        match_slug = generate_slug(match_title)
+                    
                     new_match = Match(
                         match_id=match_id,
-                        team1_name=match_data.get('team1_name', ''),
+                        slug=match_slug,
+                        team1_name=team1,
                         team1_score=match_data.get('team1_score', ''),
-                        team2_name=match_data.get('team2_name', ''),
+                        team2_name=team2,
                         team2_score=match_data.get('team2_score', ''),
                         result=match_data.get('result', ''),
                         state=new_state,
-                        match_format=match_data.get('match_format', ''),
+                        match_format=match_format,
                         series_name=match_data.get('series_name', ''),
                         match_url=match_data.get('match_url', ''),
                         cricbuzz_series_id=match_data.get('series_id', ''),

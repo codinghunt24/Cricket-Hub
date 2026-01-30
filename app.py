@@ -289,15 +289,30 @@ def upsert_match(match_data, db_series_id=None):
             existing.batting_data = match_data.get('batting')
         if match_data.get('bowling'):
             existing.bowling_data = match_data.get('bowling')
+        if not existing.slug and existing.team1_name and existing.team2_name:
+            match_title = f"{existing.team1_name} vs {existing.team2_name}"
+            if existing.match_format:
+                match_title += f" {existing.match_format}"
+            existing.slug = generate_slug(match_title)
         return existing
     else:
+        team1 = match_data.get('team1') or match_data.get('team1_name', '')
+        team2 = match_data.get('team2') or match_data.get('team2_name', '')
+        match_format = match_data.get('match_format', '')
+        match_slug = None
+        if team1 and team2:
+            match_title = f"{team1} vs {team2}"
+            if match_format:
+                match_title += f" {match_format}"
+            match_slug = generate_slug(match_title)
         new_match = Match(
             match_id=str(match_data['match_id']),
+            slug=match_slug,
             cricbuzz_series_id=match_data.get('series_id', ''),
             team1_id=match_data.get('team1_id', ''),
             team2_id=match_data.get('team2_id', ''),
             venue_id=match_data.get('venue_id', ''),
-            match_format=match_data.get('match_format', ''),
+            match_format=match_format,
             format_type=match_data.get('format_type', ''),
             venue=match_data.get('venue', ''),
             match_date=match_data.get('match_date', ''),
@@ -305,9 +320,9 @@ def upsert_match(match_data, db_series_id=None):
             start_date=match_data.get('start_date', ''),
             end_date=match_data.get('end_date', ''),
             state=match_data.get('status') or match_data.get('state', ''),
-            team1_name=match_data.get('team1') or match_data.get('team1_name', ''),
+            team1_name=team1,
             team1_score=match_data.get('team1_score', ''),
-            team2_name=match_data.get('team2') or match_data.get('team2_name', ''),
+            team2_name=team2,
             team2_score=match_data.get('team2_score', ''),
             result=match_data.get('result', ''),
             match_url=match_data.get('match_url', ''),
