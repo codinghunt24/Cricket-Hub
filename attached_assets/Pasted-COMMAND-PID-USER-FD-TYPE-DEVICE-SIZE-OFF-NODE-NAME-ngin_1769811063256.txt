@@ -1,0 +1,35 @@
+COMMAND     PID          USER   FD   TYPE   DEVICE SIZE/OFF NODE NAME
+nginx    967831        nobody   16u  IPv4 28453369      0t0  TCP localhost:42352->localhost:8000 (ESTABLISHED)
+gunicorn 969943 digitalcash24    5u  IPv4 28452490      0t0  TCP localhost:8000 (LISTEN)
+gunicorn 969945 digitalcash24    5u  IPv4 28452490      0t0  TCP localhost:8000 (LISTEN)
+gunicorn 969945 digitalcash24   10u  IPv4 28451527      0t0  TCP localhost:8000->localhost:57360 (CLOSE_WAIT)
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo kill -9 969943 969945
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo supervisorctl status
+cricbuzz                                   FATAL     Exited too quickly (process log may have details)
+zesle-worker:zesle-worker_00               RUNNING   pid 1038, uptime 10 days, 12:39:06
+zeslebackup-worker:zeslebackup-worker_00   RUNNING   pid 1039, uptime 10 days, 12:39:06
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo supervisorctl stop all
+zesle-worker:zesle-worker_00: stopped
+zeslebackup-worker:zeslebackup-worker_00: stopped
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo lsof -i :8000
+COMMAND     PID          USER   FD   TYPE   DEVICE SIZE/OFF NODE NAME
+gunicorn 970818 digitalcash24    5u  IPv4 28455203      0t0  TCP localhost:8000 (LISTEN)
+gunicorn 970820 digitalcash24    5u  IPv4 28455203      0t0  TCP localhost:8000 (LISTEN)
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo systemctl start cricketlive
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo systemctl status cricketlive
+● cricketlive.service - CricketLive Flask Application
+     Loaded: loaded (/etc/systemd/system/cricketlive.service; enabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-01-30 23:10:55 CET; 1s ago
+   Main PID: 971138 (gunicorn)
+      Tasks: 1 (limit: 9493)
+     Memory: 11.4M
+     CGroup: /system.slice/cricketlive.service
+             └─971138 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 ->
+
+Jan 30 23:10:55 mail.digitalcash24.com systemd[1]: Started CricketLive Flask Application.
+Jan 30 23:10:55 mail.digitalcash24.com gunicorn[971138]: [2026-01-30 23:10:55 +0100] [971138] [INFO] Starting gunicorn 23.0.0
+Jan 30 23:10:55 mail.digitalcash24.com gunicorn[971138]: [2026-01-30 23:10:55 +0100] [971138] [ERROR] Connection in use: ('127.0.0.1', 8000)
+Jan 30 23:10:55 mail.digitalcash24.com gunicorn[971138]: [2026-01-30 23:10:55 +0100] [971138] [ERROR] connection to ('127.0.0.1', 8000) failed: [Errno 98] Address already in use
+Jan 30 23:10:56 mail.digitalcash24.com gunicorn[971138]: [2026-01-30 23:10:56 +0100] [971138] [ERROR] Connection in use: ('127.0.0.1', 8000)
+Jan 30 23:10:56 mail.digitalcash24.com gunicorn[971138]: [2026-01-30 23:10:56 +0100] [971138] [ERROR] connection to ('127.0.0.1', 8000) failed: [Errno 98] Address already in use
+lines 1-15/15 (END)
