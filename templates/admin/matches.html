@@ -478,9 +478,9 @@ function scrapeLiveScores() {
                             <td><a href="https://www.cricbuzz.com/cricket-series/${m.series_id}" target="_blank" title="${m.series_name}">${(m.series_name || '-').substring(0, 20)}...</a></td>
                             <td><a href="https://www.cricbuzz.com/live-cricket-scores/${m.match_id}" target="_blank">${m.match_id}</a></td>
                             <td class="team-cell">${m.team1_flag ? `<img src="${m.team1_flag}" class="team-flag" alt="">` : ''} ${m.team1_name || 'Team 1'}</td>
-                            <td class="score-cell">-</td>
+                            <td class="score-cell">${m.team1_score || '-'}</td>
                             <td class="team-cell">${m.team2_flag ? `<img src="${m.team2_flag}" class="team-flag" alt="">` : ''} ${m.team2_name || 'Team 2'}</td>
-                            <td class="score-cell">-</td>
+                            <td class="score-cell">${m.team2_score || '-'}</td>
                             <td class="status-cell status-completed">${m.state || 'Complete'}</td>
                             <td class="result-cell">${m.result || '-'}</td>
                             <td><button class="scrape-btn" onclick="scrapeScorecard('${m.match_id}', '${m.series_id}', this)">Scrape</button></td>
