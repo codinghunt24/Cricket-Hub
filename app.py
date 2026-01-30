@@ -3441,6 +3441,30 @@ def api_live_matches():
     except Exception as e:
         return jsonify({'success': False, 'matches': [], 'error': str(e)})
 
+@app.route('/api/match/<match_id>')
+def api_get_match_by_id(match_id):
+    try:
+        match = Match.query.filter_by(match_id=match_id).first()
+        if match:
+            return jsonify({
+                'success': True,
+                'match': {
+                    'match_id': match.match_id,
+                    'team1_name': match.team1_name,
+                    'team2_name': match.team2_name,
+                    'team1_score': match.team1_score,
+                    'team2_score': match.team2_score,
+                    'match_format': match.match_format,
+                    'series_name': match.series_name,
+                    'state': match.state,
+                    'result': match.result
+                }
+            })
+        else:
+            return jsonify({'success': False, 'match': None, 'message': 'Match not found'})
+    except Exception as e:
+        return jsonify({'success': False, 'match': None, 'error': str(e)})
+
 @app.route('/api/categories', methods=['POST'])
 def api_create_category():
     try:

@@ -41,6 +41,16 @@
                     <h3>Live Match Scorecard</h3>
                     <p class="info-text">Select a match to embed real-time scorecard in your post. Scorecard will update automatically when users view the post.</p>
                     
+                    <div class="manual-match-id">
+                        <div class="manual-id-input">
+                            <input type="text" id="manualMatchId" placeholder="Enter Match ID (e.g. 125025)">
+                            <button type="button" class="btn btn-secondary" id="searchMatchBtn">Search</button>
+                        </div>
+                        <div id="manualMatchResult" class="manual-match-result"></div>
+                    </div>
+                    
+                    <div class="divider-or"><span>OR</span></div>
+                    
                     <div class="match-type-selector">
                         <button type="button" class="match-type-btn" data-type="live">Live Matches</button>
                         <button type="button" class="match-type-btn" data-type="upcoming">Upcoming Matches</button>
@@ -246,6 +256,20 @@
 .loading { text-align: center; padding: 30px; color: #888; }
 .no-matches { text-align: center; padding: 30px; color: #888; font-style: italic; }
 
+.manual-match-id { margin-bottom: 15px; }
+.manual-id-input { display: flex; gap: 10px; }
+.manual-id-input input { flex: 1; padding: 12px; border: 2px solid var(--admin-border); border-radius: 6px; font-size: 14px; background: var(--admin-input-bg); color: var(--admin-text); }
+.manual-id-input input:focus { border-color: var(--admin-accent); outline: none; }
+.manual-id-input button { padding: 12px 20px; white-space: nowrap; }
+.manual-match-result { margin-top: 10px; }
+.manual-match-result .match-item { margin: 0; }
+.manual-match-result .not-found { padding: 15px; background: #7f1d1d; color: #fca5a5; border-radius: 6px; text-align: center; }
+.manual-match-result .searching { padding: 15px; color: var(--admin-text-muted); text-align: center; }
+
+.divider-or { display: flex; align-items: center; margin: 20px 0; color: var(--admin-text-muted); }
+.divider-or::before, .divider-or::after { content: ''; flex: 1; border-bottom: 1px solid var(--admin-border); }
+.divider-or span { padding: 0 15px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+
 @media (max-width: 1024px) {
     .form-layout { grid-template-columns: 1fr; }
 }
@@ -331,6 +355,69 @@ document.querySelectorAll('.match-type-btn').forEach(btn => {
 });
 
 loadMatches('recent');
+
+function searchMatchById() {
+    const matchId = document.getElementById('manualMatchId').value.trim();
+    const resultContainer = document.getElementById('manualMatchResult');
+    
+    if (!matchId) {
+        resultContainer.innerHTML = '<div class="not-found">Please enter a Match ID</div>';
+        return;
+    }
+    
+    resultContainer.innerHTML = '<div class="searching">Searching...</div>';
+    
+    fetch(`/api/match/${matchId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.match) {
+                const match = data.match;
+                const stateClass = match.state === 'Live' ? 'live' : (match.state === 'Upcoming' ? 'upcoming' : 'recent');
+                const stateLabel = match.state === 'Live' ? 'LIVE' : (match.state === 'Upcoming' ? 'UPCOMING' : 'RESULT');
+                
+                resultContainer.innerHTML = `
+                    <div class="match-item selected" data-match-id="${match.match_id}" data-match-title="${match.team1_name} vs ${match.team2_name}">
+                        <div class="teams">
+                            <div class="team">
+                                <strong>${match.team1_name || 'TBA'}</strong>
+                                <span>${match.team1_score || ''}</span>
+                            </div>
+                            <div class="vs">vs</div>
+                            <div class="team">
+                                <strong>${match.team2_name || 'TBA'}</strong>
+                                <span>${match.team2_score || ''}</span>
+                            </div>
+                            <div style="font-size:12px;color:#666;margin-top:5px;">${match.series_name || match.match_format || ''}</div>
+                        </div>
+                        <span class="status ${stateClass}">${stateLabel}</span>
+                    </div>
+                `;
+                
+                selectedMatchId = match.match_id;
+                document.getElementById('match_id').value = selectedMatchId;
+                document.getElementById('selectedMatchInfo').innerHTML = `
+                    <strong>Selected Match:</strong> ${match.team1_name} vs ${match.team2_name}<br>
+                    <small>Match ID: ${selectedMatchId} - Real-time scorecard will be shown in post</small>
+                `;
+                document.getElementById('selectedMatchInfo').classList.add('show');
+                
+                document.querySelectorAll('#matchesContainer .match-item').forEach(i => i.classList.remove('selected'));
+            } else {
+                resultContainer.innerHTML = '<div class="not-found">Match not found with this ID</div>';
+            }
+        })
+        .catch(err => {
+            resultContainer.innerHTML = '<div class="not-found">Error searching match</div>';
+        });
+}
+
+document.getElementById('searchMatchBtn').addEventListener('click', searchMatchById);
+document.getElementById('manualMatchId').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        searchMatchById();
+    }
+});
 
 function addKeyword(keyword) {
     keyword = keyword.trim();
