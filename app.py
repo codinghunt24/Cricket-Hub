@@ -367,7 +367,7 @@ def upsert_player(player_data, db_team_id):
         return new_player
 
 def get_team_flag_from_list(team_name, teams_list):
-    """Find team flag by partial name matching"""
+    """Find team flag by partial name matching - fallback to get_team_flag if not found in DB"""
     if not team_name:
         return None
     team_name_lower = team_name.lower().strip()
@@ -382,7 +382,10 @@ def get_team_flag_from_list(team_name, teams_list):
             return team.flag_url
         if team_name_lower.startswith(db_name.split()[0] if db_name else ''):
             return team.flag_url
-    return None
+    
+    # Fallback to get_team_flag dictionary lookup
+    flag = get_team_flag(team_name)
+    return flag if flag else None
 
 @app.route('/robots.txt')
 def robots_txt():
