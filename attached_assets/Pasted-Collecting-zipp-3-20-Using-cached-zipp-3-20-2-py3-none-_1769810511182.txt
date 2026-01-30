@@ -1,0 +1,29 @@
+Collecting zipp>=3.20
+  Using cached zipp-3.20.2-py3-none-any.whl (9.2 kB)
+Collecting greenlet>=1; platform_machine == "aarch64" or (platform_machine == "ppc64le" or (platform_machine == "x86_64" or (platform_machine == "amd64" or (platform_machine == "AMD64" or (platform_machine == "win32" or platform_machine == "WIN32")))))
+  Using cached greenlet-3.1.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (650 kB)
+Installing collected packages: click, blinker, zipp, importlib-metadata, MarkupSafe, werkzeug, Jinja2, itsdangerous, flask, greenlet, typing-extensions, sqlalchemy, flask-sqlalchemy, flask-login, packaging, gunicorn, psycopg2-binary, urllib3, certifi, idna, charset-normalizer, requests, soupsieve, beautifulsoup4, backports.zoneinfo, tzlocal, apscheduler, python-dotenv, lxml
+Successfully installed Jinja2-3.1.6 MarkupSafe-2.1.5 apscheduler-3.11.2 backports.zoneinfo-0.2.1 beautifulsoup4-4.14.3 blinker-1.8.2 certifi-2026.1.4 charset-normalizer-3.4.4 click-8.1.8 flask-3.0.3 flask-login-0.6.3 flask-sqlalchemy-3.1.1 greenlet-3.1.1 gunicorn-23.0.0 idna-3.11 importlib-metadata-8.5.0 itsdangerous-2.2.0 lxml-6.0.2 packaging-26.0 psycopg2-binary-2.9.10 python-dotenv-1.0.1 requests-2.32.4 soupsieve-2.7 sqlalchemy-2.0.46 typing-extensions-4.13.2 tzlocal-5.2 urllib3-2.2.3 werkzeug-3.0.6 zipp-3.20.2
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# # Service file बनाओ
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo nano /etc/systemd/system/cricketlive.service
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo systemctl daemon-reload
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo systemctl start cricketlive
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo systemctl enable cricketlive
+Created symlink /etc/systemd/system/multi-user.target.wants/cricketlive.service → /etc/systemd/system/cricketlive.service.
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo systemctl status cricketlive
+● cricketlive.service - CricketLive Flask Application
+     Loaded: loaded (/etc/systemd/system/cricketlive.service; enabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-01-30 23:01:33 CET; 1s ago
+   Main PID: 965209 (gunicorn)
+      Tasks: 1 (limit: 9493)
+     Memory: 11.5M
+     CGroup: /system.slice/cricketlive.service
+             └─965209 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 ->
+
+Jan 30 23:01:33 mail.digitalcash24.com systemd[1]: Started CricketLive Flask Application.
+Jan 30 23:01:33 mail.digitalcash24.com gunicorn[965209]: [2026-01-30 23:01:33 +0100] [965209] [INFO] Starting gunicorn 23.0.0
+Jan 30 23:01:33 mail.digitalcash24.com gunicorn[965209]: [2026-01-30 23:01:33 +0100] [965209] [ERROR] Connection in use: ('127.0.0.1', 8000)
+Jan 30 23:01:33 mail.digitalcash24.com gunicorn[965209]: [2026-01-30 23:01:33 +0100] [965209] [ERROR] connection to ('127.0.0.1', 8000) failed: [Errno 98] Address already in use
+Jan 30 23:01:34 mail.digitalcash24.com gunicorn[965209]: [2026-01-30 23:01:34 +0100] [965209] [ERROR] Connection in use: ('127.0.0.1', 8000)
+Jan 30 23:01:34 mail.digitalcash24.com gunicorn[965209]: [2026-01-30 23:01:34 +0100] [965209] [ERROR] connection to ('127.0.0.1', 8000) failed: [Errno 98] Address already in use
+lines 1-15/15 (END)
