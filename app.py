@@ -213,7 +213,7 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player, Match, LiveScoreScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting)
+init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player, Match, LiveScoreScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, MatchScrapeSetting)
 
 def upsert_series(series_data, category_id):
     """Insert or update series by series_id"""

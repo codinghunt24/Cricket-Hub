@@ -163,7 +163,7 @@ def run_daily_player_scrape(app, db, Team, Player, ScrapeLog, ScrapeSetting, scr
             db.session.add(log)
             db.session.commit()
 
-def init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player=None, Match=None, LiveScoreScrapeSetting=None, ProfileScrapeSetting=None, SeriesCategory=None, Series=None, SeriesScrapeSetting=None):
+def init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper, Player=None, Match=None, LiveScoreScrapeSetting=None, ProfileScrapeSetting=None, SeriesCategory=None, Series=None, SeriesScrapeSetting=None, MatchScrapeSetting=None):
     global scheduler_started
     
     if scheduler_started:
@@ -247,6 +247,22 @@ def init_scheduler(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scrape
                     print(f"[SCHEDULER] {ss.category_slug.title()} series scrape scheduled at {ss.scrape_time}")
                 except Exception as e:
                     print(f"[SCHEDULER] Error scheduling {ss.category_slug} series scrape: {e}")
+        
+        if MatchScrapeSetting and Match and Series and SeriesCategory:
+            match_setting = MatchScrapeSetting.query.first()
+            if match_setting and match_setting.auto_scrape_enabled:
+                from apscheduler.triggers.interval import IntervalTrigger
+                interval_hours = match_setting.interval_hours or 4
+                interval_seconds = interval_hours * 3600
+                
+                scheduler.add_job(
+                    func=lambda: run_category_matches_scrape(app, db, SeriesCategory, Series, Match, ScrapeLog, MatchScrapeSetting, scraper, 'all'),
+                    trigger=IntervalTrigger(seconds=interval_seconds),
+                    id='match_interval_scrape',
+                    replace_existing=True
+                )
+                
+                print(f"[SCHEDULER] Match auto-scrape scheduled (every {interval_hours}h)")
     
     scheduler.start()
     scheduler_started = True
