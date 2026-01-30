@@ -1,0 +1,89 @@
+ 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/bin/gunicorn", line 8, in <module>
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:     sys.exit(run())
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:     WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/app/base.py", line 235, in run
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:     super().run()
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/app/base.py", line 71, in run
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:     Arbiter(self).run()
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 228, in run
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:     self.halt(reason=inst.reason, exit_status=inst.exit_status)
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 341, in halt
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:     self.stop()
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 395, in stop
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:     time.sleep(0.1)
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 241, in handle_chld
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:     self.reap_workers()
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:   File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 529, in reap_workers
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]:     raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+Jan 31 00:48:59 mail.digitalcash24.com gunicorn[1268]: gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+Jan 31 00:48:59 mail.digitalcash24.com systemd[1]: cricketlive.service: Main process exited, code=exited, status=1/FAILURE
+Jan 31 00:48:59 mail.digitalcash24.com systemd[1]: cricketlive.service: Failed with result 'exit-code'.
+Jan 31 00:49:00 mail.digitalcash24.com systemd[1]: cricketlive.service: Scheduled restart job, restart counter is at 5.
+Jan 31 00:49:00 mail.digitalcash24.com systemd[1]: Stopped CricketLive Flask Application.
+Jan 31 00:49:00 mail.digitalcash24.com systemd[1]: cricketlive.service: Start request repeated too quickly.
+Jan 31 00:49:00 mail.digitalcash24.com systemd[1]: cricketlive.service: Failed with result 'exit-code'.
+Jan 31 00:49:00 mail.digitalcash24.com systemd[1]: Failed to start CricketLive Flask Application.
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# cd /home/digitalcash24/cricbuzz-live-score.com
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# source venv/bin/activate
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# export $(cat .env | xargs)
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# python3 -c "from app import app; print('OK')"
+DEBUG:tzlocal:/etc/timezone found, contents:
+ Europe/Berlin
+
+DEBUG:tzlocal:/etc/localtime found
+DEBUG:tzlocal:2 found:
+ {'/etc/timezone': 'Europe/Berlin', '/etc/localtime is a symlink to': 'Europe/Berlin'}
+Traceback (most recent call last):
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedColumn: column match_scrape_settings.interval_hours does not exist
+LINE 1: ...scrape_time AS match_scrape_settings_scrape_time, match_scra...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/home/digitalcash24/cricbuzz-live-score.com/app.py", line 164, in <module>
+    if not MatchScrapeSetting.query.filter_by(category_slug=slug).first():
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column match_scrape_settings.interval_hours does not exist
+LINE 1: ...scrape_time AS match_scrape_settings_scrape_time, match_scra...
+                                                             ^
+
+[SQL: SELECT match_scrape_settings.id AS match_scrape_settings_id, match_scrape_settings.category_slug AS match_scrape_settings_category_slug, match_scrape_settings.auto_scrape_enabled AS match_scrape_settings_auto_scrape_enabled, match_scrape_settings.scrape_time AS match_scrape_settings_scrape_time, match_scrape_settings.interval_hours AS match_scrape_settings_interval_hours, match_scrape_settings.last_scrape AS match_scrape_settings_last_scrape, match_scrape_settings.updated_at AS match_scrape_settings_updated_at 
+FROM match_scrape_settings 
+WHERE match_scrape_settings.category_slug = %(category_slug_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'category_slug_1': 'all', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
