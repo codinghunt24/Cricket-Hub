@@ -82,7 +82,29 @@ def get_team_flag(team_name):
     if not team_name:
         return ''
     team_lower = team_name.lower().strip()
-    return TEAM_FLAGS.get(team_lower, '')
+    # Direct match
+    if team_lower in TEAM_FLAGS:
+        return TEAM_FLAGS[team_lower]
+    # Partial match - check if any key is in the team name
+    for key in TEAM_FLAGS:
+        if key in team_lower or team_lower in key:
+            return TEAM_FLAGS[key]
+    # Try common abbreviations
+    abbrev_map = {
+        'in': 'india', 'ind-w': 'india', 'india women': 'india',
+        'au': 'australia', 'aus-w': 'australia', 'australia women': 'australia',
+        'en': 'england', 'eng-w': 'england', 'england women': 'england',
+        'pk': 'pakistan', 'pak-w': 'pakistan', 'pakistan women': 'pakistan',
+        'nz-w': 'new zealand', 'new zealand women': 'new zealand',
+        'sa-w': 'south africa', 'south africa women': 'south africa',
+        'wi-w': 'west indies', 'west indies women': 'west indies',
+        'sl-w': 'sri lanka', 'sri lanka women': 'sri lanka',
+        'ban-w': 'bangladesh', 'bangladesh women': 'bangladesh',
+        'afg-w': 'afghanistan', 'afghanistan women': 'afghanistan',
+    }
+    if team_lower in abbrev_map:
+        return TEAM_FLAGS.get(abbrev_map[team_lower], '')
+    return ''
 
 def normalize_score(score):
     """Normalize score to use slash format: 123/4 (5.2 Ov)"""
