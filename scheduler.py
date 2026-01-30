@@ -2,9 +2,27 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime
 import atexit
+import unicodedata
+import re
 
 scheduler = BackgroundScheduler()
 scheduler_started = False
+
+def generate_slug(text, existing_slugs=None):
+    """Generate SEO-friendly slug from text"""
+    if not text:
+        return None
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+    text = text.lower().strip()
+    text = re.sub(r'[^\w\s-]', '', text)
+    text = re.sub(r'[-\s]+', '-', text)
+    text = text.strip('-')
+    if existing_slugs and text in existing_slugs:
+        counter = 1
+        while f"{text}-{counter}" in existing_slugs:
+            counter += 1
+        text = f"{text}-{counter}"
+    return text
 
 def run_daily_scrape(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scraper):
     with app.app_context():
@@ -15,6 +33,7 @@ def run_daily_scrape(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scra
             
             total_teams = 0
             categories = TeamCategory.query.all()
+            existing_slugs = set(t.slug for t in Team.query.filter(Team.slug.isnot(None)).all())
             
             for category in categories:
                 result = scraper.scrape_category(category.slug)
@@ -26,10 +45,19 @@ def run_daily_scrape(app, db, TeamCategory, Team, ScrapeLog, ScrapeSetting, scra
                             existing.flag_url = team_data.get('flag_url')
                             existing.team_url = team_data.get('team_url')
                             existing.updated_at = datetime.utcnow()
+                            if not existing.slug and existing.name:
+                                existing.slug = generate_slug(existing.name, existing_slugs)
+                                if existing.slug:
+                                    existing_slugs.add(existing.slug)
                         else:
+                            team_name = team_data.get('name', '')
+                            new_slug = generate_slug(team_name, existing_slugs) if team_name else None
+                            if new_slug:
+                                existing_slugs.add(new_slug)
                             team = Team(
                                 team_id=team_data.get('team_id'),
-                                name=team_data['name'],
+                                name=team_name,
+                                slug=new_slug,
                                 flag_url=team_data.get('flag_url'),
                                 team_url=team_data.get('team_url'),
                                 category_id=category.id
@@ -72,6 +100,7 @@ def run_daily_player_scrape(app, db, Team, Player, ScrapeLog, ScrapeSetting, scr
             
             total_players = 0
             teams = Team.query.filter(Team.team_url.isnot(None)).all()
+            existing_player_slugs = set(p.slug for p in Player.query.filter(Player.slug.isnot(None)).all())
             
             for team in teams:
                 try:
@@ -84,10 +113,19 @@ def run_daily_player_scrape(app, db, Team, Player, ScrapeLog, ScrapeSetting, scr
                             existing.player_url = player_data.get('player_url')
                             existing.role = player_data.get('role')
                             existing.updated_at = datetime.utcnow()
+                            if not existing.slug and existing.name:
+                                existing.slug = generate_slug(existing.name, existing_player_slugs)
+                                if existing.slug:
+                                    existing_player_slugs.add(existing.slug)
                         else:
+                            player_name = player_data.get('name', '')
+                            new_slug = generate_slug(player_name, existing_player_slugs) if player_name else None
+                            if new_slug:
+                                existing_player_slugs.add(new_slug)
                             player = Player(
                                 player_id=player_data.get('player_id'),
-                                name=player_data['name'],
+                                name=player_name,
+                                slug=new_slug,
                                 photo_url=player_data.get('photo_url'),
                                 player_url=player_data.get('player_url'),
                                 role=player_data.get('role'),
@@ -264,6 +302,7 @@ def run_category_player_scrape(app, db, TeamCategory, Team, Player, ScrapeLog, S
             
             total_players = 0
             teams = Team.query.filter_by(category_id=category.id).filter(Team.team_url.isnot(None)).all()
+            existing_player_slugs = set(p.slug for p in Player.query.filter(Player.slug.isnot(None)).all())
             
             for team in teams:
                 try:
@@ -276,10 +315,19 @@ def run_category_player_scrape(app, db, TeamCategory, Team, Player, ScrapeLog, S
                             existing.player_url = player_data.get('player_url')
                             existing.role = player_data.get('role')
                             existing.updated_at = datetime.utcnow()
+                            if not existing.slug and existing.name:
+                                existing.slug = generate_slug(existing.name, existing_player_slugs)
+                                if existing.slug:
+                                    existing_player_slugs.add(existing.slug)
                         else:
+                            player_name = player_data.get('name', '')
+                            new_slug = generate_slug(player_name, existing_player_slugs) if player_name else None
+                            if new_slug:
+                                existing_player_slugs.add(new_slug)
                             player = Player(
                                 player_id=player_data.get('player_id'),
-                                name=player_data['name'],
+                                name=player_name,
+                                slug=new_slug,
                                 photo_url=player_data.get('photo_url'),
                                 player_url=player_data.get('player_url'),
                                 role=player_data.get('role'),
