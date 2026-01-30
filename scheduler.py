@@ -437,10 +437,17 @@ def run_live_score_scrape(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scr
                         existing.state = state_val
                     if match_data.get('match_format'):
                         existing.match_format = match_data.get('match_format')
+                    if match_data.get('series_name'):
+                        existing.series_name = match_data.get('series_name')
                     if match_data.get('match_url'):
                         existing.match_url = match_data.get('match_url')
                     if match_data.get('series_id'):
                         existing.cricbuzz_series_id = match_data.get('series_id')
+                    # Update team flags if available
+                    if match_data.get('team1_flag'):
+                        existing.team1_flag = match_data.get('team1_flag')
+                    if match_data.get('team2_flag'):
+                        existing.team2_flag = match_data.get('team2_flag')
                     existing.updated_at = datetime.utcnow()
                 else:
                     # Convert Preview to Upcoming for new matches
@@ -457,8 +464,11 @@ def run_live_score_scrape(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scr
                         result=match_data.get('result', ''),
                         state=new_state,
                         match_format=match_data.get('match_format', ''),
+                        series_name=match_data.get('series_name', ''),
                         match_url=match_data.get('match_url', ''),
-                        cricbuzz_series_id=match_data.get('series_id', '')
+                        cricbuzz_series_id=match_data.get('series_id', ''),
+                        team1_flag=match_data.get('team1_flag', ''),
+                        team2_flag=match_data.get('team2_flag', '')
                     )
                     db.session.add(new_match)
                 updated_count += 1

@@ -539,31 +539,28 @@ def generate_sitemap_response(pages):
 
 @app.route('/')
 def index():
-    # Scrape live data from Cricbuzz using new function that gets ALL matches from first container
-    scrape_result = scraper.scrape_live_scores()
+    # FAST: Read from database (cached by scheduler every 30 seconds)
+    # No live scraping on each page load - much faster!
+    matches = Match.query.filter(
+        Match.state.in_(['Live', 'In Progress', 'Stumps', 'Lunch', 'Tea', 'Drinks', 'Innings Break', 'Complete', 'Completed', 'Preview', 'Upcoming'])
+    ).order_by(
+        # Live matches first, then upcoming, then completed
+        db.case(
+            (Match.state.in_(['Live', 'In Progress']), 1),
+            (Match.state.in_(['Stumps', 'Lunch', 'Tea', 'Drinks', 'Innings Break']), 2),
+            (Match.state.in_(['Preview', 'Upcoming']), 3),
+            else_=4
+        ),
+        Match.updated_at.desc()
+    ).limit(20).all()
     
-    matches = []
+    # Build match_flags from database (team flags)
     match_flags = {}
-    
-    if scrape_result.get('success'):
-        # Convert scraped data to match format for template
-        for m in scrape_result.get('matches', []):
-            match_data = {
-                'match_id': m.get('match_id'),
-                'match_format': m.get('series_name', 'Match'),
-                'team1_name': m.get('team1_name', 'Team 1'),
-                'team2_name': m.get('team2_name', 'Team 2'),
-                'team1_score': m.get('team1_score', ''),
-                'team2_score': m.get('team2_score', ''),
-                'state': m.get('state', 'Live'),
-                'result': m.get('result', '')
-            }
-            matches.append(type('Match', (), match_data)())
-            
-            # Set flags
-            if m.get('match_id'):
-                match_flags[f"{m.get('match_id')}_1"] = m.get('team1_flag', '')
-                match_flags[f"{m.get('match_id')}_2"] = m.get('team2_flag', '')
+    for match in matches:
+        if match.team1_flag:
+            match_flags[f"{match.match_id}_1"] = match.team1_flag
+        if match.team2_flag:
+            match_flags[f"{match.match_id}_2"] = match.team2_flag
     
     recent_posts = Post.query.filter_by(is_published=True).order_by(Post.created_at.desc()).limit(10).all()
     
