@@ -416,11 +416,11 @@ def run_live_score_scrape(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scr
                 
                 existing = Match.query.filter_by(match_id=match_id).first()
                 if existing:
-                    # Update team names if provided
-                    if match_data.get('team1'):
-                        existing.team1_name = match_data.get('team1')
-                    if match_data.get('team2'):
-                        existing.team2_name = match_data.get('team2')
+                    # Update team names if provided (scraper uses team1_name/team2_name keys)
+                    if match_data.get('team1_name'):
+                        existing.team1_name = match_data.get('team1_name')
+                    if match_data.get('team2_name'):
+                        existing.team2_name = match_data.get('team2_name')
                     # Only update scores if new value is not empty (preserve existing scores)
                     if match_data.get('team1_score'):
                         existing.team1_score = match_data.get('team1_score')
@@ -450,9 +450,9 @@ def run_live_score_scrape(app, db, Match, ScrapeLog, LiveScoreScrapeSetting, scr
                     
                     new_match = Match(
                         match_id=match_id,
-                        team1_name=match_data.get('team1', ''),
+                        team1_name=match_data.get('team1_name', ''),
                         team1_score=match_data.get('team1_score', ''),
-                        team2_name=match_data.get('team2', ''),
+                        team2_name=match_data.get('team2_name', ''),
                         team2_score=match_data.get('team2_score', ''),
                         result=match_data.get('result', ''),
                         state=new_state,
