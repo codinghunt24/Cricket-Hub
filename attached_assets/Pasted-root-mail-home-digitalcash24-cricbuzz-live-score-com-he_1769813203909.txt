@@ -1,0 +1,122 @@
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# head -120 /home/digitalcash24/cricbuzz-live-score.com/templates/index.html
+{% extends 'base.html' %}
+
+{% block title %}Cricbuzz Live Score - Live Cricket Score, Today Match Score, Ball by Ball{% endblock %}
+
+{% block meta_description %}Get live cricket scores, today match live score, ball by ball commentary, IPL 2026 live, IND vs AUS live score, T20 World Cup, dream11 prediction, pitch report on Cricbuzz Live Score.{% endblock %}
+
+{% block meta_keywords %}live cricket score, today match live score, cricket live score, live score, ind vs aus, ind vs eng, ipl 2026 live score, t20 world cup live, cricket scorecard, ball by ball commentary, dream11 prediction, pitch report, playing 11, cricket match today{% endblock %}
+
+{% block og_title %}Cricbuzz Live Score - Live Cricket Score, Today Match{% endblock %}
+{% block og_description %}Get live cricket scores, today match live score, ball by ball commentary on Cricbuzz Live Score.{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "SportsOrganization",
+    "name": "Cricbuzz Live Score",
+    "url": "https://cricbuzz-live-score.com",
+    "sport": "Cricket",
+    "description": "Live cricket scores, ball by ball commentary, match updates, schedules, fixtures, points table and results."
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="matches-section">
+    {% if matches %}
+    <div class="match-category">
+        <div class="slider-wrapper">
+            <div class="matches-slider">
+                <div class="slider-track">
+                {% for match in matches %}
+                <div class="match-card" data-match-id="{{ match.match_id }}" onclick="loadScorecard('{{ match.match_id }}')">
+                    <div class="card-header">
+                        <span class="series-name">{{ match.series_name or match.match_format or 'Match' }}</span>
+                        <span class="status-badge {% if match.state in ['Live', 'In Progress'] %}live{% elif match.state in ['Stumps', 'Lunch', 'Tea', 'Drinks'] %}break{% elif match.state == 'Innings Break' %}innings{% elif match.state in ['Complete', 'Completed'] %}complete{% elif match.state == 'Preview' %}preview{% elif match.state == 'Abandon' %}abandon{% else %}upcoming{% endif %}">
+                            {{ match.state|upper if match.state else 'UPCOMING' }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="teams-container">
+                            <div class="team-row">
+                                {% if match_flags.get(match.match_id ~ '_1') %}
+                                <img src="{{ match_flags.get(match.match_id ~ '_1') }}" alt="" class="team-flag">
+                                {% else %}
+                                <span class="team-flag-placeholder"></span>
+                                {% endif %}
+                                <span class="team-name">{{ match.team1_name or 'Team 1' }}</span>
+                                <span class="team-score">{{ normalize_score(match.team1_score) or '' }}</span>
+                            </div>
+                            <div class="team-row">
+                                {% if match_flags.get(match.match_id ~ '_2') %}
+                                <img src="{{ match_flags.get(match.match_id ~ '_2') }}" alt="" class="team-flag">
+                                {% else %}
+                                <span class="team-flag-placeholder"></span>
+                                {% endif %}
+                                <span class="team-name">{{ match.team2_name or 'Team 2' }}</span>
+                                <span class="team-score">{{ normalize_score(match.team2_score) or '' }}</span>
+                            </div>
+                        </div>
+                        {% if match.result %}
+                        <div class="match-result {% if 'session' in match.result.lower() or 'lunch' in match.result.lower() or 'tea' in match.result.lower() or 'stumps' in match.result.lower() or 'break' in match.result.lower() %}result-session{% elif 'opt to' in match.result.lower() or 'delayed' in match.result.lower() %}result-toss{% elif 'won' in match.result.lower() or 'win' in match.result.lower() %}result-won{% elif 'need' in match.result.lower() %}result-need{% elif 'match starts' in match.result.lower() or 'start' in match.result.lower() %}result-upcoming{% endif %}">{{ match.result }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if not matches %}
+    <div class="no-matches">
+        <p>No matches available</p>
+        <p class="hint">Scrape live scores from Admin Panel</p>
+    </div>
+    {% endif %}
+</section>
+
+{% if series %}
+<section class="series-section">
+    <div class="series-container">
+        <div class="series-header">
+            <h3>Popular Series</h3>
+            <a href="/series" class="view-all-btn">View All <i class="fas fa-chevron-right"></i></a>
+        </div>
+        <div class="series-grid">
+            {% for s in series[:8] %}
+            <a href="/series/{{ s.slug or s.id }}" class="series-card">
+                <div class="series-name">{{ s.name }}</div>
+                {% if s.start_date %}
+                <div class="series-date">{{ s.start_date.strftime('%b %Y') if s.start_date else '' }}</div>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="main-container">
+    <div class="content-wrapper">
+        <!-- Recent News / Scorecard - Separate Box -->
+        <div class="news-box" id="content-box">
+            <div id="news-content">
+            <h3>Recent News</h3>
+            {% if recent_posts %}
+            <div class="news-grid">
+                {% for post in recent_posts %}
+                <a href="/post/{{ post.slug }}" class="news-card">
+                    {% if post.thumbnail %}
+                    <img src="{{ post.thumbnail }}" alt="{{ post.title }}" class="news-thumb">
+                    {% else %}
+                    <div class="news-thumb no-thumb"></div>
+                    {% endif %}
+                    <div class="news-info">
+                        <h4>{{ post.title }}</h4>
+                        <span class="news-date">{{ post.created_at.strftime('%b %d, %Y') }}</span>
+                    </div>
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
