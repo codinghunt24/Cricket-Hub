@@ -566,34 +566,35 @@ def generate_sitemap_response(pages):
 
 @app.route('/')
 def index():
-    # FAST: Read from database (cached by scheduler every 30 seconds)
-    # No live scraping on each page load - much faster!
-    matches = Match.query.filter(
-        Match.state.in_(['Live', 'In Progress', 'Stumps', 'Lunch', 'Tea', 'Drinks', 'Innings Break', 'Complete', 'Completed', 'Preview', 'Upcoming'])
-    ).order_by(
-        # Live matches first, then upcoming, then completed
-        db.case(
-            (Match.state.in_(['Live', 'In Progress']), 1),
-            (Match.state.in_(['Stumps', 'Lunch', 'Tea', 'Drinks', 'Innings Break']), 2),
-            (Match.state.in_(['Preview', 'Upcoming']), 3),
-            else_=4
-        ),
-        # T20 matches priority within each state
-        db.case(
-            (Match.match_format.ilike('%T20%'), 1),
-            (Match.match_format.ilike('%Twenty20%'), 1),
-            else_=2
-        ),
-        Match.updated_at.desc()
-    ).limit(20).all()
+    # Use same order as live-scores page - get from scraper
+    scrape_result = scraper.scrape_live_scores()
     
-    # Build match_flags from database (team flags)
+    matches = []
     match_flags = {}
-    for match in matches:
-        if match.team1_flag:
-            match_flags[f"{match.match_id}_1"] = match.team1_flag
-        if match.team2_flag:
-            match_flags[f"{match.match_id}_2"] = match.team2_flag
+    
+    if scrape_result.get('success'):
+        for m in scrape_result.get('matches', [])[:20]:
+            # Get match from database to include slug
+            db_match = Match.query.filter_by(match_id=str(m.get('match_id'))).first()
+            match_data = {
+                'match_id': m.get('match_id'),
+                'slug': db_match.slug if db_match else None,
+                'match_format': m.get('series_name', 'Match'),
+                'team1_name': m.get('team1_name', 'Team 1'),
+                'team2_name': m.get('team2_name', 'Team 2'),
+                'team1_score': m.get('team1_score', ''),
+                'team2_score': m.get('team2_score', ''),
+                'state': m.get('state', 'Live'),
+                'result': m.get('result', ''),
+                'team1_flag': m.get('team1_flag', ''),
+                'team2_flag': m.get('team2_flag', '')
+            }
+            matches.append(type('Match', (), match_data)())
+            
+            if m.get('team1_flag'):
+                match_flags[f"{m.get('match_id')}_1"] = m.get('team1_flag')
+            if m.get('team2_flag'):
+                match_flags[f"{m.get('match_id')}_2"] = m.get('team2_flag')
     
     recent_posts = Post.query.filter_by(is_published=True).order_by(Post.created_at.desc()).limit(10).all()
     
