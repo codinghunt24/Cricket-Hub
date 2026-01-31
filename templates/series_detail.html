@@ -53,7 +53,7 @@
         {% if matches %}
         <div class="matches-list">
             {% for match in matches %}
-            <a href="{{ url_for('match_detail', match_id=match.match_id) }}" class="match-item-link">
+            <a href="/cricket-match/{{ match.slug or match.match_id }}" class="match-item-link">
                 <div class="match-item">
                     <div class="match-date-bar">
                         <i class="far fa-calendar-alt"></i> {{ match.match_date or 'TBD' }}
