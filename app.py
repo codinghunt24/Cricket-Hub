@@ -578,6 +578,12 @@ def index():
             (Match.state.in_(['Preview', 'Upcoming']), 3),
             else_=4
         ),
+        # T20 matches priority within each state
+        db.case(
+            (Match.match_format.ilike('%T20%'), 1),
+            (Match.match_format.ilike('%Twenty20%'), 1),
+            else_=2
+        ),
         Match.updated_at.desc()
     ).limit(20).all()
     
