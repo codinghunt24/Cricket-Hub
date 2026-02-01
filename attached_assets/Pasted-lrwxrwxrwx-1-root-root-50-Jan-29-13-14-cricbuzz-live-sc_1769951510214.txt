@@ -1,0 +1,29 @@
+lrwxrwxrwx 1 root root   50 Jan 29 13:14 cricbuzz-live-score.com -> /etc/nginx/sites-available/cricbuzz-live-score.com
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo systemctl restart nginx
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo systemctl status cricketlive.service
+● cricketlive.service - CricketLive Flask Application
+     Loaded: loaded (/etc/systemd/system/cricketlive.service; enabled; vendor preset: enabled)
+     Active: active (running) since Sat 2026-01-31 18:44:03 CET; 19h ago
+   Main PID: 534926 (gunicorn)
+      Tasks: 16 (limit: 9493)
+     Memory: 399.5M
+     CGroup: /system.slice/cricketlive.service
+             ├─534926 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 ->
+             ├─534935 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 ->
+             ├─534943 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 ->
+             └─534944 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-live-score.com/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 ->
+
+Feb 01 14:11:04 mail.digitalcash24.com gunicorn[534943]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Feb 01 14:11:05 mail.digitalcash24.com gunicorn[534943]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 67796
+Feb 01 14:11:05 mail.digitalcash24.com gunicorn[534935]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 67796
+Feb 01 14:11:05 mail.digitalcash24.com gunicorn[534944]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 67905
+Feb 01 14:11:05 mail.digitalcash24.com gunicorn[534943]: INFO:scraper:Live Scores: Found 18 matches in first container
+Feb 01 14:11:05 mail.digitalcash24.com gunicorn[534943]: INFO:apscheduler.executors.default:Job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02->
+Feb 01 14:11:05 mail.digitalcash24.com gunicorn[534935]: INFO:scraper:Live Scores: Found 18 matches in first container
+Feb 01 14:11:05 mail.digitalcash24.com gunicorn[534944]: INFO:scraper:Live Scores: Found 18 matches in first container
+Feb 01 14:11:05 mail.digitalcash24.com gunicorn[534935]: INFO:apscheduler.executors.default:Job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02->
+Feb 01 14:11:05 mail.digitalcash24.com gunicorn[534944]: INFO:apscheduler.executors.default:Job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02->
+lines 1-22/22 (END)
