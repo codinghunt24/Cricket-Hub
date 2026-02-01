@@ -1,0 +1,63 @@
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# # ZesleCP का nginx config देखो
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# cat /etc/nginx/nginx.conf | grep -A 20 "server {"
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# # या sites-enabled में और क्या है
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# ls -la /etc/nginx/sites-enabled/
+total 8
+drwxr-xr-x 2 root root 4096 Jan 29 13:14 .
+drwxr-xr-x 7 root root 4096 Dec  1 19:44 ..
+lrwxrwxrwx 1 root root   50 Jan 29 13:14 cricbuzz-live-score.com -> /etc/nginx/sites-available/cricbuzz-live-score.com
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# # ZesleCP vhost config check करो
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# cat /etc/nginx/conf.d/*.conf 2>/dev/null | head -50
+server {
+    #listen 80 default_server;
+    listen [::]:80 default_server ipv6only=off;
+
+    server_name localhost;
+
+    set $http_redirect 0;
+    if ($host ~ "^(zeslecp|webmail)\.") {
+        set $http_redirect 1;
+    }
+
+    if ($request_uri ~ "/.well-known/acme-challenge") {
+        set $http_redirect 0;
+    }
+
+    if ($http_redirect) {
+        return 301 https://$host;
+    }
+
+    # deny all; # DO NOT REMOVE OR CHANGE THIS LINE - Used when ZesleCP is disabled to block Nginx from becoming an open proxy
+
+    # Set the port for HTTP proxying
+    set $PROXY_TO_PORT 8080;
+
+    include conf.d/includes-optional/zesle-proxy-http.conf;
+    include conf.d/static-locations/zesle-static-locations.conf;
+    include conf.d/server-includes/*.conf;
+
+    location = /nginx_status {
+        stub_status;
+        access_log off;
+        log_not_found off;
+        # Uncomment the following 2 lines to make the Nginx status page private.
+        # If you do this and you have Munin installed, graphs for Nginx will stop working.
+        allow 127.0.0.1;
+        deny all;
+    }
+
+    location = /server-status {
+        proxy_pass http://127.0.0.1:8080; # Apache Status Page
+        # Comment the following 2 lines to make the Apache status page public
+        allow 127.0.0.1;
+        deny all;
+    }
+
+    location /terminal-ws {
+        # Any request to this server will first be sent to this URL
+        proxy_ssl_server_name on;
+        proxy_connect_timeout 7d;
+        proxy_send_timeout 7d;
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
