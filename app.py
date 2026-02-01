@@ -3728,6 +3728,48 @@ def api_upload_file():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/api/generate-thumbnail', methods=['POST'])
+def api_generate_thumbnail():
+    import uuid
+    try:
+        data = request.get_json()
+        title = data.get('title', 'Match')
+        match_id = data.get('match_id')
+        
+        team1 = "Team 1"
+        team2 = "Team 2"
+        match_format = "Match"
+        team1_flag = None
+        team2_flag = None
+        
+        if match_id:
+            match = Match.query.filter_by(match_id=match_id).first()
+            if match:
+                team1 = match.team1_name or "Team 1"
+                team2 = match.team2_name or "Team 2"
+                match_format = match.match_format or "Match"
+                team1_flag = getattr(match, 'team1_flag', None)
+                team2_flag = getattr(match, 'team2_flag', None)
+        else:
+            if ' vs ' in title.lower():
+                parts = title.split(' vs ')
+                if len(parts) >= 2:
+                    team1 = parts[0].strip().split()[-1] if parts[0].strip() else "Team 1"
+                    team2 = parts[1].strip().split()[0] if parts[1].strip() else "Team 2"
+        
+        from thumbnail_generator import generate_thumbnail
+        
+        filename = f"thumb_{uuid.uuid4().hex[:8]}.png"
+        output_path = os.path.join(app.static_folder, 'thumbnails', filename)
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        
+        generate_thumbnail(team1, team2, match_format, team1_flag, team2_flag, output_path)
+        
+        url = f"/static/thumbnails/{filename}"
+        return jsonify({'success': True, 'url': url})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/post/<slug>')
 def view_post(slug):
     post = Post.query.filter_by(slug=slug, is_published=True).first_or_404()

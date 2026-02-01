@@ -344,12 +344,30 @@
                 
                 <div class="card">
                     <h3>Thumbnail</h3>
+                    <div class="thumb-mode-toggle">
+                        <button type="button" class="thumb-mode-btn active" data-mode="upload">
+                            <i class="fas fa-upload"></i> Upload
+                        </button>
+                        <button type="button" class="thumb-mode-btn" data-mode="auto">
+                            <i class="fas fa-magic"></i> Auto Generate
+                        </button>
+                    </div>
                     <div class="thumbnail-preview" id="thumbPreview">
                         <span>No image selected</span>
                     </div>
                     <input type="file" id="thumbnailFile" accept="image/*" style="display:none">
                     <input type="hidden" id="thumbnail" name="thumbnail">
-                    <button type="button" class="btn btn-secondary btn-block" onclick="document.getElementById('thumbnailFile').click()">Upload Image</button>
+                    <div id="uploadThumbSection">
+                        <button type="button" class="btn btn-secondary btn-block" onclick="document.getElementById('thumbnailFile').click()">
+                            <i class="fas fa-image"></i> Choose Image
+                        </button>
+                    </div>
+                    <div id="autoThumbSection" style="display:none;">
+                        <p class="info-text-sm">Thumbnail will be auto-generated using match teams and title.</p>
+                        <button type="button" class="btn btn-success btn-block" id="generateThumbBtn">
+                            <i class="fas fa-bolt"></i> Generate Thumbnail
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="card">
@@ -487,6 +505,12 @@
 
 .thumbnail-preview { width: 100%; height: 150px; background: var(--admin-input-bg); border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; overflow: hidden; border: 1px solid var(--admin-border); }
 .thumbnail-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+.thumb-mode-toggle { display: flex; gap: 5px; margin-bottom: 10px; }
+.thumb-mode-btn { flex: 1; padding: 8px; border: 2px solid var(--admin-border); background: var(--admin-card); color: var(--admin-text); border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+.thumb-mode-btn:hover { border-color: var(--admin-accent); }
+.thumb-mode-btn.active { background: var(--admin-accent); color: #fff; border-color: var(--admin-accent); }
+.info-text-sm { font-size: 12px; color: var(--admin-text-muted); margin-bottom: 10px; padding: 8px; background: var(--admin-input-bg); border-radius: 4px; }
 
 .loading { text-align: center; padding: 30px; color: #888; }
 .no-matches { text-align: center; padding: 30px; color: #888; font-style: italic; }
@@ -742,6 +766,55 @@ document.getElementById('thumbnailFile').addEventListener('change', async functi
     } catch (err) {
         alert('Upload error: ' + err.message);
     }
+});
+
+document.querySelectorAll('.thumb-mode-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.thumb-mode-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        const mode = this.dataset.mode;
+        if (mode === 'upload') {
+            document.getElementById('uploadThumbSection').style.display = 'block';
+            document.getElementById('autoThumbSection').style.display = 'none';
+        } else {
+            document.getElementById('uploadThumbSection').style.display = 'none';
+            document.getElementById('autoThumbSection').style.display = 'block';
+        }
+    });
+});
+
+document.getElementById('generateThumbBtn').addEventListener('click', async function() {
+    const title = document.getElementById('title').value;
+    const matchId = document.getElementById('match_id').value;
+    
+    if (!title) {
+        alert('Please enter post title first');
+        return;
+    }
+    
+    this.disabled = true;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    
+    try {
+        const res = await fetch('/api/generate-thumbnail', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: title, match_id: matchId })
+        });
+        const result = await res.json();
+        if (result.success) {
+            document.getElementById('thumbnail').value = result.url;
+            document.getElementById('thumbPreview').innerHTML = `<img src="${result.url}" alt="">`;
+        } else {
+            alert(result.message || 'Generation failed');
+        }
+    } catch (err) {
+        alert('Generation error: ' + err.message);
+    }
+    
+    this.disabled = false;
+    this.innerHTML = '<i class="fas fa-bolt"></i> Generate Thumbnail';
 });
 
 document.getElementById('autoPostForm').addEventListener('submit', async function(e) {
