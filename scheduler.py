@@ -892,6 +892,13 @@ def run_auto_post_job(app, db, Match, Post, PostCategory, AutoPostSetting, AutoP
                         slug = f"{original_slug}-{counter}"
                         counter += 1
                     
+                    thumbnail_url = None
+                    try:
+                        from thumbnail_generator import generate_thumbnail_for_match
+                        thumbnail_url = generate_thumbnail_for_match(match)
+                    except Exception as thumb_err:
+                        print(f"[SCHEDULER] Thumbnail error: {thumb_err}")
+                    
                     post = Post(
                         title=post_data['title'],
                         slug=slug,
@@ -899,7 +906,8 @@ def run_auto_post_job(app, db, Match, Post, PostCategory, AutoPostSetting, AutoP
                         meta_title=post_data['meta_title'],
                         meta_keywords=post_data['keywords'],
                         category_id=setting.category_id,
-                        is_published=setting.auto_publish
+                        is_published=setting.auto_publish,
+                        thumbnail=thumbnail_url
                     )
                     db.session.add(post)
                     db.session.flush()
