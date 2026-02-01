@@ -3693,6 +3693,7 @@ def api_update_post(post_id):
 def api_delete_post(post_id):
     try:
         post = Post.query.get_or_404(post_id)
+        AutoPostLog.query.filter_by(post_id=post_id).update({'post_id': None})
         db.session.delete(post)
         db.session.commit()
         return jsonify({'success': True})
