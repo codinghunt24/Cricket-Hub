@@ -3743,26 +3743,26 @@ def get_captains_from_squads(match_id):
         if squads.get('team1', {}).get('captain_id'):
             captain_id = squads['team1']['captain_id']
             player = Player.query.filter_by(player_id=captain_id).first()
-            if player and player.image_url:
-                team1_captain_url = player.image_url
+            if player and player.photo_url:
+                team1_captain_url = player.photo_url
             else:
                 captain_name = squads['team1'].get('captain')
                 if captain_name:
                     player = Player.query.filter(Player.name.ilike(f"%{captain_name}%")).first()
-                    if player and player.image_url:
-                        team1_captain_url = player.image_url
+                    if player and player.photo_url:
+                        team1_captain_url = player.photo_url
         
         if squads.get('team2', {}).get('captain_id'):
             captain_id = squads['team2']['captain_id']
             player = Player.query.filter_by(player_id=captain_id).first()
-            if player and player.image_url:
-                team2_captain_url = player.image_url
+            if player and player.photo_url:
+                team2_captain_url = player.photo_url
             else:
                 captain_name = squads['team2'].get('captain')
                 if captain_name:
                     player = Player.query.filter(Player.name.ilike(f"%{captain_name}%")).first()
-                    if player and player.image_url:
-                        team2_captain_url = player.image_url
+                    if player and player.photo_url:
+                        team2_captain_url = player.photo_url
         
         return team1_captain_url, team2_captain_url
     except Exception as e:

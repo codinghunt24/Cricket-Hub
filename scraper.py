@@ -795,45 +795,59 @@ def scrape_match_squads(match_id):
         'team2': {'name': None, 'captain': None, 'captain_id': None, 'players': []}
     }
     
-    team_sections = soup.find_all('div', class_=re.compile(r'cb-col.*cb-col-100'))
+    title_tag = soup.find('title')
+    if title_tag:
+        title_text = title_tag.get_text(strip=True)
+        vs_match = re.search(r'(\w[\w\s]+?)\s+vs\s+(\w[\w\s]+?),', title_text)
+        if vs_match:
+            result['team1']['name'] = vs_match.group(1).strip()
+            result['team2']['name'] = vs_match.group(2).strip()
     
-    current_team = None
-    team_count = 0
+    player_links = soup.find_all('a', href=re.compile(r'/profiles/\d+/'))
     
-    for section in soup.find_all(['div', 'a']):
-        if section.name == 'a' and '/cricket-team/' in section.get('href', ''):
-            team_name = section.get_text(strip=True)
-            if team_name and len(team_name) > 2:
-                if team_count == 0:
-                    result['team1']['name'] = team_name
-                    current_team = 'team1'
-                    team_count = 1
-                elif team_count == 1 and team_name != result['team1']['name']:
-                    result['team2']['name'] = team_name
-                    current_team = 'team2'
-                    team_count = 2
+    team1_found = False
+    for link in player_links:
+        player_text = link.get_text(strip=True)
+        player_href = link.get('href', '')
         
-        if section.name == 'a' and '/profiles/' in section.get('href', ''):
-            player_text = section.get_text(strip=True)
-            player_href = section.get('href', '')
-            
-            player_id_match = re.search(r'/profiles/(\d+)/', player_href)
-            player_id = player_id_match.group(1) if player_id_match else None
-            
-            is_captain = '(C)' in player_text or '(c)' in player_text
-            clean_name = re.sub(r'\s*\([CcWwKk]+\)\s*', '', player_text).strip()
-            
-            if current_team and clean_name:
-                player_data = {
-                    'name': clean_name,
-                    'player_id': player_id,
-                    'is_captain': is_captain
-                }
-                result[current_team]['players'].append(player_data)
-                
-                if is_captain:
-                    result[current_team]['captain'] = clean_name
-                    result[current_team]['captain_id'] = player_id
+        if not player_text or 'Batter' not in player_text and 'Bowler' not in player_text and 'Allrounder' not in player_text and 'WK' not in player_text:
+            continue
+        
+        player_id_match = re.search(r'/profiles/(\d+)/', player_href)
+        player_id = player_id_match.group(1) if player_id_match else None
+        
+        is_captain = '(C)' in player_text
+        
+        name_match = re.match(r'^([A-Za-z\s\-\'\.]+?)(?:\(C\)|\(WK\))?(?:Batting Allrounder|Bowling Allrounder|Batter|Bowler|WK-Batter)', player_text)
+        if name_match:
+            clean_name = name_match.group(1).strip()
+        else:
+            clean_name = re.sub(r'\(C\)|\(WK\)|Batting Allrounder|Bowling Allrounder|Batter|Bowler|WK-Batter', '', player_text).strip()
+        
+        if not clean_name:
+            continue
+        
+        current_team = 'team1' if not team1_found or len(result['team1']['players']) < 15 else 'team2'
+        
+        if is_captain:
+            if not result['team1']['captain']:
+                current_team = 'team1'
+                team1_found = True
+            else:
+                current_team = 'team2'
+        
+        player_data = {
+            'name': clean_name,
+            'player_id': player_id,
+            'is_captain': is_captain
+        }
+        result[current_team]['players'].append(player_data)
+        
+        if is_captain:
+            result[current_team]['captain'] = clean_name
+            result[current_team]['captain_id'] = player_id
+            if current_team == 'team1':
+                team1_found = True
     
     logger.info(f"Squads scraped for match {match_id}: Team1={result['team1']['name']} Captain={result['team1']['captain']}, Team2={result['team2']['name']} Captain={result['team2']['captain']}")
     
