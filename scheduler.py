@@ -4,6 +4,7 @@ from datetime import datetime
 import atexit
 import unicodedata
 import re
+import os
 
 scheduler = BackgroundScheduler()
 scheduler_started = False
@@ -835,7 +836,7 @@ def generate_auto_post_content(match):
         'content': content
     }
 
-def run_auto_post_job(app, db, Match, Post, PostCategory, AutoPostSetting, AutoPostLog):
+def run_auto_post_job(app, db, Match, Post, PostCategory, AutoPostSetting, AutoPostLog, Player=None):
     """Run auto post job - create posts for tomorrow's matches"""
     with app.app_context():
         try:
@@ -917,12 +918,16 @@ def run_auto_post_job(app, db, Match, Post, PostCategory, AutoPostSetting, AutoP
                         try:
                             squads = scrape_match_squads(match.match_id)
                             if squads and squads.get('success'):
+                                if Player is None:
+                                    from models import Player as PlayerModel
+                                else:
+                                    PlayerModel = Player
                                 if squads.get('team1', {}).get('captain_id'):
-                                    captain = Player.query.filter_by(player_id=squads['team1']['captain_id']).first()
+                                    captain = PlayerModel.query.filter_by(player_id=squads['team1']['captain_id']).first()
                                     if captain and captain.photo_url:
                                         team1_captain_url = captain.photo_url
                                 if squads.get('team2', {}).get('captain_id'):
-                                    captain = Player.query.filter_by(player_id=squads['team2']['captain_id']).first()
+                                    captain = PlayerModel.query.filter_by(player_id=squads['team2']['captain_id']).first()
                                     if captain and captain.photo_url:
                                         team2_captain_url = captain.photo_url
                         except Exception as cap_err:
