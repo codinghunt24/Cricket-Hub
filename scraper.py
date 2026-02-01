@@ -775,6 +775,71 @@ def scrape_series_from_live_page():
     return {'success': True, 'series': series_list, 'count': len(series_list), 'message': f'Found {len(series_list)} series with {total_matches} matches'}
 
 
+def scrape_match_squads(match_id):
+    """
+    Scrape match squads to get captain info.
+    URL: https://www.cricbuzz.com/cricket-match-squads/{match_id}
+    Returns both teams' players with captain marked as (C)
+    """
+    url = f"{BASE_URL}/cricket-match-squads/{match_id}"
+    html = fetch_page(url)
+    
+    if not html:
+        return {'success': False, 'match_id': match_id, 'message': 'Failed to fetch squads page'}
+    
+    soup = BeautifulSoup(html, 'html.parser')
+    
+    result = {
+        'match_id': match_id,
+        'team1': {'name': None, 'captain': None, 'captain_id': None, 'players': []},
+        'team2': {'name': None, 'captain': None, 'captain_id': None, 'players': []}
+    }
+    
+    team_sections = soup.find_all('div', class_=re.compile(r'cb-col.*cb-col-100'))
+    
+    current_team = None
+    team_count = 0
+    
+    for section in soup.find_all(['div', 'a']):
+        if section.name == 'a' and '/cricket-team/' in section.get('href', ''):
+            team_name = section.get_text(strip=True)
+            if team_name and len(team_name) > 2:
+                if team_count == 0:
+                    result['team1']['name'] = team_name
+                    current_team = 'team1'
+                    team_count = 1
+                elif team_count == 1 and team_name != result['team1']['name']:
+                    result['team2']['name'] = team_name
+                    current_team = 'team2'
+                    team_count = 2
+        
+        if section.name == 'a' and '/profiles/' in section.get('href', ''):
+            player_text = section.get_text(strip=True)
+            player_href = section.get('href', '')
+            
+            player_id_match = re.search(r'/profiles/(\d+)/', player_href)
+            player_id = player_id_match.group(1) if player_id_match else None
+            
+            is_captain = '(C)' in player_text or '(c)' in player_text
+            clean_name = re.sub(r'\s*\([CcWwKk]+\)\s*', '', player_text).strip()
+            
+            if current_team and clean_name:
+                player_data = {
+                    'name': clean_name,
+                    'player_id': player_id,
+                    'is_captain': is_captain
+                }
+                result[current_team]['players'].append(player_data)
+                
+                if is_captain:
+                    result[current_team]['captain'] = clean_name
+                    result[current_team]['captain_id'] = player_id
+    
+    logger.info(f"Squads scraped for match {match_id}: Team1={result['team1']['name']} Captain={result['team1']['captain']}, Team2={result['team2']['name']} Captain={result['team2']['captain']}")
+    
+    return {'success': True, **result}
+
+
 def scrape_scorecard(match_id):
     """
     Scrape scorecard/match info for a match.

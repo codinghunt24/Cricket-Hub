@@ -3728,34 +3728,46 @@ def api_upload_file():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
-def get_captain_from_scorecard(match_id, team_name):
-    """Get captain image URL from scorecard by detecting (c) in player name"""
+def get_captains_from_squads(match_id):
+    """Get both captains' image URLs from match squads page"""
     try:
-        from scraper import scrape_scorecard
-        scorecard = scrape_scorecard(match_id)
+        from scraper import scrape_match_squads
+        squads = scrape_match_squads(match_id)
         
-        if not scorecard or not scorecard.get('innings'):
-            return None
+        if not squads or not squads.get('success'):
+            return None, None
         
-        for innings in scorecard.get('innings', []):
-            inn_team = innings.get('team_name', '').lower()
-            if team_name.lower() in inn_team or inn_team in team_name.lower():
-                for batter in innings.get('batting', []):
-                    player_name = batter.get('player', '')
-                    if '(c)' in player_name:
-                        player_id = batter.get('player_id')
-                        if player_id:
-                            player = Player.query.filter_by(player_id=player_id).first()
-                            if player and player.image_url:
-                                return player.image_url
-                        clean_name = player_name.replace('(c)', '').replace('(wk)', '').strip()
-                        player = Player.query.filter(Player.name.ilike(f"%{clean_name}%")).first()
-                        if player and player.image_url:
-                            return player.image_url
-        return None
+        team1_captain_url = None
+        team2_captain_url = None
+        
+        if squads.get('team1', {}).get('captain_id'):
+            captain_id = squads['team1']['captain_id']
+            player = Player.query.filter_by(player_id=captain_id).first()
+            if player and player.image_url:
+                team1_captain_url = player.image_url
+            else:
+                captain_name = squads['team1'].get('captain')
+                if captain_name:
+                    player = Player.query.filter(Player.name.ilike(f"%{captain_name}%")).first()
+                    if player and player.image_url:
+                        team1_captain_url = player.image_url
+        
+        if squads.get('team2', {}).get('captain_id'):
+            captain_id = squads['team2']['captain_id']
+            player = Player.query.filter_by(player_id=captain_id).first()
+            if player and player.image_url:
+                team2_captain_url = player.image_url
+            else:
+                captain_name = squads['team2'].get('captain')
+                if captain_name:
+                    player = Player.query.filter(Player.name.ilike(f"%{captain_name}%")).first()
+                    if player and player.image_url:
+                        team2_captain_url = player.image_url
+        
+        return team1_captain_url, team2_captain_url
     except Exception as e:
-        logging.error(f"Error getting captain from scorecard: {e}")
-        return None
+        logging.error(f"Error getting captains from squads: {e}")
+        return None, None
 
 @app.route('/api/generate-thumbnail', methods=['POST'])
 def api_generate_thumbnail():
@@ -3782,10 +3794,12 @@ def api_generate_thumbnail():
                 team1_flag = getattr(match, 'team1_flag', None)
                 team2_flag = getattr(match, 'team2_flag', None)
                 
-                if not team1_captain_url:
-                    team1_captain_url = get_captain_from_scorecard(match_id, team1)
-                if not team2_captain_url:
-                    team2_captain_url = get_captain_from_scorecard(match_id, team2)
+                if not team1_captain_url or not team2_captain_url:
+                    cap1_url, cap2_url = get_captains_from_squads(match_id)
+                    if not team1_captain_url:
+                        team1_captain_url = cap1_url
+                    if not team2_captain_url:
+                        team2_captain_url = cap2_url
                 
                 if not team1_captain_url or not team2_captain_url:
                     team1_obj = Team.query.filter(Team.name.ilike(f"%{team1}%")).first()
