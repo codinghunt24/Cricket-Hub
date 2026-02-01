@@ -124,7 +124,7 @@ def utility_processor():
     return dict(get_team_flag=get_team_flag, normalize_score=normalize_score)
 
 from models import init_models
-TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect, SiteSettings, PushSubscription, NotificationLog = init_models(db)
+TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect, SiteSettings, PushSubscription, NotificationLog, AutoPostSetting, AutoPostLog = init_models(db)
 
 import scraper
 from scheduler import init_scheduler, update_schedule, update_player_schedule, update_category_profile_schedule, update_category_series_schedule, update_category_matches_schedule
@@ -3455,7 +3455,50 @@ def admin_post_edit(post_id):
 @admin_required
 def admin_auto_post():
     categories = PostCategory.query.order_by(PostCategory.name).all()
-    return render_template('admin/auto_post.html', categories=categories)
+    setting = AutoPostSetting.query.first()
+    logs = AutoPostLog.query.order_by(AutoPostLog.created_at.desc()).limit(50).all()
+    return render_template('admin/auto_post.html', categories=categories, setting=setting, logs=logs)
+
+@app.route('/admin/auto-post/scheduler', methods=['POST'])
+@admin_required
+def admin_auto_post_scheduler():
+    try:
+        setting = AutoPostSetting.query.first()
+        if not setting:
+            setting = AutoPostSetting()
+            db.session.add(setting)
+        
+        setting.is_enabled = request.form.get('is_enabled') == 'on'
+        setting.schedule_hour = int(request.form.get('schedule_hour', 1))
+        setting.schedule_minute = int(request.form.get('schedule_minute', 0))
+        setting.days_ahead = int(request.form.get('days_ahead', 1))
+        setting.auto_publish = request.form.get('auto_publish') == 'on'
+        category_id = request.form.get('category_id')
+        setting.category_id = int(category_id) if category_id else None
+        
+        db.session.commit()
+        
+        from scheduler import update_auto_post_schedule
+        update_auto_post_schedule(app, db, Match, Post, PostCategory, AutoPostSetting, AutoPostLog)
+        
+        flash('Auto Post Scheduler settings saved successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error saving settings: {str(e)}', 'error')
+    
+    return redirect(url_for('admin_auto_post'))
+
+@app.route('/admin/auto-post/run-now', methods=['POST'])
+@admin_required
+def admin_auto_post_run_now():
+    try:
+        from scheduler import run_auto_post_now
+        posts_created = run_auto_post_now(app, db, Match, Post, PostCategory, AutoPostSetting, AutoPostLog)
+        flash(f'Auto Post ran successfully! {posts_created} posts created.', 'success')
+    except Exception as e:
+        flash(f'Error running auto post: {str(e)}', 'error')
+    
+    return redirect(url_for('admin_auto_post'))
 
 @app.route('/api/live-matches')
 def api_live_matches():

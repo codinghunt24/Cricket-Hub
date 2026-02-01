@@ -788,3 +788,192 @@ def update_category_matches_schedule(app, db, SeriesCategory, Series, Match, Scr
         print(f"[SCHEDULER] {category.title()} matches scrape scheduled at {scrape_time}")
     else:
         print(f"[SCHEDULER] {category.title()} matches scrape disabled")
+
+def generate_auto_post_content(match):
+    """Generate content for auto post"""
+    team1 = match.team1_name or 'Team 1'
+    team2 = match.team2_name or 'Team 2'
+    match_format = match.match_format or 'Match'
+    series = match.series_name or ''
+    venue = match.venue or ''
+    
+    title = f"{team1} vs {team2} Today Live Match - {match_format}"
+    if series:
+        title += f" | {series}"
+    
+    meta_title = title[:60] if len(title) > 60 else title
+    
+    keywords = f"{team1}, {team2}, {team1} vs {team2}, live score, {match_format}"
+    if series:
+        keywords += f", {series}"
+    
+    slug = generate_slug(f"{team1}-vs-{team2}-{match_format}")
+    
+    content = f"""<h2>{team1} vs {team2} Live Score</h2>
+<p>Get live updates for the exciting {match_format} match between {team1} and {team2}.</p>
+"""
+    if series:
+        content += f"<p><strong>Series:</strong> {series}</p>\n"
+    if venue:
+        content += f"<p><strong>Venue:</strong> {venue}</p>\n"
+    
+    content += f"""
+<h3>Match Details</h3>
+<ul>
+<li><strong>Teams:</strong> {team1} vs {team2}</li>
+<li><strong>Format:</strong> {match_format}</li>
+</ul>
+
+<p>Stay tuned for ball-by-ball updates and live commentary!</p>
+"""
+    
+    return {
+        'title': title,
+        'meta_title': meta_title,
+        'keywords': keywords,
+        'slug': slug,
+        'content': content
+    }
+
+def run_auto_post_job(app, db, Match, Post, PostCategory, AutoPostSetting, AutoPostLog):
+    """Run auto post job - create posts for tomorrow's matches"""
+    with app.app_context():
+        try:
+            setting = AutoPostSetting.query.first()
+            if not setting or not setting.is_enabled:
+                return 0
+            
+            from datetime import timedelta
+            import pytz
+            
+            ist = pytz.timezone('Asia/Kolkata')
+            now_ist = datetime.now(ist)
+            target_date = now_ist.date() + timedelta(days=setting.days_ahead)
+            
+            upcoming_matches = Match.query.filter(
+                Match.state.in_(['upcoming', 'Upcoming', 'UPCOMING'])
+            ).all()
+            
+            tomorrow_matches = []
+            for m in upcoming_matches:
+                if m.match_date:
+                    try:
+                        if isinstance(m.match_date, str):
+                            match_date = datetime.strptime(m.match_date.split()[0], '%Y-%m-%d').date()
+                        else:
+                            match_date = m.match_date.date() if hasattr(m.match_date, 'date') else m.match_date
+                        
+                        if match_date == target_date:
+                            tomorrow_matches.append(m)
+                    except:
+                        pass
+            
+            posts_created = 0
+            existing_slugs = set(p.slug for p in Post.query.filter(Post.slug.isnot(None)).all())
+            
+            for match in tomorrow_matches:
+                try:
+                    post_data = generate_auto_post_content(match)
+                    
+                    slug = post_data['slug']
+                    if slug in existing_slugs:
+                        log = AutoPostLog(
+                            match_id=match.match_id,
+                            match_title=post_data['title'],
+                            status='skipped',
+                            message='Post with similar slug already exists'
+                        )
+                        db.session.add(log)
+                        continue
+                    
+                    counter = 1
+                    original_slug = slug
+                    while slug in existing_slugs:
+                        slug = f"{original_slug}-{counter}"
+                        counter += 1
+                    
+                    post = Post(
+                        title=post_data['title'],
+                        slug=slug,
+                        content=post_data['content'],
+                        meta_title=post_data['meta_title'],
+                        meta_keywords=post_data['keywords'],
+                        category_id=setting.category_id,
+                        is_published=setting.auto_publish
+                    )
+                    db.session.add(post)
+                    db.session.flush()
+                    
+                    existing_slugs.add(slug)
+                    
+                    log = AutoPostLog(
+                        match_id=match.match_id,
+                        post_id=post.id,
+                        match_title=post_data['title'],
+                        status='success',
+                        message=f'Post created: {post.title}'
+                    )
+                    db.session.add(log)
+                    posts_created += 1
+                    
+                except Exception as e:
+                    log = AutoPostLog(
+                        match_id=match.match_id,
+                        match_title=f"{match.team1_name} vs {match.team2_name}",
+                        status='error',
+                        message=str(e)
+                    )
+                    db.session.add(log)
+            
+            setting.last_run = datetime.utcnow()
+            setting.last_run_status = 'success'
+            setting.posts_created_last_run = posts_created
+            
+            db.session.commit()
+            print(f"[SCHEDULER] Auto Post: {posts_created} posts created for {target_date}")
+            return posts_created
+            
+        except Exception as e:
+            print(f"[SCHEDULER] Auto Post error: {e}")
+            try:
+                setting = AutoPostSetting.query.first()
+                if setting:
+                    setting.last_run = datetime.utcnow()
+                    setting.last_run_status = f'error: {str(e)}'
+                    db.session.commit()
+            except:
+                pass
+            return 0
+
+def run_auto_post_now(app, db, Match, Post, PostCategory, AutoPostSetting, AutoPostLog):
+    """Manually run auto post"""
+    return run_auto_post_job(app, db, Match, Post, PostCategory, AutoPostSetting, AutoPostLog)
+
+def update_auto_post_schedule(app, db, Match, Post, PostCategory, AutoPostSetting, AutoPostLog):
+    """Update auto post scheduler"""
+    global scheduler
+    job_id = 'auto_post_daily'
+    
+    try:
+        scheduler.remove_job(job_id)
+    except:
+        pass
+    
+    with app.app_context():
+        setting = AutoPostSetting.query.first()
+        if setting and setting.is_enabled:
+            utc_hour = (setting.schedule_hour - 5) % 24
+            if setting.schedule_minute >= 30:
+                utc_hour = (setting.schedule_hour - 6) % 24
+            utc_minute = (setting.schedule_minute - 30) % 60
+            
+            scheduler.add_job(
+                func=lambda: run_auto_post_job(app, db, Match, Post, PostCategory, AutoPostSetting, AutoPostLog),
+                trigger=CronTrigger(hour=utc_hour, minute=utc_minute),
+                id=job_id,
+                replace_existing=True
+            )
+            
+            print(f"[SCHEDULER] Auto Post scheduled at {setting.schedule_hour:02d}:{setting.schedule_minute:02d} IST")
+        else:
+            print("[SCHEDULER] Auto Post disabled")

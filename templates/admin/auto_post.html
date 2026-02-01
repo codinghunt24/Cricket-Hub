@@ -7,8 +7,117 @@
 <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 
 <div class="auto-post-container">
+    <!-- Daily Scheduler Section -->
+    <div class="card scheduler-card">
+        <h3><i class="fas fa-clock"></i> Daily Auto Post Scheduler</h3>
+        <p class="info-text">Schedule automatic posts for tomorrow's matches at a specific time daily.</p>
+        
+        <form action="{{ url_for('admin_auto_post_scheduler') }}" method="POST" class="scheduler-form">
+            <div class="scheduler-grid">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="is_enabled" {% if setting and setting.is_enabled %}checked{% endif %}>
+                        Enable Daily Scheduler
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label>Schedule Time (IST)</label>
+                    <div class="time-inputs">
+                        <select name="schedule_hour" class="time-select">
+                            {% for h in range(24) %}
+                            <option value="{{ h }}" {% if setting and setting.schedule_hour == h %}selected{% endif %}>{{ '%02d'|format(h) }}</option>
+                            {% endfor %}
+                        </select>
+                        <span>:</span>
+                        <select name="schedule_minute" class="time-select">
+                            {% for m in range(0, 60, 5) %}
+                            <option value="{{ m }}" {% if setting and setting.schedule_minute == m %}selected{% endif %}>{{ '%02d'|format(m) }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Days Ahead</label>
+                    <select name="days_ahead" class="form-control">
+                        <option value="1" {% if setting and setting.days_ahead == 1 %}selected{% endif %}>Tomorrow (+1 day)</option>
+                        <option value="2" {% if setting and setting.days_ahead == 2 %}selected{% endif %}>Day after (+2 days)</option>
+                        <option value="0" {% if setting and setting.days_ahead == 0 %}selected{% endif %}>Today (same day)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Category</label>
+                    <select name="category_id" class="form-control">
+                        <option value="">-- No Category --</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if setting and setting.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="auto_publish" {% if not setting or setting.auto_publish %}checked{% endif %}>
+                        Auto Publish Posts
+                    </label>
+                </div>
+            </div>
+            
+            <div class="scheduler-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
+                <button type="button" class="btn btn-success" onclick="runNow()">
+                    <i class="fas fa-play"></i> Run Now
+                </button>
+            </div>
+            
+            {% if setting and setting.last_run %}
+            <div class="last-run-info">
+                <small>
+                    Last Run: {{ setting.last_run.strftime('%d %b %Y, %H:%M') }} UTC | 
+                    Status: {{ setting.last_run_status or 'N/A' }} | 
+                    Posts Created: {{ setting.posts_created_last_run }}
+                </small>
+            </div>
+            {% endif %}
+        </form>
+        
+        {% if logs and logs|length > 0 %}
+        <div class="scheduler-logs">
+            <h4><i class="fas fa-history"></i> Recent Logs</h4>
+            <div class="logs-table-container">
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Match</th>
+                            <th>Status</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs[:10] %}
+                        <tr class="log-{{ log.status }}">
+                            <td>{{ log.created_at.strftime('%d/%m %H:%M') }}</td>
+                            <td>{{ log.match_title[:40] if log.match_title else 'N/A' }}...</td>
+                            <td><span class="status-badge {{ log.status }}">{{ log.status }}</span></td>
+                            <td>{{ log.message[:50] if log.message else '' }}...</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <hr style="margin: 30px 0; border-color: #333;">
+    
     <div class="card mode-toggle-card">
-        <h3>Post Mode</h3>
+        <h3>Manual Post Mode</h3>
         <div class="mode-toggle">
             <button type="button" class="mode-btn active" data-mode="manual">
                 <i class="fas fa-edit"></i> Manual
@@ -257,6 +366,30 @@
 <style>
 .auto-post-container { padding: 20px; }
 .form-layout { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+
+.scheduler-card { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); border: 2px solid #3b82f6; }
+.scheduler-card h3 { color: #60a5fa; border-color: #3b82f6; }
+.scheduler-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+.time-inputs { display: flex; align-items: center; gap: 5px; }
+.time-select { padding: 8px; background: var(--admin-input-bg); border: 1px solid var(--admin-border); border-radius: 4px; color: var(--admin-text); min-width: 60px; }
+.scheduler-actions { display: flex; gap: 10px; margin-bottom: 15px; }
+.btn-success { background: #16a34a; color: #fff; }
+.btn-success:hover { background: #15803d; }
+.last-run-info { padding: 10px; background: rgba(0,0,0,0.2); border-radius: 4px; margin-top: 15px; }
+.last-run-info small { color: #94a3b8; }
+.scheduler-logs { margin-top: 20px; padding-top: 20px; border-top: 1px solid #334155; }
+.scheduler-logs h4 { color: #60a5fa; margin-bottom: 15px; }
+.logs-table-container { max-height: 250px; overflow-y: auto; }
+.logs-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.logs-table th, .logs-table td { padding: 8px; text-align: left; border-bottom: 1px solid #334155; }
+.logs-table th { background: rgba(0,0,0,0.3); color: #94a3b8; }
+.logs-table .log-success td { color: #4ade80; }
+.logs-table .log-error td { color: #f87171; }
+.logs-table .log-skipped td { color: #fbbf24; }
+.status-badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.status-badge.success { background: #166534; color: #4ade80; }
+.status-badge.error { background: #7f1d1d; color: #f87171; }
+.status-badge.skipped { background: #78350f; color: #fbbf24; }
 
 .mode-toggle-card { margin-bottom: 20px; }
 .mode-toggle { display: flex; gap: 10px; margin-bottom: 15px; }
@@ -882,5 +1015,17 @@ document.getElementById('createAutoPostBtn').addEventListener('click', async fun
 const tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 1);
 document.getElementById('autoMatchDate').valueAsDate = tomorrow;
+
+function runNow() {
+    if (!confirm('This will create posts for all matches scheduled for the target date. Continue?')) {
+        return;
+    }
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ url_for("admin_auto_post_run_now") }}';
+    document.body.appendChild(form);
+    form.submit();
+}
 </script>
 {% endblock %}

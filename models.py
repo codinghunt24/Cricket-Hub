@@ -390,4 +390,30 @@ def init_models(db):
         failed_count = db.Column(db.Integer, default=0)
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect, SiteSettings, PushSubscription, NotificationLog
+    class AutoPostSetting(db.Model):
+        __tablename__ = 'auto_post_settings'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        is_enabled = db.Column(db.Boolean, default=False)
+        schedule_hour = db.Column(db.Integer, default=1)  # Hour in 24h format (IST)
+        schedule_minute = db.Column(db.Integer, default=0)
+        days_ahead = db.Column(db.Integer, default=1)  # Create posts for matches X days ahead
+        auto_publish = db.Column(db.Boolean, default=True)
+        category_id = db.Column(db.Integer, db.ForeignKey('post_categories.id'), nullable=True)
+        last_run = db.Column(db.DateTime, nullable=True)
+        last_run_status = db.Column(db.String(50), nullable=True)
+        posts_created_last_run = db.Column(db.Integer, default=0)
+        updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    class AutoPostLog(db.Model):
+        __tablename__ = 'auto_post_logs'
+        
+        id = db.Column(db.Integer, primary_key=True)
+        match_id = db.Column(db.String(50), nullable=True)
+        post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=True)
+        match_title = db.Column(db.String(300), nullable=True)
+        status = db.Column(db.String(50), default='success')
+        message = db.Column(db.Text, nullable=True)
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    return TeamCategory, Team, Player, ScrapeLog, ScrapeSetting, ProfileScrapeSetting, SeriesCategory, Series, SeriesScrapeSetting, Match, MatchScrapeSetting, LiveScoreScrapeSetting, PostCategory, Post, AdminUser, Page, Redirect, SiteSettings, PushSubscription, NotificationLog, AutoPostSetting, AutoPostLog
