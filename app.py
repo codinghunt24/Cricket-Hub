@@ -3784,6 +3784,8 @@ def api_generate_thumbnail():
         match_format = "Match"
         team1_flag = None
         team2_flag = None
+        venue = None
+        series_name = None
         
         if match_id:
             match = Match.query.filter_by(match_id=match_id).first()
@@ -3793,6 +3795,8 @@ def api_generate_thumbnail():
                 match_format = match.match_format or "Match"
                 team1_flag = getattr(match, 'team1_flag', None)
                 team2_flag = getattr(match, 'team2_flag', None)
+                venue = getattr(match, 'venue', None)
+                series_name = getattr(match, 'series_name', None)
                 
                 if not team1_captain_url or not team2_captain_url:
                     cap1_url, cap2_url = get_captains_from_squads(match_id)
@@ -3814,7 +3818,7 @@ def api_generate_thumbnail():
         output_path = os.path.join(app.static_folder, 'thumbnails', filename)
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         
-        generate_thumbnail(team1, team2, match_format, team1_flag, team2_flag, output_path, team1_captain_url, team2_captain_url)
+        generate_thumbnail(team1, team2, match_format, team1_flag, team2_flag, output_path, team1_captain_url, team2_captain_url, venue, series_name)
         
         url = f"/static/thumbnails/{filename}"
         return jsonify({'success': True, 'url': url})
