@@ -3801,19 +3801,6 @@ def api_generate_thumbnail():
                     if not team2_captain_url:
                         team2_captain_url = cap2_url
                 
-                if not team1_captain_url or not team2_captain_url:
-                    team1_obj = Team.query.filter(Team.name.ilike(f"%{team1}%")).first()
-                    team2_obj = Team.query.filter(Team.name.ilike(f"%{team2}%")).first()
-                    
-                    if team1_obj and team1_obj.captain_id and not team1_captain_url:
-                        captain1 = Player.query.get(team1_obj.captain_id)
-                        if captain1:
-                            team1_captain_url = captain1.image_url
-                    
-                    if team2_obj and team2_obj.captain_id and not team2_captain_url:
-                        captain2 = Player.query.get(team2_obj.captain_id)
-                        if captain2:
-                            team2_captain_url = captain2.image_url
         else:
             if ' vs ' in title.lower():
                 parts = title.split(' vs ')
