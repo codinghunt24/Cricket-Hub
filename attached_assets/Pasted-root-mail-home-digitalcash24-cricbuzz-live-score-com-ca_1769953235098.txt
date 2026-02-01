@@ -1,0 +1,23 @@
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# cat /etc/httpd/conf/httpd.conf 2>/dev/null | grep -i documentroot
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# cat /etc/apache2/sites-enabled/*.conf 2>/dev/null | grep -i documentroot
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# # या ZesleCP httpd config
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# find /usr/local/zesle -name "*.conf" 2>/dev/null | xargs grep -l "cricbuzz" 2>/dev/null
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# cat /usr/local/zesle/conf/httpd.conf 2>/dev/null | head -50
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# # httpd कहाँ से चल रहा है
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# ps aux | grep httpd | head -5
+root     1086873  0.0  0.1  16592  9948 ?        Ss   13:18   0:00 /usr/sbin/httpd -k start
+nobody   1086876  0.0  0.1  18528 12004 ?        S    13:18   0:01 /usr/sbin/httpd -k start
+nobody   1086877  0.0  0.1  18544 12020 ?        S    13:18   0:01 /usr/sbin/httpd -k start
+nobody   1086878  0.0  0.1  18540 12204 ?        S    13:18   0:01 /usr/sbin/httpd -k start
+nobody   1086879  0.0  0.1  18536 12016 ?        S    13:18   0:01 /usr/sbin/httpd -k start
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# # httpd config file path
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# cat /etc/apache2/apache2.conf 2>/dev/null | grep -i include | head -10
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# # ZesleCP vhosts देखो
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# ls /etc/apache2/sites-enabled/ 2>/dev/null
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# ls /home/digitalcash24/
+api.codinghunt.in          codinghunt.in            instapaisa.net        lodhasamaj.in  mail                    public_html           sattaking.com.im          zestmony.com
+backup_old_project.tar.gz  cricbuzz-live-score.com  jj-communication.com  logs           mail.digitalcash24.com  sarkariresult.com.kg  server.digitalcash24.com
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
