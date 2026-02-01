@@ -918,10 +918,7 @@ def run_auto_post_job(app, db, Match, Post, PostCategory, AutoPostSetting, AutoP
                         try:
                             squads = scrape_match_squads(match.match_id)
                             if squads and squads.get('success'):
-                                if Player is None:
-                                    from models import Player as PlayerModel
-                                else:
-                                    PlayerModel = Player
+                                from app import Player as PlayerModel
                                 if squads.get('team1', {}).get('captain_id'):
                                     captain = PlayerModel.query.filter_by(player_id=squads['team1']['captain_id']).first()
                                     if captain and captain.photo_url:
