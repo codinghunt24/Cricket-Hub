@@ -1,0 +1,106 @@
+Location: /home/digitalcash24/cricbuzz-live-score.com/venv/lib/python3.8/site-packages
+Requires: 
+Required-by: 
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# sudo journalctl -u cricketlive.service -n 100 --no-pager
+-- Logs begin at Mon 2025-11-10 12:47:14 CET, end at Sun 2026-02-01 19:13:30 CET. --
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268009]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268009]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268009]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268009]: INFO:apscheduler.scheduler:Scheduler started
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268009]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268009]: DEBUG:apscheduler.scheduler:Next wakeup is due at 2026-02-01 19:12:45.499617+01:00 (in 29.971509 seconds)
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.scheduler:Scheduler started
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268008]: DEBUG:apscheduler.scheduler:Next wakeup is due at 2026-02-01 19:12:45.596371+01:00 (in 29.986305 seconds)
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Added job "init_scheduler.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.scheduler:Scheduler started
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Feb 01 19:12:15 mail.digitalcash24.com gunicorn[1268010]: DEBUG:apscheduler.scheduler:Next wakeup is due at 2026-02-01 19:12:45.656899+01:00 (in 29.987185 seconds)
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268009]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268009]: INFO:apscheduler.executors.default:Running job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02-01 19:12:45 CET)" (scheduled at 2026-02-01 19:12:45.499617+01:00)
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268009]: DEBUG:apscheduler.scheduler:Next wakeup is due at 2026-02-01 19:13:15.499617+01:00 (in 29.997849 seconds)
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268009]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268008]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.executors.default:Running job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02-01 19:12:45 CET)" (scheduled at 2026-02-01 19:12:45.596371+01:00)
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268008]: DEBUG:apscheduler.scheduler:Next wakeup is due at 2026-02-01 19:13:15.596371+01:00 (in 29.997979 seconds)
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268008]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268010]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.executors.default:Running job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02-01 19:12:45 CET)" (scheduled at 2026-02-01 19:12:45.656899+01:00)
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268010]: DEBUG:apscheduler.scheduler:Next wakeup is due at 2026-02-01 19:13:15.656899+01:00 (in 29.992657 seconds)
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268010]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268010]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 61200
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268009]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 61200
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268010]: INFO:scraper:Live Scores: Found 11 matches in first container
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268009]: INFO:scraper:Live Scores: Found 11 matches in first container
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.executors.default:Job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02-01 19:13:15 CET)" executed successfully
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268009]: INFO:apscheduler.executors.default:Job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02-01 19:13:15 CET)" executed successfully
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268008]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 61200
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268008]: INFO:scraper:Live Scores: Found 11 matches in first container
+Feb 01 19:12:45 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.executors.default:Job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02-01 19:13:15 CET)" executed successfully
+Feb 01 19:12:49 mail.digitalcash24.com gunicorn[1268009]: INFO:apscheduler.scheduler:Added job "update_auto_post_schedule.<locals>.<lambda>" to job store "default"
+Feb 01 19:12:49 mail.digitalcash24.com gunicorn[1268009]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Feb 01 19:12:49 mail.digitalcash24.com gunicorn[1268009]: DEBUG:apscheduler.scheduler:Next wakeup is due at 2026-02-01 19:13:15.499617+01:00 (in 25.731840 seconds)
+Feb 01 19:12:56 mail.digitalcash24.com gunicorn[1268010]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Feb 01 19:12:56 mail.digitalcash24.com gunicorn[1268010]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 61148
+Feb 01 19:12:56 mail.digitalcash24.com gunicorn[1268010]: INFO:scraper:Live Scores: Found 11 matches in first container
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268009]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268009]: DEBUG:apscheduler.scheduler:Next wakeup is due at 2026-02-01 19:13:45.499617+01:00 (in 29.998863 seconds)
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268009]: INFO:apscheduler.executors.default:Running job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02-01 19:13:45 CET)" (scheduled at 2026-02-01 19:13:15.499617+01:00)
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268009]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268008]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268008]: DEBUG:apscheduler.scheduler:Next wakeup is due at 2026-02-01 19:13:45.596371+01:00 (in 29.996791 seconds)
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.executors.default:Running job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02-01 19:13:45 CET)" (scheduled at 2026-02-01 19:13:15.596371+01:00)
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268008]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268010]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268010]: DEBUG:apscheduler.scheduler:Next wakeup is due at 2026-02-01 19:13:45.656899+01:00 (in 29.996673 seconds)
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.executors.default:Running job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02-01 19:13:45 CET)" (scheduled at 2026-02-01 19:13:15.656899+01:00)
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268010]: DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.cricbuzz.com:443
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268009]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 61200
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268009]: INFO:scraper:Live Scores: Found 11 matches in first container
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268009]: INFO:apscheduler.executors.default:Job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02-01 19:13:45 CET)" executed successfully
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268008]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 61200
+Feb 01 19:13:15 mail.digitalcash24.com gunicorn[1268010]: DEBUG:urllib3.connectionpool:https://www.cricbuzz.com:443 "GET /cricket-match/live-scores HTTP/11" 200 61200
+Feb 01 19:13:16 mail.digitalcash24.com gunicorn[1268008]: INFO:scraper:Live Scores: Found 11 matches in first container
+Feb 01 19:13:16 mail.digitalcash24.com gunicorn[1268008]: INFO:apscheduler.executors.default:Job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02-01 19:13:45 CET)" executed successfully
+Feb 01 19:13:16 mail.digitalcash24.com gunicorn[1268010]: INFO:scraper:Live Scores: Found 11 matches in first container
+Feb 01 19:13:16 mail.digitalcash24.com gunicorn[1268010]: INFO:apscheduler.executors.default:Job "init_scheduler.<locals>.<lambda> (trigger: interval[0:00:30], next run at: 2026-02-01 19:13:45 CET)" executed successfully
+(venv) root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
