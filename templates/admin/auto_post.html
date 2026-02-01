@@ -749,13 +749,14 @@ function generateAutoPostData(match) {
     const team2 = match.team2_name || 'Team2';
     const format = match.match_format || 'Match';
     const series = match.series_name || '';
+    const venue = match.venue || '';
     
     const team1Short = team1.substring(0, 3).toUpperCase();
     const team2Short = team2.substring(0, 3).toUpperCase();
     
-    const title = `${team1} vs ${team2} Live Score Today - ${format} Dream11 Prediction`;
-    const metaTitle = `${team1Short} vs ${team2Short} Live Score | Dream11 Team Today Match`;
-    const slug = `${team1.toLowerCase().replace(/\s+/g, '-')}-vs-${team2.toLowerCase().replace(/\s+/g, '-')}-live-score-dream11`;
+    const title = `${team1} vs ${team2} Today Live Match - ${format}${venue ? ' • ' + venue : ''}`;
+    const metaTitle = `${team1} vs ${team2} Live Score | ${format} Today Match`;
+    const slug = `${team1.toLowerCase().replace(/\s+/g, '-')}-vs-${team2.toLowerCase().replace(/\s+/g, '-')}-${format.toLowerCase().replace(/\s+/g, '-')}-live-score`;
     
     const keywordsList = [
         `${team1} vs ${team2} live score`,
