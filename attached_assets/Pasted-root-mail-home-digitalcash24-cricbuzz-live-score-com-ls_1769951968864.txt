@@ -1,0 +1,84 @@
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# ls /etc/nginx/conf.d/
+default.conf  domains  domains.conf  includes-optional  server-includes  static-locations
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# cat /etc/nginx/conf.d/default.conf | head -80
+server {
+    #listen 80 default_server;
+    listen [::]:80 default_server ipv6only=off;
+
+    server_name localhost;
+
+    set $http_redirect 0;
+    if ($host ~ "^(zeslecp|webmail)\.") {
+        set $http_redirect 1;
+    }
+
+    if ($request_uri ~ "/.well-known/acme-challenge") {
+        set $http_redirect 0;
+    }
+
+    if ($http_redirect) {
+        return 301 https://$host;
+    }
+
+    # deny all; # DO NOT REMOVE OR CHANGE THIS LINE - Used when ZesleCP is disabled to block Nginx from becoming an open proxy
+
+    # Set the port for HTTP proxying
+    set $PROXY_TO_PORT 8080;
+
+    include conf.d/includes-optional/zesle-proxy-http.conf;
+    include conf.d/static-locations/zesle-static-locations.conf;
+    include conf.d/server-includes/*.conf;
+
+    location = /nginx_status {
+        stub_status;
+        access_log off;
+        log_not_found off;
+        # Uncomment the following 2 lines to make the Nginx status page private.
+        # If you do this and you have Munin installed, graphs for Nginx will stop working.
+        allow 127.0.0.1;
+        deny all;
+    }
+
+    location = /server-status {
+        proxy_pass http://127.0.0.1:8080; # Apache Status Page
+        # Comment the following 2 lines to make the Apache status page public
+        allow 127.0.0.1;
+        deny all;
+    }
+
+    location /terminal-ws {
+        # Any request to this server will first be sent to this URL
+        proxy_ssl_server_name on;
+        proxy_connect_timeout 7d;
+        proxy_send_timeout 7d;
+        proxy_read_timeout 7d;
+
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $host;
+
+        proxy_pass http://127.0.0.1:2086$request_uri;
+    }
+}
+
+server {
+    #listen 443 ssl http2 default_server;
+    listen [::]:443 ssl http2 default_server ipv6only=off;
+    server_name localhost;
+
+    # deny all; # DO NOT REMOVE OR CHANGE THIS LINE - Used when ZesleCP is disabled to block Nginx from becoming an open proxy
+
+    ssl_certificate /var/zesle/ssl/zeslesrv/fullchain.pem;
+    ssl_certificate_key /var/zesle/ssl/zeslesrv/privkey.pem;
+
+    # OCSP Stapling
+    #ssl_trusted_certificate /var/zesle/ssl/zeslesrv/fullchain.pem;
+    #ssl_stapling on;
+    #ssl_stapling_verify on;
+
+    include conf.d/includes-optional/zesle-proxy-https.conf;
+    include conf.d/static-locations/zesle-static-locations.conf;
+    include conf.d/server-includes/*.conf;
+
+root@mail:/home/digitalcash24/cricbuzz-live-score.com# 
