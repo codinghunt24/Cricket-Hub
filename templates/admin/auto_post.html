@@ -55,6 +55,10 @@
                     <span id="previewMetaTitle"></span>
                 </div>
                 <div class="preview-item">
+                    <label>Series:</label>
+                    <span id="previewSeries"></span>
+                </div>
+                <div class="preview-item">
                     <label>Keywords:</label>
                     <span id="previewKeywords"></span>
                 </div>
@@ -770,6 +774,7 @@ function generateAutoPostData(match) {
     
     document.getElementById('previewTitle').textContent = title;
     document.getElementById('previewMetaTitle').textContent = metaTitle;
+    document.getElementById('previewSeries').textContent = series || '(No series data)';
     document.getElementById('previewSlug').textContent = slug;
     document.getElementById('previewKeywords').textContent = keywordsList.slice(0, 5).join(', ');
     
