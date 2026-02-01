@@ -894,8 +894,44 @@ def run_auto_post_job(app, db, Match, Post, PostCategory, AutoPostSetting, AutoP
                     
                     thumbnail_url = None
                     try:
-                        from thumbnail_generator import generate_thumbnail_for_match
-                        thumbnail_url = generate_thumbnail_for_match(match)
+                        from thumbnail_generator import generate_thumbnail
+                        from scraper import scrape_match_squads
+                        import uuid
+                        
+                        team1_captain_url = None
+                        team2_captain_url = None
+                        
+                        try:
+                            squads = scrape_match_squads(match.match_id)
+                            if squads and squads.get('success'):
+                                if squads.get('team1', {}).get('captain_id'):
+                                    captain = Player.query.filter_by(player_id=squads['team1']['captain_id']).first()
+                                    if captain and captain.photo_url:
+                                        team1_captain_url = captain.photo_url
+                                if squads.get('team2', {}).get('captain_id'):
+                                    captain = Player.query.filter_by(player_id=squads['team2']['captain_id']).first()
+                                    if captain and captain.photo_url:
+                                        team2_captain_url = captain.photo_url
+                        except Exception as cap_err:
+                            print(f"[SCHEDULER] Captain fetch error: {cap_err}")
+                        
+                        filename = f"thumb_{uuid.uuid4().hex[:8]}.png"
+                        output_path = os.path.join('static', 'thumbnails', filename)
+                        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                        
+                        generate_thumbnail(
+                            match.team1_name or "Team 1",
+                            match.team2_name or "Team 2",
+                            match.match_format or "Match",
+                            getattr(match, 'team1_flag', None),
+                            getattr(match, 'team2_flag', None),
+                            output_path,
+                            team1_captain_url,
+                            team2_captain_url,
+                            getattr(match, 'venue', None),
+                            getattr(match, 'series_name', None)
+                        )
+                        thumbnail_url = f"/static/thumbnails/{filename}"
                     except Exception as thumb_err:
                         print(f"[SCHEDULER] Thumbnail error: {thumb_err}")
                     
