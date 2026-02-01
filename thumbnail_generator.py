@@ -27,8 +27,20 @@ def create_circle_mask(size):
     draw.ellipse((0, 0, size, size), fill=255)
     return mask
 
-def generate_thumbnail(team1_name, team2_name, match_title, team1_flag_url=None, team2_flag_url=None, output_path=None):
-    """Generate match thumbnail"""
+def download_image(url):
+    """Download image from URL"""
+    try:
+        if not url:
+            return None
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            return Image.open(BytesIO(response.content))
+    except:
+        pass
+    return None
+
+def generate_thumbnail(team1_name, team2_name, match_title, team1_flag_url=None, team2_flag_url=None, output_path=None, team1_captain_url=None, team2_captain_url=None):
+    """Generate match thumbnail with captain images"""
     
     img = Image.new('RGB', (THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT), BACKGROUND_COLOR)
     draw = ImageDraw.Draw(img)
@@ -69,6 +81,18 @@ def generate_thumbnail(team1_name, team2_name, match_title, team1_flag_url=None,
                      team1_x + flag_size//2, center_y - 80 + flag_size], 
                      fill="#2d4059", outline="#3282b8", width=3)
     
+    captain_size = 100
+    captain1 = download_image(team1_captain_url)
+    if captain1:
+        captain1 = captain1.resize((captain_size, captain_size), Image.Resampling.LANCZOS)
+        if captain1.mode != 'RGBA':
+            captain1 = captain1.convert('RGBA')
+        cap_mask = create_circle_mask(captain_size)
+        cap1_x = team1_x + flag_size//2 + 20
+        cap1_y = center_y - 50
+        draw.ellipse([cap1_x - 3, cap1_y - 3, cap1_x + captain_size + 3, cap1_y + captain_size + 3], fill="#e94560")
+        img.paste(captain1, (cap1_x, cap1_y), cap_mask)
+    
     team1_short = team1_name[:15] if len(team1_name) > 15 else team1_name
     bbox = draw.textbbox((0, 0), team1_short, font=team_font)
     text_width = bbox[2] - bbox[0]
@@ -93,6 +117,17 @@ def generate_thumbnail(team1_name, team2_name, match_title, team1_flag_url=None,
         draw.ellipse([team2_x - flag_size//2, center_y - 80, 
                      team2_x + flag_size//2, center_y - 80 + flag_size], 
                      fill="#2d4059", outline="#3282b8", width=3)
+    
+    captain2 = download_image(team2_captain_url)
+    if captain2:
+        captain2 = captain2.resize((captain_size, captain_size), Image.Resampling.LANCZOS)
+        if captain2.mode != 'RGBA':
+            captain2 = captain2.convert('RGBA')
+        cap_mask2 = create_circle_mask(captain_size)
+        cap2_x = team2_x - flag_size//2 - captain_size - 20
+        cap2_y = center_y - 50
+        draw.ellipse([cap2_x - 3, cap2_y - 3, cap2_x + captain_size + 3, cap2_y + captain_size + 3], fill="#e94560")
+        img.paste(captain2, (cap2_x, cap2_y), cap_mask2)
     
     team2_short = team2_name[:15] if len(team2_name) > 15 else team2_name
     bbox = draw.textbbox((0, 0), team2_short, font=team_font)
@@ -126,8 +161,8 @@ def generate_thumbnail(team1_name, team2_name, match_title, team1_flag_url=None,
         buffer.seek(0)
         return buffer
 
-def generate_thumbnail_for_match(match, output_dir="static/thumbnails"):
-    """Generate thumbnail for a match object"""
+def generate_thumbnail_for_match(match, output_dir="static/thumbnails", team1_captain_url=None, team2_captain_url=None):
+    """Generate thumbnail for a match object with captain images"""
     team1_name = match.team1_name or "Team 1"
     team2_name = match.team2_name or "Team 2"
     match_format = match.match_format or "Match"
@@ -148,6 +183,6 @@ def generate_thumbnail_for_match(match, output_dir="static/thumbnails"):
     if hasattr(match, 'team2_flag'):
         team2_flag_url = match.team2_flag
     
-    generate_thumbnail(team1_name, team2_name, title, team1_flag_url, team2_flag_url, output_path)
+    generate_thumbnail(team1_name, team2_name, title, team1_flag_url, team2_flag_url, output_path, team1_captain_url, team2_captain_url)
     
     return f"/static/thumbnails/{filename}"

@@ -3735,6 +3735,8 @@ def api_generate_thumbnail():
         data = request.get_json()
         title = data.get('title', 'Match')
         match_id = data.get('match_id')
+        team1_captain_url = data.get('team1_captain_url')
+        team2_captain_url = data.get('team2_captain_url')
         
         team1 = "Team 1"
         team2 = "Team 2"
@@ -3750,6 +3752,20 @@ def api_generate_thumbnail():
                 match_format = match.match_format or "Match"
                 team1_flag = getattr(match, 'team1_flag', None)
                 team2_flag = getattr(match, 'team2_flag', None)
+                
+                if not team1_captain_url or not team2_captain_url:
+                    team1_obj = Team.query.filter(Team.name.ilike(f"%{team1}%")).first()
+                    team2_obj = Team.query.filter(Team.name.ilike(f"%{team2}%")).first()
+                    
+                    if team1_obj and team1_obj.captain_id and not team1_captain_url:
+                        captain1 = Player.query.get(team1_obj.captain_id)
+                        if captain1:
+                            team1_captain_url = captain1.image_url
+                    
+                    if team2_obj and team2_obj.captain_id and not team2_captain_url:
+                        captain2 = Player.query.get(team2_obj.captain_id)
+                        if captain2:
+                            team2_captain_url = captain2.image_url
         else:
             if ' vs ' in title.lower():
                 parts = title.split(' vs ')
@@ -3763,7 +3779,7 @@ def api_generate_thumbnail():
         output_path = os.path.join(app.static_folder, 'thumbnails', filename)
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         
-        generate_thumbnail(team1, team2, match_format, team1_flag, team2_flag, output_path)
+        generate_thumbnail(team1, team2, match_format, team1_flag, team2_flag, output_path, team1_captain_url, team2_captain_url)
         
         url = f"/static/thumbnails/{filename}"
         return jsonify({'success': True, 'url': url})
