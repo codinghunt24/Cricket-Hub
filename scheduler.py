@@ -858,12 +858,25 @@ def run_auto_post_job(app, db, Match, Post, PostCategory, AutoPostSetting, AutoP
             for m in upcoming_matches:
                 if m.match_date:
                     try:
+                        match_date = None
                         if isinstance(m.match_date, str):
-                            match_date = datetime.strptime(m.match_date.split()[0], '%Y-%m-%d').date()
+                            date_formats = [
+                                '%Y-%m-%d',
+                                '%a, %d %b %Y',
+                                '%d %b %Y',
+                                '%d-%m-%Y',
+                                '%d/%m/%Y'
+                            ]
+                            for fmt in date_formats:
+                                try:
+                                    match_date = datetime.strptime(m.match_date.strip(), fmt).date()
+                                    break
+                                except:
+                                    continue
                         else:
                             match_date = m.match_date.date() if hasattr(m.match_date, 'date') else m.match_date
                         
-                        if match_date == target_date:
+                        if match_date and match_date == target_date:
                             tomorrow_matches.append(m)
                     except:
                         pass
