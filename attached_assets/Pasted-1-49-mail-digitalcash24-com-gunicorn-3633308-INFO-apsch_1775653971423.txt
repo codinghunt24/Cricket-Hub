@@ -1,0 +1,36 @@
+1:49 mail.digitalcash24.com gunicorn[3633308]: INFO:apscheduler.scheduler:Scheduler started
+Apr 08 15:11:49 mail.digitalcash24.com gunicorn[3633308]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Apr 08 15:11:49 mail.digitalcash24.com gunicorn[3633308]: DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+Apr 08 15:11:49 mail.digitalcash24.com gunicorn[3633308]: [2026-04-08 15:11:49 +0200] [3633308] [INFO] Worker exiting (pid: 3633308)
+Apr 08 15:11:49 mail.digitalcash24.com gunicorn[3633308]: INFO:apscheduler.scheduler:Scheduler has been shut down
+Apr 08 15:11:49 mail.digitalcash24.com gunicorn[3633308]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Apr 08 15:11:49 mail.digitalcash24.com gunicorn[3633308]: DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+Apr 08 15:11:49 mail.digitalcash24.com gunicorn[3633293]: [2026-04-08 15:11:49 +0200] [3633293] [ERROR] Shutting down: Master
+Apr 08 15:11:49 mail.digitalcash24.com gunicorn[3633293]: [2026-04-08 15:11:49 +0200] [3633293] [ERROR] Reason: Worker failed to boot.
+Apr 08 15:11:49 mail.digitalcash24.com systemd[1]: cricbuzz-score.service: Main process exited, code=exited, status=3/NOTIMPLEMENTED
+Apr 08 15:11:49 mail.digitalcash24.com systemd[1]: cricbuzz-score.service: Failed with result 'exit-code'.
+Apr 08 15:11:55 mail.digitalcash24.com systemd[1]: cricbuzz-score.service: Scheduled restart job, restart counter is at 1.
+Apr 08 15:11:55 mail.digitalcash24.com systemd[1]: Stopped Cricbuzz Score Flask App.
+Apr 08 15:11:55 mail.digitalcash24.com systemd[1]: Started Cricbuzz Score Flask App.
+Apr 08 15:11:55 mail.digitalcash24.com gunicorn[3633359]: [2026-04-08 15:11:55 +0200] [3633359] [INFO] Starting gunicorn 23.0.0
+Apr 08 15:11:55 mail.digitalcash24.com gunicorn[3633359]: [2026-04-08 15:11:55 +0200] [3633359] [INFO] Listening at: http://127.0.0.1:8007 (3633359)
+Apr 08 15:11:55 mail.digitalcash24.com gunicorn[3633359]: [2026-04-08 15:11:55 +0200] [3633359] [INFO] Using worker: sync
+Apr 08 15:11:55 mail.digitalcash24.com gunicorn[3633361]: [2026-04-08 15:11:55 +0200] [3633361] [INFO] Booting worker with pid: 3633361
+Apr 08 15:11:55 mail.digitalcash24.com gunicorn[3633362]: [2026-04-08 15:11:55 +0200] [3633362] [INFO] Booting worker with pid: 3633362
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633361]: DEBUG:tzlocal:/etc/timezone found, contents:
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633361]:  Europe/Berlin
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633361]: DEBUG:tzlocal:/etc/localtime found
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633361]: DEBUG:tzlocal:2 found:
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633361]:  {'/etc/timezone': 'Europe/Berlin', '/etc/localtime is a symlink to': 'Europe/Berlin'}
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633362]: DEBUG:tzlocal:/etc/timezone found, contents:
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633362]:  Europe/Berlin
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633362]: DEBUG:tzlocal:/etc/localtime found
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633362]: DEBUG:tzlocal:2 found:
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633362]:  {'/etc/timezone': 'Europe/Berlin', '/etc/localtime is a symlink to': 'Europe/Berlin'}
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633361]: INFO:apscheduler.scheduler:Scheduler started
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633361]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633361]: DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633362]: INFO:apscheduler.scheduler:Scheduler started
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633362]: DEBUG:apscheduler.scheduler:Looking for jobs to run
+Apr 08 15:11:56 mail.digitalcash24.com gunicorn[3633362]: DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# 
