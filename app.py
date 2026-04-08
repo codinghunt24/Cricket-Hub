@@ -432,7 +432,7 @@ def sitemap_index():
     from flask import Response
     from datetime import datetime
     
-    base_url = "https://cricbuzz-live-score.com"
+    base_url = "https://cricbuzz-score.com"
     today = datetime.utcnow().strftime('%Y-%m-%d')
     
     sitemaps = [
@@ -462,7 +462,7 @@ def sitemap_main():
     """Main pages sitemap - homepage, live scores, categories"""
     from flask import Response
     
-    base_url = "https://cricbuzz-live-score.com"
+    base_url = "https://cricbuzz-score.com"
     pages = []
     
     pages.append({'loc': base_url, 'priority': '1.0', 'changefreq': 'hourly'})
@@ -481,7 +481,7 @@ def sitemap_teams():
     """Teams sitemap"""
     from flask import Response
     
-    base_url = "https://cricbuzz-live-score.com"
+    base_url = "https://cricbuzz-score.com"
     pages = []
     
     teams = Team.query.all()
@@ -496,7 +496,7 @@ def sitemap_players():
     """Players sitemap"""
     from flask import Response
     
-    base_url = "https://cricbuzz-live-score.com"
+    base_url = "https://cricbuzz-score.com"
     pages = []
     
     players = Player.query.all()
@@ -511,7 +511,7 @@ def sitemap_series():
     """Series sitemap"""
     from flask import Response
     
-    base_url = "https://cricbuzz-live-score.com"
+    base_url = "https://cricbuzz-score.com"
     pages = []
     
     series_list = Series.query.all()
@@ -526,7 +526,7 @@ def sitemap_posts():
     """Posts/Blog sitemap"""
     from flask import Response
     
-    base_url = "https://cricbuzz-live-score.com"
+    base_url = "https://cricbuzz-score.com"
     pages = []
     
     posts = Post.query.filter_by(is_published=True).all()
@@ -540,7 +540,7 @@ def sitemap_static_pages():
     """Static pages sitemap"""
     from flask import Response
     
-    base_url = "https://cricbuzz-live-score.com"
+    base_url = "https://cricbuzz-score.com"
     pages = []
     
     static_pages = Page.query.filter_by(is_published=True).all()
@@ -4537,7 +4537,7 @@ def send_push_notification():
             return jsonify({'success': False, 'message': 'Message body is required'}), 400
         
         vapid_private_key = os.environ.get('VAPID_PRIVATE_KEY')
-        vapid_claims_email = os.environ.get('VAPID_CLAIMS_EMAIL', 'admin@cricbuzz-live-score.com')
+        vapid_claims_email = os.environ.get('VAPID_CLAIMS_EMAIL', 'admin@cricbuzz-score.com')
         
         if not vapid_private_key:
             return jsonify({'success': False, 'message': 'VAPID keys not configured'}), 500

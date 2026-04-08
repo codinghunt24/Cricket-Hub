@@ -16,7 +16,7 @@
     <meta name="google" content="notranslate">
     <meta name="theme-color" content="#046A38">
     
-    <link rel="canonical" href="{% block canonical %}https://cricbuzz-live-score.com{{ request.path }}{% endblock %}">
+    <link rel="canonical" href="{% block canonical %}https://cricbuzz-score.com{{ request.path }}{% endblock %}">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
@@ -25,15 +25,15 @@
     <meta property="og:site_name" content="Cricbuzz Live Score">
     <meta property="og:title" content="{% block og_title %}Cricbuzz Live Score - Live Cricket Score, Ball by Ball Commentary{% endblock %}">
     <meta property="og:description" content="{% block og_description %}Get live cricket scores, ball by ball commentary, match updates, schedules, fixtures, points table, results on Cricbuzz Live Score.{% endblock %}">
-    <meta property="og:url" content="{% block og_url %}https://cricbuzz-live-score.com{{ request.path }}{% endblock %}">
-    <meta property="og:image" content="{% block og_image %}https://cricbuzz-live-score.com/static/og-image.png{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}https://cricbuzz-score.com{{ request.path }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}https://cricbuzz-score.com/static/og-image.png{% endblock %}">
     <meta property="og:locale" content="en_IN">
     
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@cricbuzzlive">
     <meta name="twitter:title" content="{% block twitter_title %}Cricbuzz Live Score - Live Cricket Score{% endblock %}">
     <meta name="twitter:description" content="{% block twitter_description %}Get live cricket scores, ball by ball commentary, match updates on Cricbuzz Live Score.{% endblock %}">
-    <meta name="twitter:image" content="{% block twitter_image %}https://cricbuzz-live-score.com/static/og-image.png{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}https://cricbuzz-score.com/static/og-image.png{% endblock %}">
     
     <script type="application/ld+json">
     {
@@ -41,20 +41,20 @@
         "@type": "WebSite",
         "name": "Cricbuzz Live Score",
         "alternateName": ["Cricket Live Score", "Live Cricket Score"],
-        "url": "https://cricbuzz-live-score.com",
+        "url": "https://cricbuzz-score.com",
         "description": "Get live cricket scores, ball by ball commentary, match updates, schedules, fixtures, points table and results.",
         "potentialAction": {
             "@type": "SearchAction",
-            "target": "https://cricbuzz-live-score.com/search?q={search_term_string}",
+            "target": "https://cricbuzz-score.com/search?q={search_term_string}",
             "query-input": "required name=search_term_string"
         },
         "publisher": {
             "@type": "Organization",
             "name": "Cricbuzz Live Score",
-            "url": "https://cricbuzz-live-score.com",
+            "url": "https://cricbuzz-score.com",
             "logo": {
                 "@type": "ImageObject",
-                "url": "https://cricbuzz-live-score.com/static/logo.png"
+                "url": "https://cricbuzz-score.com/static/logo.png"
             }
         }
     }
@@ -192,7 +192,7 @@
                     <a href="/page/{{ page.slug }}">{{ page.title }}</a>
                     {% endfor %}
                 </div>
-                <p>&copy; 2026 Cricbuzz Live Score. All rights reserved. | <a href="https://cricbuzz-live-score.com">cricbuzz-live-score.com</a></p>
+                <p>&copy; 2026 Cricbuzz Live Score. All rights reserved. | <a href="https://cricbuzz-score.com">cricbuzz-score.com</a></p>
             </div>
         </div>
     </footer>
