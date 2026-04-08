@@ -1,0 +1,49 @@
+postgres=# CREATE DATABASE cricbuzz_score;
+CREATE DATABASE
+postgres=# CREATE USER cricbuzz_score WITH PASSWORD 'cricbuzz1991';
+CREATE ROLE
+postgres=# GRANT ALL PRIVILEGES ON DATABASE cricbuzz_score TO cricbuzz_score;
+GRANT
+postgres=# \q
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# nano /etc/systemd/system/cricbuzz-score.service
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# sudo systemctl daemon-reload
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# sudo systemctl enable cricbuzz-score
+Created symlink /etc/systemd/system/multi-user.target.wants/cricbuzz-score.service → /etc/systemd/system/cricbuzz-score.service.
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# sudo systemctl start cricbuzz-score
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# sudo systemctl status cricbuzz-score
+● cricbuzz-score.service - Cricbuzz Score Flask App
+     Loaded: loaded (/etc/systemd/system/cricbuzz-score.service; enabled; vendor preset: enabled)
+     Active: active (running) since Wed 2026-04-08 15:10:14 CEST; 1s ago
+   Main PID: 3632675 (gunicorn)
+      Tasks: 3 (limit: 9493)
+     Memory: 110.5M
+     CGroup: /system.slice/cricbuzz-score.service
+             ├─3632675 /home/digitalcash24/cricbuzz-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-score.com/venv/bin/gunicorn --bind 127.0.0.1:8007 --workers 2 --timeout >
+             ├─3632690 /home/digitalcash24/cricbuzz-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-score.com/venv/bin/gunicorn --bind 127.0.0.1:8007 --workers 2 --timeout >
+             └─3632691 /home/digitalcash24/cricbuzz-score.com/venv/bin/python3 /home/digitalcash24/cricbuzz-score.com/venv/bin/gunicorn --bind 127.0.0.1:8007 --workers 2 --timeout >
+
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632691]: DEBUG:tzlocal:/etc/timezone found, contents:
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632691]:  Europe/Berlin
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]: DEBUG:tzlocal:/etc/timezone found, contents:
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]:  Europe/Berlin
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632691]: DEBUG:tzlocal:/etc/localtime found
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]: DEBUG:tzlocal:/etc/localtime found
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632691]: DEBUG:tzlocal:2 found:
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632691]:  {'/etc/timezone': 'Europe/Berlin', '/etc/localtime is a symlink to': 'Europe/Berlin'}
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]: DEBUG:tzlocal:2 found:
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]:  {'/etc/timezone': 'Europe/Berlin', '/etc/localtime is a symlink to': 'Europe/Berlin'}
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]: [2026-04-08 15:10:15 +0200] [3632690] [ERROR] Exception in worker process
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]: Traceback (most recent call last):
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]:   File "/home/digitalcash24/cricbuzz-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1967, in >
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]:     self.dialect.do_execute(
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]:   File "/home/digitalcash24/cricbuzz-score.com/venv/lib/python3.8/site-packages/sqlalchemy/engine/default.py", line 952, i>
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]:     cursor.execute(statement, parameters)
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]: psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]: DETAIL:  Key (typname, typnamespace)=(team_categories_id_seq, 2200) already exists.
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]: The above exception was the direct cause of the following exception:
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]: Traceback (most recent call last):
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]:   File "/home/digitalcash24/cricbuzz-score.com/venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 608, in spawn_w>
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]:     worker.init_process()
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]:   File "/home/digitalcash24/cricbuzz-score.com/venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 135, in in>
+Apr 08 15:10:15 mail.digitalcash24.com gunicorn[3632690]:     self.load_wsgi()
+lines 1-35
