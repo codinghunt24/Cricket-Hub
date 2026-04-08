@@ -1,0 +1,79 @@
+>     print(f"Done! Teams: {teams_updated}, Players: {players_updated}, Series: {series_updated}")
+> EOF
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/home/digitalcash24/cricbuzz-score.com/app.py", line 43, in <module>
+    db.init_app(app)
+  File "/home/digitalcash24/cricbuzz-score.com/venv/lib/python3.8/site-packages/flask_sqlalchemy/extension.py", line 355, in init_app
+    raise RuntimeError(
+RuntimeError: Either 'SQLALCHEMY_DATABASE_URI' or 'SQLALCHEMY_BINDS' must be set.
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# cd /home/digitalcash24/cricbuzz-score.com
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# source venv/bin/activate
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# 
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# export DATABASE_URL="postgresql://cricbuzz_score:cricbuzz1991@localhost/cricbuzz_score"
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# export SESSION_SECRET="CricbuzzS3cr3tKey2024XyzAbc987!"
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# 
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# python3 - << 'EOF'
+> from app import app, db
+> from models import Team, Player, Series
+> import unicodedata, re
+> 
+> def generate_slug(text, existing_slugs=None):
+>     if not text:
+>         return None
+>     text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+>     text = text.lower().strip()
+>     text = re.sub(r'[^\w\s-]', '', text)
+>     text = re.sub(r'[-\s]+', '-', text)
+>     text = text.strip('-')
+>     if existing_slugs and text in existing_slugs:
+>         counter = 1
+>         while f"{text}-{counter}" in existing_slugs:
+>             counter += 1
+>         text = f"{text}-{counter}"
+>     return text
+> 
+> with app.app_context():
+>     team_slugs = set(t.slug for t in Team.query.filter(Team.slug.isnot(None)).all())
+>     teams_updated = 0
+>     for team in Team.query.filter(Team.slug.is_(None)).all():
+>         team.slug = generate_slug(team.name, team_slugs)
+>         if team.slug:
+>             team_slugs.add(team.slug)
+>             teams_updated += 1
+> 
+>     player_slugs = set(p.slug for p in Player.query.filter(Player.slug.isnot(None)).all())
+>     players_updated = 0
+>     for player in Player.query.filter(Player.slug.is_(None)).all():
+>         player.slug = generate_slug(player.name, player_slugs)
+>         if player.slug:
+>             player_slugs.add(player.slug)
+>             players_updated += 1
+> 
+>     series_slugs = set(s.slug for s in Series.query.filter(Series.slug.isnot(None)).all())
+>     series_updated = 0
+>     for s in Series.query.filter(Series.slug.is_(None)).all():
+>         s.slug = generate_slug(s.name, series_slugs)
+>         if s.slug:
+>             series_slugs.add(s.slug)
+>             series_updated += 1
+> 
+>     db.session.commit()
+>     print(f"Done! Teams: {teams_updated}, Players: {players_updated}, Series: {series_updated}")
+> EOF
+DEBUG:tzlocal:/etc/timezone found, contents:
+ Europe/Berlin
+
+DEBUG:tzlocal:/etc/localtime found
+DEBUG:tzlocal:2 found:
+ {'/etc/timezone': 'Europe/Berlin', '/etc/localtime is a symlink to': 'Europe/Berlin'}
+INFO:apscheduler.scheduler:Scheduler started
+DEBUG:apscheduler.scheduler:Looking for jobs to run
+DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+ImportError: cannot import name 'Team' from 'models' (/home/digitalcash24/cricbuzz-score.com/models.py)
+INFO:apscheduler.scheduler:Scheduler has been shut down
+DEBUG:apscheduler.scheduler:Looking for jobs to run
+DEBUG:apscheduler.scheduler:No jobs; waiting until a job is added
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# 
