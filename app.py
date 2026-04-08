@@ -209,8 +209,10 @@ with app.app_context():
     for m in Match.query.filter(Match.slug.is_(None)).all():
         if m.team1_name and m.team2_name:
             match_title = f"{m.team1_name} vs {m.team2_name}"
-            if m.match_format:
-                match_title += f" {m.match_format}"
+            if m.series_name:
+                match_title += f" {m.series_name}"
+            if m.match_id:
+                match_title += f" {m.match_id}"
             m.slug = generate_slug(match_title, existing_match_slugs)
             if m.slug:
                 existing_match_slugs.add(m.slug)
@@ -291,19 +293,22 @@ def upsert_match(match_data, db_series_id=None):
             existing.bowling_data = match_data.get('bowling')
         if not existing.slug and existing.team1_name and existing.team2_name:
             match_title = f"{existing.team1_name} vs {existing.team2_name}"
-            if existing.match_format:
-                match_title += f" {existing.match_format}"
+            if existing.series_name:
+                match_title += f" {existing.series_name}"
+            match_title += f" {existing.match_id}"
             existing.slug = generate_slug(match_title)
         return existing
     else:
         team1 = match_data.get('team1') or match_data.get('team1_name', '')
         team2 = match_data.get('team2') or match_data.get('team2_name', '')
-        match_format = match_data.get('match_format', '')
+        series_name = match_data.get('series_name', '')
+        match_id_val = str(match_data['match_id'])
         match_slug = None
         if team1 and team2:
             match_title = f"{team1} vs {team2}"
-            if match_format:
-                match_title += f" {match_format}"
+            if series_name:
+                match_title += f" {series_name}"
+            match_title += f" {match_id_val}"
             match_slug = generate_slug(match_title)
         new_match = Match(
             match_id=str(match_data['match_id']),
