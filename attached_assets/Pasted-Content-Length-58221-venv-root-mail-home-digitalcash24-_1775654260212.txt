@@ -1,0 +1,65 @@
+Content-Length: 58221
+
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# cat /etc/nginx/conf.d/includes-optional/zesle-proxy-http.conf
+set $PROXY_DOMAIN_OR_IP 127.0.0.1;
+set $PROXY_FORWARDED_HOST $host;
+set $PROXY_SCHEME $scheme;
+
+location / {
+    try_files $uri @backend;
+}
+
+location @backend {
+    include conf.d/includes-optional/zesle-proxy.conf;
+}
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# cat /etc/nginx/conf.d/static-locations/zesle-static-locations.conf
+# Enable low duration browser cache for static data files (TTL is 1 min)
+location ~* \.(?:csv|json|xml|rss|atom)$ {
+    include conf.d/includes-optional/zesle-proxy.conf;
+    include conf.d/includes-optional/zesle-proxy_static.conf;
+    expires 1m;
+}
+
+# Enable browser cache for CSS / JS (TTL is 30 days)
+location ~* \.(?:css|js)$ {
+    include conf.d/includes-optional/zesle-proxy.conf;
+    include conf.d/includes-optional/zesle-proxy_static.conf;
+    expires 30d;
+}
+
+# Enable browser cache for images (TTL is 60 days)
+location ~* \.(?:ico|jpg|jpeg|gif|png|webp)$ {
+    include conf.d/includes-optional/zesle-proxy.conf;
+    include conf.d/includes-optional/zesle-proxy_static.conf;
+    expires 60d;
+}
+
+# Enable browser cache for fonts & fix @font-face cross-domain restriction (TTL is 60 days)
+location ~* \.(eot|ttf|otf|woff|woff2|svg|svgz)$ {
+    include conf.d/includes-optional/zesle-proxy.conf;
+    include conf.d/includes-optional/zesle-proxy_static.conf;
+    expires 60d;
+}
+
+# Prevent logging of favicon and robot request errors
+location = /favicon.ico {
+    include conf.d/includes-optional/zesle-proxy.conf;
+    include conf.d/includes-optional/zesle-proxy_static.conf;
+    expires 60d;
+    log_not_found off;
+    access_log off;
+}
+
+location = /robots.txt  {
+    include conf.d/includes-optional/zesle-proxy.conf;
+    include conf.d/includes-optional/zesle-proxy_static.conf;
+    expires 1d;
+    log_not_found off;
+    access_log off;
+}
+
+# do not serve Apache .htaccess files
+location ~ /\.ht {
+    deny  all;
+}
+(venv) root@mail:/home/digitalcash24/cricbuzz-score.com# 
