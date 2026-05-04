@@ -78,6 +78,52 @@
     {% endif %}
 </section>
 
+{% if recent_matches %}
+<section class="recent-matches-strip">
+    <div class="strip-header">
+        <span class="strip-title"><i class="fas fa-check-circle"></i> Recent Matches</span>
+        <a href="/recent-matches" class="strip-view-all">View All <i class="fas fa-chevron-right"></i></a>
+    </div>
+    <div class="recent-slider-wrapper">
+        <div class="recent-slider">
+            <div class="recent-slider-track">
+            {% for match in recent_matches %}
+            <a class="recent-match-card" href="/cricket-match/{{ match.slug or match.match_id }}">
+                <div class="rmc-header">
+                    <span class="rmc-series">{{ (match.series_name or match.match_format or 'Match')[:40] }}</span>
+                    <span class="rmc-badge">RESULT</span>
+                </div>
+                <div class="rmc-body">
+                    <div class="rmc-team">
+                        {% if recent_match_flags.get(match.match_id ~ '_1') %}
+                        <img src="{{ recent_match_flags.get(match.match_id ~ '_1') }}" alt="" class="rmc-flag">
+                        {% else %}
+                        <span class="rmc-flag-ph"></span>
+                        {% endif %}
+                        <span class="rmc-name">{{ match.team1_name or 'Team 1' }}</span>
+                        <span class="rmc-score">{{ normalize_score(match.team1_score) or '-' }}</span>
+                    </div>
+                    <div class="rmc-team">
+                        {% if recent_match_flags.get(match.match_id ~ '_2') %}
+                        <img src="{{ recent_match_flags.get(match.match_id ~ '_2') }}" alt="" class="rmc-flag">
+                        {% else %}
+                        <span class="rmc-flag-ph"></span>
+                        {% endif %}
+                        <span class="rmc-name">{{ match.team2_name or 'Team 2' }}</span>
+                        <span class="rmc-score">{{ normalize_score(match.team2_score) or '-' }}</span>
+                    </div>
+                    {% if match.result %}
+                    <div class="rmc-result">{{ match.result }}</div>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <section class="main-container">
     <div class="content-wrapper">
         <!-- Recent News / Scorecard - Separate Box -->
@@ -270,6 +316,198 @@
     
     .series-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* Recent Matches Strip */
+.recent-matches-strip {
+    background: #fff;
+    margin: 8px 20px 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 10px 15px 12px 15px;
+    overflow: visible;
+}
+
+.strip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.strip-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a472a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.strip-title i {
+    color: #10b981;
+    font-size: 13px;
+}
+
+.strip-view-all {
+    font-size: 11px;
+    color: #1a472a;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 3px 10px;
+    border: 1px solid #1a472a;
+    border-radius: 12px;
+    transition: all 0.2s;
+}
+
+.strip-view-all:hover {
+    background: #1a472a;
+    color: #fff;
+}
+
+.recent-slider-wrapper {
+    overflow: visible;
+    margin: 0 -5px;
+}
+
+.recent-slider {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    cursor: grab;
+}
+
+.recent-slider:active { cursor: grabbing; }
+.recent-slider::-webkit-scrollbar { display: none; }
+
+.recent-slider-track {
+    display: flex;
+    gap: 10px;
+    padding: 4px 5px 6px 5px;
+    width: max-content;
+}
+
+.recent-match-card {
+    display: block;
+    text-decoration: none;
+    min-width: 240px;
+    max-width: 240px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+    flex-shrink: 0;
+}
+
+.recent-match-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+}
+
+.rmc-header {
+    background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+    padding: 6px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rmc-series {
+    color: rgba(255,255,255,0.9);
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 75%;
+}
+
+.rmc-badge {
+    background: #10b981;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.rmc-body {
+    padding: 6px 10px 8px 10px;
+}
+
+.rmc-team {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 0;
+}
+
+.rmc-team:first-child {
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 5px;
+    margin-bottom: 1px;
+}
+
+.rmc-flag {
+    width: 24px;
+    height: 17px;
+    object-fit: cover;
+    border-radius: 2px;
+    border: 1px solid #ddd;
+    flex-shrink: 0;
+}
+
+.rmc-flag-ph {
+    width: 24px;
+    height: 17px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    flex-shrink: 0;
+    display: block;
+}
+
+.rmc-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #222;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rmc-score {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a472a;
+    flex-shrink: 0;
+    text-align: right;
+}
+
+.rmc-result {
+    font-size: 10px;
+    color: #155724;
+    background: #d4edda;
+    border-radius: 4px;
+    padding: 3px 7px;
+    margin-top: 5px;
+    line-height: 1.3;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .recent-matches-strip {
+        margin: 6px 8px 8px 8px;
+        padding: 8px 10px 10px 10px;
+    }
+    .recent-match-card {
+        min-width: 210px;
+        max-width: 210px;
     }
 }
 

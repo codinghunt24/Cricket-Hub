@@ -606,7 +606,34 @@ def index():
     # Get recent series for home page (order by id desc for most recently added)
     recent_series = Series.query.order_by(Series.id.desc()).limit(10).all()
     
-    return render_template('index.html', matches=matches, match_flags=match_flags, recent_posts=recent_posts, series=recent_series)
+    # Fetch recently completed matches from Cricbuzz
+    recent_result = scraper.scrape_recent_matches()
+    recent_matches = []
+    recent_match_flags = {}
+    if recent_result.get('success'):
+        for m in recent_result.get('matches', [])[:20]:
+            db_match = Match.query.filter_by(match_id=str(m.get('match_id'))).first()
+            match_data = {
+                'match_id': m.get('match_id'),
+                'slug': db_match.slug if db_match else None,
+                'match_format': m.get('series_name') or m.get('match_format') or 'Match',
+                'series_name': m.get('series_name', ''),
+                'team1_name': m.get('team1_name', 'Team 1'),
+                'team2_name': m.get('team2_name', 'Team 2'),
+                'team1_score': m.get('team1_score', ''),
+                'team2_score': m.get('team2_score', ''),
+                'state': 'Complete',
+                'result': m.get('result', ''),
+                'team1_flag': m.get('team1_flag', ''),
+                'team2_flag': m.get('team2_flag', '')
+            }
+            recent_matches.append(type('Match', (), match_data)())
+            if m.get('team1_flag'):
+                recent_match_flags[f"{m.get('match_id')}_1"] = m.get('team1_flag')
+            if m.get('team2_flag'):
+                recent_match_flags[f"{m.get('match_id')}_2"] = m.get('team2_flag')
+    
+    return render_template('index.html', matches=matches, match_flags=match_flags, recent_posts=recent_posts, series=recent_series, recent_matches=recent_matches, recent_match_flags=recent_match_flags)
 
 @app.route('/live-scores')
 def live_scores():
