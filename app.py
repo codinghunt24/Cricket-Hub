@@ -440,6 +440,7 @@ def sitemap_index():
         {'loc': f"{base_url}/sitemap-teams.xml", 'lastmod': today},
         {'loc': f"{base_url}/sitemap-players.xml", 'lastmod': today},
         {'loc': f"{base_url}/sitemap-series.xml", 'lastmod': today},
+        {'loc': f"{base_url}/sitemap-matches.xml", 'lastmod': today},
         {'loc': f"{base_url}/sitemap-posts.xml", 'lastmod': today},
         {'loc': f"{base_url}/sitemap-pages.xml", 'lastmod': today},
     ]
@@ -467,6 +468,7 @@ def sitemap_main():
     
     pages.append({'loc': base_url, 'priority': '1.0', 'changefreq': 'hourly'})
     pages.append({'loc': f"{base_url}/live-scores", 'priority': '1.0', 'changefreq': 'always'})
+    pages.append({'loc': f"{base_url}/recent-matches", 'priority': '0.9', 'changefreq': 'hourly'})
     pages.append({'loc': f"{base_url}/teams", 'priority': '0.9', 'changefreq': 'weekly'})
     pages.append({'loc': f"{base_url}/series", 'priority': '0.9', 'changefreq': 'daily'})
     
@@ -521,6 +523,30 @@ def sitemap_series():
     
     return generate_sitemap_response(pages)
 
+@app.route('/sitemap-matches.xml')
+def sitemap_matches():
+    """Matches sitemap - all scraped/stored matches"""
+    base_url = "https://cricbuzz-score.com"
+    pages = []
+
+    today = datetime.utcnow().strftime('%Y-%m-%d')
+
+    # Static recent-matches listing page
+    pages.append({'loc': f"{base_url}/recent-matches", 'priority': '0.9', 'changefreq': 'hourly'})
+
+    # Individual match detail pages from DB
+    matches = Match.query.filter(Match.slug.isnot(None)).all()
+    for m in matches:
+        lastmod = m.updated_at.strftime('%Y-%m-%d') if m.updated_at else today
+        pages.append({
+            'loc': f"{base_url}/cricket-match/{m.slug}",
+            'lastmod': lastmod,
+            'priority': '0.8',
+            'changefreq': 'daily'
+        })
+
+    return generate_sitemap_response(pages)
+
 @app.route('/sitemap-posts.xml')
 def sitemap_posts():
     """Posts/Blog sitemap"""
@@ -559,6 +585,8 @@ def generate_sitemap_response(pages):
     for page in pages:
         xml_content += '  <url>\n'
         xml_content += f'    <loc>{page["loc"]}</loc>\n'
+        if 'lastmod' in page:
+            xml_content += f'    <lastmod>{page["lastmod"]}</lastmod>\n'
         if 'changefreq' in page:
             xml_content += f'    <changefreq>{page["changefreq"]}</changefreq>\n'
         if 'priority' in page:
@@ -4363,13 +4391,14 @@ def get_site_settings():
 @app.route('/admin/seo')
 @admin_required
 def admin_seo():
-    main_count = 4 + PostCategory.query.count()
+    main_count = 5 + PostCategory.query.count()
     teams_count = Team.query.count()
     players_count = Player.query.count()
     series_count = Series.query.count()
+    matches_count = 1 + Match.query.filter(Match.slug.isnot(None)).count()
     posts_count = Post.query.filter_by(is_published=True).count()
     pages_count = Page.query.filter_by(is_published=True).count()
-    total_urls = main_count + teams_count + players_count + series_count + posts_count + pages_count
+    total_urls = main_count + teams_count + players_count + series_count + matches_count + posts_count + pages_count
     
     robots_content = ""
     try:
@@ -4383,6 +4412,7 @@ def admin_seo():
         teams_count=teams_count,
         players_count=players_count,
         series_count=series_count,
+        matches_count=matches_count,
         posts_count=posts_count,
         pages_count=pages_count,
         total_urls=total_urls,
