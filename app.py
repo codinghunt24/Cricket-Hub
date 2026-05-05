@@ -426,6 +426,16 @@ def get_team_flag_from_list(team_name, teams_list):
 def robots_txt():
     return app.send_static_file('robots.txt')
 
+@app.route('/ads.txt')
+def ads_txt():
+    try:
+        with open('static/ads.txt', 'r') as f:
+            content = f.read()
+    except:
+        content = ""
+    from flask import Response
+    return Response(content, mimetype='text/plain')
+
 @app.route('/sitemap.xml')
 def sitemap_index():
     """Sitemap index file that links to all category sitemaps"""
@@ -4418,6 +4428,28 @@ def admin_seo():
         total_urls=total_urls,
         robots_content=robots_content
     )
+
+@app.route('/admin/ads-txt', methods=['GET', 'POST'])
+@admin_required
+def admin_ads_txt():
+    message = None
+    if request.method == 'POST':
+        content = request.form.get('ads_txt_content', '').strip()
+        try:
+            with open('static/ads.txt', 'w') as f:
+                f.write(content)
+            message = 'ads.txt successfully saved!'
+        except Exception as e:
+            message = f'Error saving file: {str(e)}'
+
+    ads_txt_content = ""
+    try:
+        with open('static/ads.txt', 'r') as f:
+            ads_txt_content = f.read()
+    except:
+        ads_txt_content = ""
+
+    return render_template('admin/ads_txt.html', ads_txt_content=ads_txt_content, message=message)
 
 @app.route('/admin/adsense', methods=['GET', 'POST'])
 @admin_required

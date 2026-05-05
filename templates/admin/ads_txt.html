@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Ads.txt Manager - Admin{% endblock %}
+{% block page_title %}Ads.txt Manager{% endblock %}
+
+{% block content %}
+<div class="admin-section">
+
+    {% if message %}
+    <div class="alert" style="background: #14532d; color: #4ade80; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #166534;">
+        ✅ {{ message }}
+    </div>
+    {% endif %}
+
+    <div style="background: var(--admin-card); padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid var(--admin-border);">
+        <h2 style="color: var(--admin-text); margin-bottom: 8px;">What is ads.txt?</h2>
+        <p style="color: var(--admin-text-muted); line-height: 1.7; margin: 0;">
+            <strong style="color: var(--admin-text);">ads.txt</strong> (Authorized Digital Sellers) Google AdSense ke liye ek zaroori file hai jo confirm karti hai ki aap apni website ke authorized seller hain.
+            Iske bina AdSense revenue kam ho sakta hai ya ads show nahi hote.
+        </p>
+        <div style="margin-top: 12px; padding: 12px; background: #1e3a5f; border-radius: 5px; border: 1px solid #2563eb;">
+            <strong style="color: #60a5fa;">Format:</strong>
+            <code style="color: #93c5fd; display: block; margin-top: 5px; font-size: 13px;">google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0</code>
+        </div>
+    </div>
+
+    <form method="POST" action="/admin/ads-txt">
+        <div style="background: var(--admin-card); padding: 20px; border-radius: 8px; border: 1px solid var(--admin-border);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: var(--admin-text); margin: 0;">ads.txt Content</h3>
+                <a href="/ads.txt" target="_blank" class="btn btn-sm btn-outline">
+                    View Live File ↗
+                </a>
+            </div>
+
+            <textarea name="ads_txt_content" rows="12" style="
+                width: 100%;
+                padding: 12px;
+                border: 1px solid var(--admin-border);
+                border-radius: 6px;
+                background: var(--admin-input-bg);
+                color: var(--admin-text);
+                font-family: monospace;
+                font-size: 13px;
+                line-height: 1.6;
+                resize: vertical;
+                box-sizing: border-box;
+            " placeholder="google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0">{{ ads_txt_content }}</textarea>
+
+            <p style="color: var(--admin-text-muted); font-size: 12px; margin-top: 8px;">
+                * Har advertiser ka ek alag line mein record add karein. Google AdSense Publisher ID <a href="https://www.google.com/adsense" target="_blank" style="color: var(--admin-accent);">AdSense dashboard</a> mein milega.
+            </p>
+        </div>
+
+        <div style="margin-top: 15px; display: flex; gap: 12px; align-items: center;">
+            <button type="submit" class="btn btn-primary">💾 Save ads.txt</button>
+            <a href="/ads.txt" target="_blank" class="btn btn-outline">View /ads.txt</a>
+        </div>
+    </form>
+
+    <div style="background: var(--admin-card); padding: 20px; border-radius: 8px; margin-top: 25px; border: 1px solid var(--admin-border);">
+        <h3 style="color: var(--admin-text); margin-bottom: 12px;">Google AdSense ke liye ads.txt kaise setup karein</h3>
+        <ol style="color: var(--admin-text-muted); line-height: 2.2; padding-left: 20px;">
+            <li><a href="https://www.google.com/adsense" target="_blank" style="color: var(--admin-accent);">AdSense Dashboard</a> par jaayein</li>
+            <li><strong style="color: var(--admin-text);">Account → Sites</strong> mein apni site check karein</li>
+            <li>Warning show hogi: <em>"Earnings at risk – You need to fix some ads.txt file issues"</em></li>
+            <li>Wahan diya gaya line copy karein — format hoga:<br>
+                <code style="background: var(--admin-input-bg); color: #4ade80; padding: 4px 8px; border-radius: 4px; font-size: 12px;">google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0</code>
+            </li>
+            <li>Upar text area mein paste karein aur <strong style="color: var(--admin-text);">Save</strong> karein</li>
+            <li>Google 24 ghante mein verify kar leta hai</li>
+        </ol>
+    </div>
+
+</div>
+{% endblock %}
