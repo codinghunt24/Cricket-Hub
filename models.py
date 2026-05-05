@@ -359,6 +359,9 @@ def init_models(db):
         ad_between_posts_enabled = db.Column(db.Boolean, default=False)
         ad_between_posts_code = db.Column(db.Text, nullable=True)
         
+        # Ads.txt content stored in DB (no file permission issues)
+        ads_txt_content = db.Column(db.Text, nullable=True, default='')
+        
         # Ad Slots - Match Page
         ad_match_page_enabled = db.Column(db.Boolean, default=False)
         ad_match_page_code = db.Column(db.Text, nullable=True)

@@ -7,8 +7,8 @@
 <div class="admin-section">
 
     {% if message %}
-    <div class="alert" style="background: #14532d; color: #4ade80; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #166534;">
-        ✅ {{ message }}
+    <div class="alert" style="background: {% if success %}#14532d{% else %}#4c1515{% endif %}; color: {% if success %}#4ade80{% else %}#f87171{% endif %}; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid {% if success %}#166534{% else %}#7f1d1d{% endif %};">
+        {% if success %}✅{% else %}❌{% endif %} {{ message }}
     </div>
     {% endif %}
 

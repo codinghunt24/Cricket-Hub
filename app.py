@@ -428,12 +428,14 @@ def robots_txt():
 
 @app.route('/ads.txt')
 def ads_txt():
+    from flask import Response
     try:
-        with open('static/ads.txt', 'r') as f:
-            content = f.read()
+        models = get_models()
+        SiteSettings = models['SiteSettings']
+        settings = SiteSettings.query.first()
+        content = settings.ads_txt_content if settings and settings.ads_txt_content else ""
     except:
         content = ""
-    from flask import Response
     return Response(content, mimetype='text/plain')
 
 @app.route('/sitemap.xml')
@@ -4432,24 +4434,30 @@ def admin_seo():
 @app.route('/admin/ads-txt', methods=['GET', 'POST'])
 @admin_required
 def admin_ads_txt():
+    models = get_models()
+    SiteSettings = models['SiteSettings']
     message = None
+    success = False
+
+    settings = SiteSettings.query.first()
+    if not settings:
+        settings = SiteSettings()
+        db.session.add(settings)
+        db.session.commit()
+
     if request.method == 'POST':
         content = request.form.get('ads_txt_content', '').strip()
         try:
-            with open('static/ads.txt', 'w') as f:
-                f.write(content)
+            settings.ads_txt_content = content
+            db.session.commit()
             message = 'ads.txt successfully saved!'
+            success = True
         except Exception as e:
-            message = f'Error saving file: {str(e)}'
+            db.session.rollback()
+            message = f'Error saving: {str(e)}'
 
-    ads_txt_content = ""
-    try:
-        with open('static/ads.txt', 'r') as f:
-            ads_txt_content = f.read()
-    except:
-        ads_txt_content = ""
-
-    return render_template('admin/ads_txt.html', ads_txt_content=ads_txt_content, message=message)
+    ads_txt_content = settings.ads_txt_content or ""
+    return render_template('admin/ads_txt.html', ads_txt_content=ads_txt_content, message=message, success=success)
 
 @app.route('/admin/adsense', methods=['GET', 'POST'])
 @admin_required
