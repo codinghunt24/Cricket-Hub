@@ -430,8 +430,6 @@ def robots_txt():
 def ads_txt():
     from flask import Response
     try:
-        models = get_models()
-        SiteSettings = models['SiteSettings']
         settings = SiteSettings.query.first()
         content = settings.ads_txt_content if settings and settings.ads_txt_content else ""
     except:
@@ -4434,8 +4432,6 @@ def admin_seo():
 @app.route('/admin/ads-txt', methods=['GET', 'POST'])
 @admin_required
 def admin_ads_txt():
-    models = get_models()
-    SiteSettings = models['SiteSettings']
     message = None
     success = False
 
